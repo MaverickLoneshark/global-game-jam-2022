@@ -12,14 +12,18 @@ public class InputMapper : MonoBehaviour {
 	public static int pointer_position_y { get; private set; }
 
 	public enum CONTROLS {
+		//primary buttons
 		execute = 1,
 		action,
 		cancel,
 		special,
+		//shoulder buttons
 		alternative,
 		extra,
+		//menu & options buttons
 		start,
 		select,
+		//used only for internal reference
 		COUNT
 	}
 
@@ -36,7 +40,7 @@ public class InputMapper : MonoBehaviour {
 			pointer_move.Enable();
 
 			string debug_text;
-			Debug.Log(InputSystem.devices.Count + " input device(s) detected");
+Debug.Log(InputSystem.devices.Count + " input device(s) detected");
 
 			UnityEngine.InputSystem.Utilities.ReadOnlyArray<InputControl> all_controls;
 
@@ -55,7 +59,7 @@ public class InputMapper : MonoBehaviour {
 					break;
 				}
 
-				Debug.Log(debug_text);
+Debug.Log(debug_text);
 			}
 		}
 	}
@@ -80,6 +84,20 @@ public class InputMapper : MonoBehaviour {
 	}
 
 	private void OnGUI() {
+		string pressed_buttons = "nothing";
+
+		for (int i = 1; i < (int)CONTROLS.COUNT; i++) {
+			if ((mappings[i] != null) && (mappings[i].IsPressed())) {
+				if (pressed_buttons == "nothing") {
+					pressed_buttons = ((CONTROLS)i).ToString();
+				}
+				else {
+					pressed_buttons += ", " + (CONTROLS)i;
+				}
+			}
+		}
+
 		GUILayout.TextField("Pointer: " + pointer_position_x + ", " + pointer_position_y);
+		GUILayout.TextField(pressed_buttons + " pressed");
 	}
 }
