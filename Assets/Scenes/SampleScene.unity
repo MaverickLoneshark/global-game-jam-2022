@@ -671,7 +671,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1697245081
 RectTransform:
   m_ObjectHideFlags: 0
@@ -737,6 +737,54 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1697245081}
     m_Modifications:
+    - target: {fileID: 1162178661529873627, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Id
+      value: 75d904ce-e409-45ed-a3a9-b359b508b1e6
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162178661529873627, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Name
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162178661529873627, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162178661529873627, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: d043c718-2a66-4c4b-8f31-a9a739b40081
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162178661529873627, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/#(A)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1162178661529873627, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Action
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 1532339075153988028, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Id
+      value: 7ba33a0f-970f-4a1e-95c7-6f779965605b
+      objectReference: {fileID: 0}
+    - target: {fileID: 1532339075153988028, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Name
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 1532339075153988028, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1532339075153988028, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: d47d94c9-307e-432b-8aec-45f102bacbe8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1532339075153988028, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/#(Z)
+      objectReference: {fileID: 0}
+    - target: {fileID: 1532339075153988028, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Action
+      value: Bound_action
+      objectReference: {fileID: 0}
     - target: {fileID: 1571519927113336245, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -821,6 +869,30 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4069416264499418984, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Id
+      value: 3d14c46e-4808-40d1-a7e0-aae3324ebd11
+      objectReference: {fileID: 0}
+    - target: {fileID: 4069416264499418984, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Name
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 4069416264499418984, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4069416264499418984, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: 77322618-0450-4a6e-a80a-286fb6f7a012
+      objectReference: {fileID: 0}
+    - target: {fileID: 4069416264499418984, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/#(')
+      objectReference: {fileID: 0}
+    - target: {fileID: 4069416264499418984, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Action
+      value: Bound_action
+      objectReference: {fileID: 0}
     - target: {fileID: 4244930572086311650, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
       propertyPath: m_Name
       value: MappingMenu
@@ -828,6 +900,130 @@ PrefabInstance:
     - target: {fileID: 4244930572086311650, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5600539436489640563, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Id
+      value: 5441caae-4b0a-44b4-a909-a11b47a8fc2f
+      objectReference: {fileID: 0}
+    - target: {fileID: 5600539436489640563, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Name
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 5600539436489640563, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5600539436489640563, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: 4289d097-2bd4-4344-a611-735115421be0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5600539436489640563, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/#(Q)
+      objectReference: {fileID: 0}
+    - target: {fileID: 5600539436489640563, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Action
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 6778262115666478702, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Id
+      value: e437b5cd-eb96-44eb-a0fd-c054ebde43ff
+      objectReference: {fileID: 0}
+    - target: {fileID: 6778262115666478702, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Name
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 6778262115666478702, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6778262115666478702, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: 00ba353f-bbbb-4511-81db-312fece74470
+      objectReference: {fileID: 0}
+    - target: {fileID: 6778262115666478702, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/#(S)
+      objectReference: {fileID: 0}
+    - target: {fileID: 6778262115666478702, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Action
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 7251650767139495415, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Id
+      value: 75a133fb-832e-4702-be8d-8fa18bec16a9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7251650767139495415, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Name
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 7251650767139495415, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7251650767139495415, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: 6f4e3a63-15c3-4395-b5dd-c35c15a94a0e
+      objectReference: {fileID: 0}
+    - target: {fileID: 7251650767139495415, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/enter
+      objectReference: {fileID: 0}
+    - target: {fileID: 7251650767139495415, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Action
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 7828726364949160791, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: m_Name
+      value: Button
+      objectReference: {fileID: 0}
+    - target: {fileID: 8203852518045186355, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Id
+      value: a187b4d7-bff0-472e-b195-648193c60a2a
+      objectReference: {fileID: 0}
+    - target: {fileID: 8203852518045186355, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Name
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 8203852518045186355, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8203852518045186355, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: c7bd433e-85a5-41f5-9d10-ef26b14052d7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8203852518045186355, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/#(X)
+      objectReference: {fileID: 0}
+    - target: {fileID: 8203852518045186355, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Action
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 9150995072379856795, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Id
+      value: dabaeef5-41de-4baa-9d88-44b3b7dd7279
+      objectReference: {fileID: 0}
+    - target: {fileID: 9150995072379856795, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_Name
+      value: Bound_action
+      objectReference: {fileID: 0}
+    - target: {fileID: 9150995072379856795, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 9150995072379856795, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: 5bac5e4b-b5df-4eae-8f64-acc348d45a9d
+      objectReference: {fileID: 0}
+    - target: {fileID: 9150995072379856795, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/#(W)
+      objectReference: {fileID: 0}
+    - target: {fileID: 9150995072379856795, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+      propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Action
+      value: Bound_action
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
