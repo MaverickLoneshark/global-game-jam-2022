@@ -4,12 +4,10 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class InputMapper : MonoBehaviour {
-	public static InputMapper inputMapper;
-	//private UnityEngine.InputSystem.Utilities.ReadOnlyArray<Gamepad> gamepad;
-
-	private InputAction pointer_move = new InputAction(binding: "<Pointer>/delta");
-	public static int pointer_position_x { get; private set; }
-	public static int pointer_position_y { get; private set; }
+	public static InputMapper inputMapper {
+		private set;
+		get;
+	}
 
 	public enum CONTROLS {
 		//primary buttons
@@ -23,11 +21,24 @@ public class InputMapper : MonoBehaviour {
 		//menu & options buttons
 		start,
 		select,
+		//directions
+		up,
+		down,
+		left,
+		right,
 		//used only for internal reference
 		COUNT
 	}
 
-	private InputControl [] mappings = new InputControl[(int)CONTROLS.COUNT];
+	public int pointer_position_x { get; private set; }
+	public int pointer_position_y { get; private set; }
+
+	private InputControl[] mappings = new InputControl[(int)CONTROLS.COUNT];
+	public InputControl this[int index] {
+		get { return mappings[index]; }
+	}
+
+	private InputAction pointer_move = new InputAction(binding: "<Pointer>/delta");
 
 	private void Awake() {
 		if (inputMapper) {
@@ -35,13 +46,13 @@ public class InputMapper : MonoBehaviour {
 		}
 		else {
 			inputMapper = this;
+			DontDestroyOnLoad(gameObject);
 
+Debug.Log(InputSystem.devices.Count + " input device(s) detected");
 			pointer_move.performed += context => OnPointerMove(context);
 			pointer_move.Enable();
 
 			string debug_text;
-Debug.Log(InputSystem.devices.Count + " input device(s) detected");
-
 			UnityEngine.InputSystem.Utilities.ReadOnlyArray<InputControl> all_controls;
 
 			foreach (InputDevice device in InputSystem.devices) {
@@ -81,23 +92,5 @@ Debug.Log(debug_text);
 	private void OnPointerMove(InputAction.CallbackContext context) {
 		pointer_position_x = (int)Pointer.current.position.x.ReadValue();
 		pointer_position_y = (int)Pointer.current.position.y.ReadValue();
-	}
-
-	private void OnGUI() {
-		string pressed_buttons = "nothing";
-
-		for (int i = 1; i < (int)CONTROLS.COUNT; i++) {
-			if ((mappings[i] != null) && (mappings[i].IsPressed())) {
-				if (pressed_buttons == "nothing") {
-					pressed_buttons = ((CONTROLS)i).ToString();
-				}
-				else {
-					pressed_buttons += ", " + (CONTROLS)i;
-				}
-			}
-		}
-
-		GUILayout.TextField("Pointer: " + pointer_position_x + ", " + pointer_position_y);
-		GUILayout.TextField(pressed_buttons + " pressed");
 	}
 }
