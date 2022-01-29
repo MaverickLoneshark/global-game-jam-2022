@@ -333,13 +333,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f7c13da74d5cc8468d26568751c4671, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerCar: {fileID: 0}
+  playerCar: {fileID: 1729664000}
   playerCarEffect: {fileID: 0}
-  playerCarStraight: {fileID: 0}
+  playerCarStraight: {fileID: 21300000, guid: cfafefbadaadfa6468bdfe0078ca4036, type: 3}
   playerCarLeft: {fileID: 0}
-  playerCarHardLeft: {fileID: 0}
+  playerCarHardLeft: {fileID: 21300000, guid: 24834d8179d28ee4cad13a73e0dda1eb, type: 3}
   playerCarRight: {fileID: 0}
-  playerCarHardRight: {fileID: 0}
+  playerCarHardRight: {fileID: 21300000, guid: 0baedb33ec378424ab28b534f272acda, type: 3}
   playerCarCrash: {fileID: 0}
   playerCarCrashLeft: {fileID: 0}
   playerCarCrashRight: {fileID: 0}
@@ -371,11 +371,32 @@ MonoBehaviour:
   roadSegmentLength: 5
   roadStartZ: 109
   FOV: 2
-  numTotalSegs: 10000
-  numSegsToDraw: 400
+  numStraightSegs: 10000
+  numSegsToDraw: 500
+  roadCurves:
+  - segmentInsertIndex: 200
+    numEnterSegments: 50
+    numHoldSegments: 400
+    numExitSegments: 100
+    curveIntensity: 0.25
+    elevationShift: 0
+  - segmentInsertIndex: 800
+    numEnterSegments: 50
+    numHoldSegments: 300
+    numExitSegments: 20
+    curveIntensity: -0.5
+    elevationShift: 0
+  rdCurveExample:
+    segmentInsertIndex: 0
+    numEnterSegments: 0
+    numHoldSegments: 0
+    numExitSegments: 0
+    curveIntensity: 0
+    elevationShift: 0
   topSpeed: 1500
   acceleration: 250
   deceleration: 350
+  maxTurning: 50
 --- !u!1 &1102322470
 GameObject:
   m_ObjectHideFlags: 0
@@ -633,3 +654,85 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1729663998
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1729664000}
+  - component: {fileID: 1729663999}
+  m_Layer: 0
+  m_Name: Player Car
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!212 &1729663999
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1729663998}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 21300000, guid: cfafefbadaadfa6468bdfe0078ca4036, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 120, y: 80}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
+--- !u!4 &1729664000
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1729663998}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 30, z: -1}
+  m_LocalScale: {x: 0.75, y: 0.75, z: 0.75}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
