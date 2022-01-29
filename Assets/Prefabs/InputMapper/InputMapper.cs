@@ -43,12 +43,11 @@ public class InputMapper : MonoBehaviour {
 			inputMapper = this;
 			DontDestroyOnLoad(gameObject);
 
+Debug.Log(InputSystem.devices.Count + " input device(s) detected");
 			pointer_move.performed += context => OnPointerMove(context);
 			pointer_move.Enable();
 
 			string debug_text;
-Debug.Log(InputSystem.devices.Count + " input device(s) detected");
-
 			UnityEngine.InputSystem.Utilities.ReadOnlyArray<InputControl> all_controls;
 
 			foreach (InputDevice device in InputSystem.devices) {

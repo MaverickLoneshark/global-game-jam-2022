@@ -788,6 +788,18 @@ PrefabInstance:
       propertyPath: bound_action.m_SingletonActionBindings.Array.data[0].m_Action
       value: Bound_action
       objectReference: {fileID: 0}
+    - target: {fileID: 2987703768186440303, guid: cc14af02f417dc245bd840f47badb321, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2987703768186440303, guid: cc14af02f417dc245bd840f47badb321, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2987703768186440303, guid: cc14af02f417dc245bd840f47badb321, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3014977334561793178, guid: cc14af02f417dc245bd840f47badb321, type: 3}
       propertyPath: control_value
       value: 5

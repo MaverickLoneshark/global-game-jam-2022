@@ -34,7 +34,9 @@ public class ButtonMapper : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update() {
-		//
+		if (rebinding) {
+			button_text.text = "Assigning...";
+		}
 	}
 
 	private void OnClick() {
@@ -50,11 +52,5 @@ public class ButtonMapper : MonoBehaviour {
 
 			return;
 		});
-	}
-
-	private void OnGUI() {
-		if (rebinding) {
-			GUILayout.TextField("Please assign " + control_value + " control...");
-		}
 	}
 }
