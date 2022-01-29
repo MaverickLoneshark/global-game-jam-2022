@@ -47,6 +47,7 @@ public class ButtonMapper : MonoBehaviour {
 			mapping = rebinding_operation.selectedControl;
 			input_mapper.AssignControl(control_value, mapping);
 			button_text.text = mapping.displayName;
+
 			rebinding = false;
 			rebinding_operation.Dispose();
 

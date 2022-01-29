@@ -21,6 +21,11 @@ public class InputMapper : MonoBehaviour {
 		//menu & options buttons
 		start,
 		select,
+		//directions
+		up,
+		down,
+		left,
+		right,
 		//used only for internal reference
 		COUNT
 	}

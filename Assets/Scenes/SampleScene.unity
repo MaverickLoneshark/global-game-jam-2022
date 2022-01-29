@@ -649,6 +649,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 1640494707}
     m_Modifications:
+    - target: {fileID: 1726155538960986541, guid: 9130d3bfa7928e1488e0f0b1caae5383, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2561162667532488916, guid: 9130d3bfa7928e1488e0f0b1caae5383, type: 3}
       propertyPath: subMenuObject
       value: 
@@ -683,11 +687,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2757964407066529274, guid: 9130d3bfa7928e1488e0f0b1caae5383, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 400
+      value: 320
       objectReference: {fileID: 0}
     - target: {fileID: 2757964407066529274, guid: 9130d3bfa7928e1488e0f0b1caae5383, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 300
+      value: 200
       objectReference: {fileID: 0}
     - target: {fileID: 2757964407066529274, guid: 9130d3bfa7928e1488e0f0b1caae5383, type: 3}
       propertyPath: m_LocalPosition.x
