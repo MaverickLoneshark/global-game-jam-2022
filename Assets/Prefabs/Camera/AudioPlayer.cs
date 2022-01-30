@@ -32,6 +32,9 @@ public class AudioPlayer : MonoBehaviour {
 	private AudioClip[] sfx = new AudioClip[(int)SFX.COUNT];
 
 	private AudioSource[] audioSources = new AudioSource[8];
+	private InputMapper input_mapper;
+	private BGMTracks current_bgm = 0;
+	private bool holding_shoulder = false;
 
 	private void Awake() {
 		if (audioPlayer) {
@@ -45,18 +48,44 @@ public class AudioPlayer : MonoBehaviour {
 			}
 
 			audioSources[0].loop = true;
-			PlayBGM(BGMTracks.titlescreen);
+			PlayBGM(current_bgm);
 		}
 	}
 
 	// Start is called before the first frame update
 	void Start() {
-		//
+		input_mapper = InputMapper.inputMapper;
 	}
 
 	// Update is called once per frame
 	void Update() {
-		//
+		if (input_mapper[(int)InputMapper.CONTROLS.extra]) {
+			if (!holding_shoulder) {
+				current_bgm++;
+
+				if (current_bgm == BGMTracks.COUNT) {
+					current_bgm = 0;
+				}
+
+				PlayBGM(current_bgm);
+				holding_shoulder = true;
+			}
+		}
+		else if (input_mapper[(int)InputMapper.CONTROLS.alternative]) {
+			if (!holding_shoulder) {
+				current_bgm--;
+
+				if (current_bgm < 0) {
+					current_bgm = BGMTracks.COUNT - 1;
+				}
+
+				PlayBGM(current_bgm);
+				holding_shoulder = true;
+			}
+		}
+		else {
+			holding_shoulder = false;
+		}
 	}
 
 	public void TestPolytonality() {
