@@ -68,6 +68,16 @@ public class RoadControl : MonoBehaviour
     private bool canDrive, isOnAutopilot, isSlipping, isOffRoading, isCrashing, isSpinningOut, isExploding, isRolling;
 
     // ENEMIES
+    [SerializeField]
+    private Sprite bombVisible, bombCamo, droidHolding, droidEmptyHanded;
+    [SerializeField]
+    private SpriteRenderer scannerBgd;
+    [SerializeField]
+    private float droidHeight, delayBeforeDropping, bombDropSpeed, bombSizeCorrectionFactor;
+
+    public List<BombDroid> droids;
+    private List<BombDroid> visibleDroids = new List<BombDroid>();
+    private List<Bomb> activeBombPool = new List<Bomb>();
 
     // BILLBOARDS and OTHER SPRITES
     public List<BillboardSprite> billboardData;
@@ -129,6 +139,8 @@ public class RoadControl : MonoBehaviour
         rumbleStripCounter = 0;
 
         progressCarInitialY = progressCar.rectTransform.anchoredPosition.y;
+
+        scannerBgd.enabled = false;
 
         GameMode = GameState.TrackStart;
         canDrive = false;
@@ -342,6 +354,7 @@ public class RoadControl : MonoBehaviour
         int highestScreenLineDrawn = -1;    // First screen line is roadScreenLines[0], so let's use -1 as a reference
 
         UpdateBillboards();
+        UpdateEnemies();
 
         float x = 0;
         float dx;
@@ -384,19 +397,76 @@ public class RoadControl : MonoBehaviour
                 }
             }
 
-            foreach (BillboardSprite bb in visibleBillboards) {
-                if (bb.segmentIndex == i) {
+            if (visibleBillboards.Count > 0) {
+                foreach (BillboardSprite bb in visibleBillboards) {
+                    if (bb.segmentIndex == i) {
 
-                    float roadWidthOffset;
-                    if (bb.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
-                    else                { roadWidthOffset = screenHalfWidth; }
+                        float roadWidthOffset;
+                        if (bb.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
+                        else { roadWidthOffset = screenHalfWidth; }
 
-                    float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
+                        float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
 
-                    bb.spriteTransform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
-                    bb.spriteTransform.position = new Vector3(x + (bb.offsetX + roadWidthOffset) * nearEdgeWidthScale,
-                                                                nearEdgeHeight + bb.spriteType.rect.height * nearEdgeWidthScale / 2, -1f);
-                    bb.spriteRend.enabled = true;
+                        bb.spriteTransform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                        bb.spriteTransform.position = new Vector3(x + (bb.offsetX + roadWidthOffset) * nearEdgeWidthScale,
+                                                                    nearEdgeHeight + bb.spriteType.rect.height * nearEdgeWidthScale / 2, -1f);
+                        bb.spriteRend.enabled = true;
+                    }
+                }
+            }
+
+            if (visibleDroids.Count > 0) {
+                foreach (BombDroid bd in visibleDroids) {
+
+                    if (bd.segmentIndex == i) {
+
+                        float roadWidthOffset;
+                        if (bd.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
+                        else { roadWidthOffset = screenHalfWidth; }
+
+                        float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
+
+                        bd.droid.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                        bd.droid.position = new Vector3(x + (bd.offsetX) * nearEdgeWidthScale,
+                                                                    nearEdgeHeight + (droidHeight + bd.droidSprite.sprite.rect.height) * nearEdgeWidthScale / 2, -1f);
+                        bd.droidSprite.enabled = true;
+                    }
+
+                    if ((Time.time - bd.dropDelayRefTime > delayBeforeDropping) && bd.droidSprite.sprite == droidHolding) {
+                        bd.droidSprite.sprite = droidEmptyHanded;
+                        Bomb bmb = new Bomb();
+                        GameObject obj = new GameObject();
+                        obj.AddComponent<SpriteRenderer>().enabled = false;
+                        bmb.segmentIndex = i + 200;
+                        bmb.singleBomb = obj.transform;
+                        bmb.offsetX = bd.offsetX;
+                        bmb.bombSprite = obj.GetComponent<SpriteRenderer>();
+                        bmb.bombSprite.sprite = bombCamo;
+                        bmb.bombSprite.enabled = true;
+
+                        activeBombPool.Add(bmb);
+                    }
+                }
+            }
+
+            if (activeBombPool.Count > 0) {
+
+                foreach (Bomb bmb in activeBombPool) {
+                    if (bmb.segmentIndex == i) {
+
+                        Debug.Log("hi");
+
+                        float roadWidthOffset;
+                        if (bmb.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
+                        else { roadWidthOffset = screenHalfWidth; }
+
+                        float sizeCorrection = nearEdgeWidthScale * bombSizeCorrectionFactor; //* billboardSizeCorrectionFactor;
+
+                        bmb.singleBomb.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                        bmb.singleBomb.position = new Vector3(x + (bmb.offsetX) * nearEdgeWidthScale,
+                                                                    nearEdgeHeight + bmb.bombSprite.sprite.rect.height * nearEdgeWidthScale / 2, -1.5f);
+                        bmb.bombSprite.enabled = true;
+                    }
                 }
             }
 
@@ -460,6 +530,69 @@ public class RoadControl : MonoBehaviour
         }
 
         foreach (BillboardSprite bb in tempBBs) { visibleBillboards.Remove(bb); }
+    }
+
+    private void LoadOpeningEnemies() {
+        foreach (BombDroid bd in droids) {
+            if (bd.segmentIndex <= curSegmentIndex + numSegsToDraw) {
+                GameObject obj = new GameObject();
+                obj.AddComponent<SpriteRenderer>();
+                bd.droid = obj.transform;
+                bd.droidSprite = obj.GetComponent<SpriteRenderer>();
+                bd.droidSprite.enabled = false;
+                bd.droidSprite.sprite = droidHolding;
+
+
+                visibleDroids.Add(bd);
+                Debug.Log(bd.droid);
+            }
+        }
+    }
+
+    private void UpdateEnemies() {
+        List<BombDroid> tempBDs = new List<BombDroid>();
+
+        foreach (BombDroid bd in droids) {
+            if (bd.segmentIndex == curSegmentIndex + numSegsToDraw) {
+                GameObject obj = new GameObject();
+                obj.AddComponent<SpriteRenderer>();
+                bd.droid = obj.transform;
+                bd.droidSprite = obj.GetComponent<SpriteRenderer>();
+                bd.droidSprite.enabled = false;
+                bd.droidSprite.sprite = droidHolding;
+
+                bd.dropDelayRefTime = Time.time;
+                visibleDroids.Add(bd);
+                BombDroid tempBD = bd;
+                tempBDs.Add(tempBD);
+            }
+        }
+
+        foreach (BombDroid tmp in tempBDs) { droids.Remove(tmp); }
+        tempBDs.Clear();
+
+        foreach (BombDroid bd in visibleDroids) {
+            if (bd.segmentIndex < curSegmentIndex) {
+                Destroy(bd.droidSprite.gameObject);
+                tempBDs.Add(bd);
+            }
+        }
+
+        foreach (BombDroid bd in tempBDs) { visibleDroids.Remove(bd); }
+
+        List<Bomb> tempBombs = new List<Bomb>();
+        tempBombs.Clear();
+
+        if (activeBombPool.Count > 0) {
+            foreach (Bomb bmb in activeBombPool) {
+                if (bmb.segmentIndex < curSegmentIndex) {
+                    Destroy(bmb.singleBomb.gameObject);
+                    tempBombs.Add(bmb);
+                }
+            }
+        }
+
+        foreach (Bomb bmb in tempBombs) { activeBombPool.Remove(bmb); }
     }
 
     private void AddRoadCurve(RoadCurve rdCurve) {
@@ -536,17 +669,10 @@ public class RoadControl : MonoBehaviour
 
             if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.left]) {
 
-<<<<<<< HEAD
-                if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.action].IsPressed()) {
-                    //playerCarSprite.sprite = playerCarHardLeft;
-                    if (curPlayerTurning > -maxTurning) {
-                        curPlayerTurning -= hardTurnIncrease * Time.deltaTime;
-=======
                 if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action]) {
                     playerCarSprite.sprite = playerCarHardLeft;
-                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
-                        playerCar.Translate(-maxTurning * Time.deltaTime, 0, 0);
->>>>>>> main
+                    if (curPlayerTurning > -maxTurning) {
+                        curPlayerTurning -= hardTurnIncrease * Time.deltaTime;
                     }
                 }
                 else {
@@ -558,17 +684,10 @@ public class RoadControl : MonoBehaviour
             }
             else if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.right]) {
 
-<<<<<<< HEAD
-                if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.action].IsPressed()) {
+                if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action]) {
                     //playerCarSprite.sprite = playerCarHardRight;
                     if (curPlayerTurning < maxTurning) {
                         curPlayerTurning += hardTurnIncrease * Time.deltaTime;
-=======
-                if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action]) {
-                    playerCarSprite.sprite = playerCarHardRight;
-                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
-                        playerCar.Translate(maxTurning * Time.deltaTime, 0, 0);
->>>>>>> main
                     }
                 }
                 else {
@@ -589,6 +708,27 @@ public class RoadControl : MonoBehaviour
                 }
                 else {
                     curPlayerTurning = 0.0f;
+                }
+            }
+
+            if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.special]) {
+
+                scannerBgd.enabled = true;
+
+                if (activeBombPool.Count > 0) {
+                    foreach (Bomb bmb in activeBombPool) {
+                        bmb.bombSprite.sprite = bombVisible;
+                    }
+                }
+            }
+            else {
+
+                scannerBgd.enabled = false;
+
+                if (activeBombPool.Count > 0) {
+                    foreach (Bomb bmb in activeBombPool) {
+                        bmb.bombSprite.sprite = bombCamo;
+                    }
                 }
             }
         }
