@@ -30,6 +30,10 @@ public class InputMapper : MonoBehaviour {
 	public int pointer_position_x { get; private set; } = 0;
 	public int pointer_position_y { get; private set; } = 0;
 
+	private GameObject pauseMenu;
+	private GameObject mappingMenu;
+	private bool holding_pause = false;
+
 	[SerializeField]
 	private InputAction[] boundAction = new InputAction[(int)CONTROLS.COUNT] {
 		new InputAction(name: CONTROLS.execute.ToString(), binding: "<Keyboard>/z"), //0: execute
@@ -79,6 +83,8 @@ public class InputMapper : MonoBehaviour {
 		else {
 			inputMapper = this;
 			DontDestroyOnLoad(gameObject);
+			pauseMenu = transform.Find("PauseCanvas").Find("OptionsMenu").gameObject;
+			mappingMenu = pauseMenu.transform.Find("MappingMenu").gameObject;
 
 			for (int i = 0; i < (int)CONTROLS.COUNT; i++) {
 				boundAction[i].performed += (context) => {
@@ -153,7 +159,21 @@ Debug.Log(debug_text);
 
 	// Update is called once per frame
 	void Update() {
-		//
+		if (inputMapper[(int)CONTROLS.start]) {
+			if (!holding_pause) {
+				if (!mappingMenu.activeSelf && UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex > 0) {
+					pauseMenu.SetActive(!pauseMenu.activeSelf);
+					holding_pause = true;
+
+					if (!pauseMenu.activeSelf) {
+						Time.timeScale = 1.0f;
+					}
+				}
+			}
+		}
+		else {
+			holding_pause = false;
+		}
 	}
 
 	private void OnPointerMove(InputAction.CallbackContext context) {
