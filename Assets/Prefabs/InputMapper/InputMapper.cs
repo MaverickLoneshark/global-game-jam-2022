@@ -81,8 +81,39 @@ public class InputMapper : MonoBehaviour {
 			DontDestroyOnLoad(gameObject);
 
 			for (int i = 0; i < (int)CONTROLS.COUNT; i++) {
-				boundAction[i].performed += (context) => { pressed[(int)name2Control[context.action.name]] = true; };
-				boundAction[i].canceled += (context) => { pressed[(int)name2Control[context.action.name]] = false; };
+				boundAction[i].performed += (context) => {
+					try {
+						pressed[(int)name2Control[context.action.name]] = context.ReadValueAsButton();
+					}
+					catch {
+						Vector2 deltaVector = context.ReadValue<Vector2>();
+
+						switch (name2Control[context.action.name]) {
+							case CONTROLS.up:
+								pressed[(int)name2Control[context.action.name]] = deltaVector.y > 0.4f;
+							break;
+
+							case CONTROLS.right:
+								pressed[(int)name2Control[context.action.name]] = deltaVector.x > 0.4f;
+							break;
+
+							case CONTROLS.down:
+								pressed[(int)name2Control[context.action.name]] = deltaVector.y < -0.4f;
+							break;
+
+							case CONTROLS.left:
+								pressed[(int)name2Control[context.action.name]] = deltaVector.x < -0.4f;
+							break;
+
+							default:
+							break;
+						}
+					}
+				};
+				
+				boundAction[i].canceled += (context) => {
+					pressed[(int)name2Control[context.action.name]] = false;
+				};
 				boundAction[i].Enable();
 			}
 
