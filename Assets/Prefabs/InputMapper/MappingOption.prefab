@@ -30,7 +30,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 6252135197385227837}
-  m_RootOrder: 1
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 1, y: 1}
@@ -112,7 +112,7 @@ RectTransform:
   m_Children:
   - {fileID: 7066162019901465891}
   m_Father: {fileID: 6252135197385227837}
-  m_RootOrder: 0
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0.5}
@@ -214,15 +214,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   control_value: 0
-  bound_action:
-    m_Name: 
-    m_Type: 0
-    m_ExpectedControlType: 
-    m_Id: d6039d7f-bcb3-4aa2-932e-ec27562319bb
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings: []
-    m_Flags: 0
 --- !u!1 &6814502062062748246
 GameObject:
   m_ObjectHideFlags: 0
@@ -329,8 +320,8 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
-  - {fileID: 4788382945101830062}
   - {fileID: 2987703768186440303}
+  - {fileID: 4788382945101830062}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
