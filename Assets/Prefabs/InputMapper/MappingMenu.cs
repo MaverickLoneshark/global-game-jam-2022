@@ -16,30 +16,30 @@ public class MappingMenu : MonoBehaviour {
 		//
 	}
 
-	private void OnGUI() {
-		string pressed_buttons = "";
+    //private void OnGUI() {
+    //    string pressed_buttons = "";
 
-		for (int i = 1; i < (int)InputMapper.CONTROLS.COUNT; i++) {
-			if ((inputMapper[i] != null) && inputMapper[i].IsPressed()) {
-				if (pressed_buttons == "") {
-					pressed_buttons = ((InputMapper.CONTROLS)i).ToString();
-				}
-				else {
-					pressed_buttons += ", " + (InputMapper.CONTROLS)i;
-				}
-			}
-		}
+    //    for (int i = 1; i < (int)InputMapper.CONTROLS.COUNT; i++) {
+    //        if ((inputMapper[i] != null) && inputMapper[i].IsPressed()) {
+    //            if (pressed_buttons == "") {
+    //                pressed_buttons = ((InputMapper.CONTROLS)i).ToString();
+    //            }
+    //            else {
+    //                pressed_buttons += ", " + (InputMapper.CONTROLS)i;
+    //            }
+    //        }
+    //    }
 
-		GUILayout.TextField("Pointer: " + inputMapper.pointer_position_x + ", " + inputMapper.pointer_position_y);
+    //    GUILayout.TextField("Pointer: " + inputMapper.pointer_position_x + ", " + inputMapper.pointer_position_y);
 
-		if (pressed_buttons.Length > 0) {
-			GUILayout.TextField(pressed_buttons + " pressed");
-		}
+    //    if (pressed_buttons.Length > 0) {
+    //        GUILayout.TextField(pressed_buttons + " pressed");
+    //    }
 
-		foreach (InputDevice device in InputSystem.devices) {
-			if (!device.CheckStateIsAtDefaultIgnoringNoise()) {
-				GUILayout.TextField(device.displayName + " is being messed with");
-			}
-		}
-	}
+    //    foreach (InputDevice device in InputSystem.devices) {
+    //        if (!device.CheckStateIsAtDefaultIgnoringNoise()) {
+    //            GUILayout.TextField(device.displayName + " is being messed with");
+    //        }
+    //    }
+    //}
 }
