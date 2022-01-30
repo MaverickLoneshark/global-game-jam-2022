@@ -7,12 +7,14 @@ public class AudioPlayer : MonoBehaviour {
 
 	public enum BGMTracks {
 		titlescreen = 0,
+		main_theme,
+		blood_sores,
+		anti_wave,
 		COUNT
 	}
 
 	public enum SFX {
 		accelerate = 0,
-		accelerate2,
 		crash,
 		decelerate,
 		idle,
