@@ -525,7 +525,7 @@ public class RoadControl : MonoBehaviour
         speedometerReading.text = ((int)curPlayerSpeed / 12).ToString();
 
         if (canDrive) {
-            if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.up] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.up].IsPressed()) {
+            if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.up]) {
                 if (curPlayerSpeed < topSpeed) { curPlayerSpeed += acceleration * Time.deltaTime; }
                 else { curPlayerSpeed = topSpeed; }
             }
@@ -534,12 +534,19 @@ public class RoadControl : MonoBehaviour
                 else { curPlayerSpeed = 0.0f; }
             }
 
-            if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.left] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.left].IsPressed()) {
+            if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.left]) {
 
+<<<<<<< HEAD
                 if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.action].IsPressed()) {
                     //playerCarSprite.sprite = playerCarHardLeft;
                     if (curPlayerTurning > -maxTurning) {
                         curPlayerTurning -= hardTurnIncrease * Time.deltaTime;
+=======
+                if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action]) {
+                    playerCarSprite.sprite = playerCarHardLeft;
+                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
+                        playerCar.Translate(-maxTurning * Time.deltaTime, 0, 0);
+>>>>>>> main
                     }
                 }
                 else {
@@ -549,12 +556,19 @@ public class RoadControl : MonoBehaviour
                     }
                 }
             }
-            else if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.right] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.right].IsPressed()) {
+            else if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.right]) {
 
+<<<<<<< HEAD
                 if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.action].IsPressed()) {
                     //playerCarSprite.sprite = playerCarHardRight;
                     if (curPlayerTurning < maxTurning) {
                         curPlayerTurning += hardTurnIncrease * Time.deltaTime;
+=======
+                if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action]) {
+                    playerCarSprite.sprite = playerCarHardRight;
+                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
+                        playerCar.Translate(maxTurning * Time.deltaTime, 0, 0);
+>>>>>>> main
                     }
                 }
                 else {
