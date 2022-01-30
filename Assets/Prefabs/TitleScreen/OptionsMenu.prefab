@@ -148,6 +148,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+--- !u!1 &1726155538960986541 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 4244930572086311650, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
+  m_PrefabInstance: {fileID: 3250909040895707983}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &4094516981862502138 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1571519927113336245, guid: 9f4c094b849ecdb42a316629bdeb6c88, type: 3}
@@ -350,6 +355,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: OptionsButton
       objectReference: {fileID: 0}
+    - target: {fileID: 8087384430481425167, guid: 88d13ca32cbe9d943af591c22c6307db, type: 3}
+      propertyPath: subMenuObject
+      value: 
+      objectReference: {fileID: 1726155538960986541}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 88d13ca32cbe9d943af591c22c6307db, type: 3}
 --- !u!224 &8636486276436250808 stripped

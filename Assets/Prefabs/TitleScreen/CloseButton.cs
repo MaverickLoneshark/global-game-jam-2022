@@ -4,10 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class CloseButton : MonoBehaviour {
-    [SerializeField]
-	GameObject targetMenuObject;
+	[SerializeField]
+	private GameObject targetMenuObject;
 
 	private Button button;
+
 	private void Awake() {
 		button = GetComponent<Button>();
 		button.onClick.AddListener(OnClick);
@@ -28,7 +29,6 @@ public class CloseButton : MonoBehaviour {
 	}
 
 	private void OnClick() {
-        Debug.Log("hi");
 		targetMenuObject.SetActive(false);
 	}
 }

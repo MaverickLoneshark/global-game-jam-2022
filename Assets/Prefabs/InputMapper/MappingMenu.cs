@@ -5,41 +5,67 @@ using UnityEngine.InputSystem;
 
 public class MappingMenu : MonoBehaviour {
 	InputMapper inputMapper;
-	
+	AudioPlayer audioPlayer;
+
+	bool [] still_pressed = new bool[12];
+
 	// Start is called before the first frame update
 	void Start() {
 		inputMapper = InputMapper.inputMapper;
+		audioPlayer = AudioPlayer.audioPlayer;
 	}
 
 	// Update is called once per frame
 	void Update() {
-		//
+		if (inputMapper[0]) {
+			if (!still_pressed[0]) {
+				audioPlayer.TestPolytonality();
+				still_pressed[0] = true;
+			}
+		}
+		else {
+			still_pressed[0] = false;
+
+			for (int i = 1; i < (int)InputMapper.CONTROLS.COUNT; i++) {
+				if (inputMapper[i]) {
+					if (!still_pressed[i]) {
+						audioPlayer.PlaySound((AudioPlayer.SFX)(i % (int)AudioPlayer.SFX.COUNT));
+						still_pressed[i] = true;
+					}
+				}
+				else {
+					still_pressed[i] = false;
+				}
+			}
+		}
 	}
 
-    //private void OnGUI() {
-    //    string pressed_buttons = "";
+	private void OnGUI() {
+		string pressed_buttons = "";
 
-    //    for (int i = 1; i < (int)InputMapper.CONTROLS.COUNT; i++) {
-    //        if ((inputMapper[i] != null) && inputMapper[i].IsPressed()) {
-    //            if (pressed_buttons == "") {
-    //                pressed_buttons = ((InputMapper.CONTROLS)i).ToString();
-    //            }
-    //            else {
-    //                pressed_buttons += ", " + (InputMapper.CONTROLS)i;
-    //            }
-    //        }
-    //    }
+		for (int i = 0; i < (int)InputMapper.CONTROLS.COUNT; i++) {
+			if (inputMapper[i]) {
+				if (pressed_buttons == "") {
+					pressed_buttons = ((InputMapper.CONTROLS)i).ToString();
+				}
+				else {
+					pressed_buttons += ", " + (InputMapper.CONTROLS)i;
+				}
+			}
+		}
 
-    //    GUILayout.TextField("Pointer: " + inputMapper.pointer_position_x + ", " + inputMapper.pointer_position_y);
+		GUILayout.TextField("Pointer: " + inputMapper.pointer_position_x + ", " + inputMapper.pointer_position_y);
 
-    //    if (pressed_buttons.Length > 0) {
-    //        GUILayout.TextField(pressed_buttons + " pressed");
-    //    }
+		if (pressed_buttons.Length > 0) {
+			GUILayout.TextField(pressed_buttons + " pressed");
+		}
 
-    //    foreach (InputDevice device in InputSystem.devices) {
-    //        if (!device.CheckStateIsAtDefaultIgnoringNoise()) {
-    //            GUILayout.TextField(device.displayName + " is being messed with");
-    //        }
-    //    }
-    //}
+#if DEBUG
+		foreach (InputDevice device in InputSystem.devices) {
+			if (!device.CheckStateIsAtDefaultIgnoringNoise()) {
+				GUILayout.TextField(device.displayName + " is being messed with");
+			}
+		}
+#endif
+	}
 }
