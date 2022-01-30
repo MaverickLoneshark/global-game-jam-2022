@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
 
 public class RoadControl : MonoBehaviour
 {
@@ -22,7 +24,7 @@ public class RoadControl : MonoBehaviour
     [SerializeField, Range(0.0f, 1.0f)]
     private float steeringDeadZoneAlpha, turnFrameThreshold, hardTurnFrameThreshold;
 
-    private bool canDrive, isSlipping, isOffRoading, isCrashing, isSpinningOut, isExploding, isRolling;
+    
 
     [SerializeField]
     private Transform refRoadStrip;
@@ -58,13 +60,66 @@ public class RoadControl : MonoBehaviour
     private int curSegmentIndex;
 
     [SerializeField]
-    private float topSpeed, acceleration, deceleration, maxTurning;
-    private float curPlayerSpeed, curPlayerTurning, camCurZ, playerZoffset, curPlayerPosX;
+    private float topSpeed, autopilotSpeed, acceleration, deceleration, maxTurning, maxArmor;
+    private float curPlayerSpeed, curPlayerTurning, camCurZ, playerZoffset, curPlayerPosX, curArmor;
+
+    // GAME STATES
+    private enum GameState { InMenu, TrackStart, Driving, Crashing, Exploding, TrackComplete, GameOver }
+    private GameState GameMode;
+
+    private bool canDrive, isOnAutopilot, isSlipping, isOffRoading, isCrashing, isSpinningOut, isExploding, isRolling;
+
+    // ENEMIES
+
+    // BILLBOARDS and OTHER SPRITES
+    public List<BillboardSprite> billboardData;
+
+    private List<BillboardSprite> billboardDataExpanded = new List<BillboardSprite>();
+    private List<BillboardSprite> visibleBillboards = new List<BillboardSprite>();
+
+    [SerializeField]
+    private float billboardSizeCorrectionFactor;
+
+    // Menu
+    [SerializeField]
+    private RawImage menuBgd;
+
+    // HUD
+    [SerializeField]
+    private RawImage speedometer, speedometerNeedle, progressTrack, progressCar, armor, armorFrame;
+    [SerializeField]
+    private Text speedometerReading, timer, timerLabel, armorLabel, messageText;
+    [SerializeField]
+    private string trackStartReadyMessage, trackStartGoMessage, gameOverMessage, trackCompleteMessage; 
+    [SerializeField]
+    private float speedometerRotationFactor, timeLimit;
+    private float timeElapsed, lastStartTime;
+    [SerializeField]
+    private float messageDelay;
+    private float messageDelayRefTime;
+    private bool readyMessageShown, goMessageShown, victoryMessageShown, gameOverMessageShown;
+    private float progressCarInitialY;
 
     // Start is called before the first frame update
     void Start()
     {
         playerCarSprite = playerCar.GetComponent<SpriteRenderer>();
+
+        if (billboardData.Count > 0) {
+            foreach (BillboardSprite bb in billboardData) {
+                if (bb.howMany > 1) {
+                    for (int i = 0; i < bb.howMany; i++) {
+                        BillboardSprite bbTemp = bb;
+                        bbTemp.howMany = 1;
+                        bbTemp.segmentIndex = bb.segmentIndex + 1;
+                        billboardDataExpanded.Add(bbTemp);
+                    }
+                }
+                else {
+                    billboardDataExpanded.Add(bb);
+                }
+            }
+        }
 
         curPlayerSpeed = 0;
         camCurZ = 0;
@@ -73,19 +128,160 @@ public class RoadControl : MonoBehaviour
         curAddedSegmentZ = camCurZ + roadStartZ;
         straightSegCounter = 0;
         rumbleStripCounter = 0;
-        InitializeRoadStrips();
 
-        Debug.Log("# road screen line sprites = " + roadScreenSprites.Count);
+        progressCarInitialY = progressCar.rectTransform.anchoredPosition.y;
+
+        GameMode = GameState.TrackStart;
+        canDrive = false;
+        isOnAutopilot = false;
+        readyMessageShown = false;
+        goMessageShown = false;
+        victoryMessageShown = false;
+        gameOverMessageShown = false;
+
+        ShowHUD(false);
+        InitializeRoadStrips();
+        ShowHUD(true);
+
+        //Debug.Log("# road screen line sprites = " + roadScreenSprites.Count);
     }
 
     // Update is called once per frame
     void Update()
     {
-        curSegmentIndex = GetCurrentRoadSegmentIndex();
-        ManagePlayerPosition();
-        UpdateRoad();
 
-        Debug.Log(roadSegments.Count);
+        //Debug.Log(roadSegments.Count);
+
+        switch (GameMode) {
+            case GameState.InMenu:
+
+                break;
+            case GameState.TrackStart:
+
+                menuBgd.enabled = false;
+                
+
+                curSegmentIndex = GetCurrentRoadSegmentIndex();
+
+                UpdateRoad();
+                isOnAutopilot = true;
+                ManagePlayerPosition();
+
+                if (!goMessageShown) {
+                    if (!readyMessageShown) {
+                        if (Time.time - messageDelayRefTime > messageDelay) {
+                            messageText.text = trackStartReadyMessage;
+                            messageText.enabled = true;
+
+                            readyMessageShown = true;
+                            messageDelayRefTime = Time.time;
+                        }
+                    }
+                    else {
+                        if (Time.time - messageDelayRefTime > messageDelay) {
+                            messageText.text = trackStartGoMessage;
+
+                            goMessageShown = true;
+                            messageDelayRefTime = Time.time;
+                        }
+                    }
+                }
+                else {
+                    if (Time.time - messageDelayRefTime > messageDelay) {
+                        messageText.enabled = false;
+                        GameMode = GameState.Driving;
+
+                        lastStartTime = Time.time;
+                        timer.text = ((int)timeLimit).ToString();
+                        timer.enabled = true;
+                        timerLabel.enabled = true;
+
+                        progressTrack.enabled = true;
+                        progressCar.enabled = true;
+
+                        isOnAutopilot = false;
+                        canDrive = true;
+                    }
+                }
+
+                break;
+            case GameState.Driving:
+
+                timer.text = ((int)(timeLimit - (Time.time - lastStartTime))).ToString();
+
+                curSegmentIndex = GetCurrentRoadSegmentIndex();
+
+                ManagePlayerPosition();
+                UpdateRoad();
+
+                if (Time.time - lastStartTime >= timeLimit) {
+                    canDrive = false;
+
+                    messageDelayRefTime = Time.time;
+                    GameMode = GameState.GameOver;
+                }
+                else {
+
+                }
+
+                break;
+            case GameState.Crashing:
+                break;
+            case GameState.Exploding:
+                break;
+            case GameState.TrackComplete:
+
+                curSegmentIndex = GetCurrentRoadSegmentIndex();
+
+                ManagePlayerPosition();
+                UpdateRoad();
+
+                if (!victoryMessageShown) {
+                    if (Time.time - messageDelayRefTime > messageDelay) {
+                        messageText.text = trackCompleteMessage;
+                        messageText.enabled = true;
+
+                        victoryMessageShown = true;
+                        messageDelayRefTime = Time.time;
+                    }
+                }
+                else {
+                    if (Time.time - messageDelayRefTime > messageDelay) {
+
+                        ShowHUD(false);
+                        menuBgd.enabled = true;
+                        GameMode = GameState.InMenu;
+                    }
+                }
+
+                break;
+            case GameState.GameOver:
+
+                curSegmentIndex = GetCurrentRoadSegmentIndex();
+
+                ManagePlayerPosition();
+                UpdateRoad();
+
+                if (!gameOverMessageShown) {
+                    if (Time.time - messageDelayRefTime > messageDelay) {
+                        messageText.text = gameOverMessage;
+                        messageText.enabled = true;
+
+                        messageDelayRefTime = Time.time;
+                        gameOverMessageShown = true;
+                    }
+                }
+                else {
+                    if (Time.time - messageDelayRefTime > messageDelay) {
+
+                        ShowHUD(false);
+                        menuBgd.enabled = true;
+                        GameMode = GameState.InMenu;
+                    }
+                }
+
+                break;
+        }
     }
 
     private void InitializeRoadStrips() {
@@ -129,7 +325,7 @@ public class RoadControl : MonoBehaviour
                     if (crv.segmentInsertIndex == straightSegCounter) {
                         AddRoadCurve(crv);
 
-                        Debug.Log("hi, " + straightSegCounter);
+                        //Debug.Log("hi, " + straightSegCounter);
                     }
                 }
             }
@@ -143,8 +339,10 @@ public class RoadControl : MonoBehaviour
     }
 
     private void UpdateRoad() {
-        Debug.Log(curSegmentIndex);
+        //Debug.Log(curSegmentIndex);
         int highestScreenLineDrawn = -1;    // First screen line is roadScreenLines[0], so let's use -1 as a reference
+
+        UpdateBillboards();
 
         float x = 0;
         float dx;
@@ -155,8 +353,8 @@ public class RoadControl : MonoBehaviour
             nearEdgeWidthScale = (distCamToScreen / (roadSegments[i].EdgeNearZ - camCurZ));
             farEdgeWidthScale = (distCamToScreen / (roadSegments[i].EdgeFarZ - camCurZ));
 
-            Debug.Log(roadSegments[i].EdgeNearZ);
-            Debug.Log(nearEdgeHeight + ", " + farEdgeHeight);
+            //Debug.Log(roadSegments[i].EdgeNearZ);
+            //Debug.Log(nearEdgeHeight + ", " + farEdgeHeight);
 
             nearEdgeHeight -= 130;
             farEdgeHeight -= 130;
@@ -173,17 +371,33 @@ public class RoadControl : MonoBehaviour
                             roadScreenLines[j].position = new Vector3(x + dxFraction,
                                                                     roadScreenLines[j].position.y, roadScreenLines[j].position.z);
                             roadScreenLines[j].localScale = new Vector3(nearEdgeWidthScale + scaleIncreaseFromNearEdge, 1.0f, 1.0f);
-                            Debug.Log(roadScreenLines[j].localScale.x);
+                            //Debug.Log(roadScreenLines[j].localScale.x);
                         }
                     }
-                    Debug.Log("thick seg, screen line #" + nearEdgeHeight);
+                    //Debug.Log("thick seg, screen line #" + nearEdgeHeight);
                 }
                 else {
                     roadScreenSprites[farEdgeHeight].sprite = roadSegments[i].SpriteVariation;
                     roadScreenLines[farEdgeHeight].position = new Vector3(x + dx,
                                                                         roadScreenLines[farEdgeHeight].position.y, roadScreenLines[farEdgeHeight].position.z);
                     roadScreenLines[farEdgeHeight].localScale = new Vector3(farEdgeWidthScale, 1.0f, 1.0f);
-                    Debug.Log("single seg, screen line #" + nearEdgeHeight);
+                    //Debug.Log("single seg, screen line #" + nearEdgeHeight);
+                }
+            }
+
+            foreach (BillboardSprite bb in visibleBillboards) {
+                if (bb.segmentIndex == i) {
+
+                    float roadWidthOffset;
+                    if (bb.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
+                    else                { roadWidthOffset = screenHalfWidth; }
+
+                    float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
+
+                    bb.spriteTransform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                    bb.spriteTransform.position = new Vector3(x + (bb.offsetX + roadWidthOffset) * nearEdgeWidthScale,
+                                                                nearEdgeHeight + bb.spriteType.rect.height * nearEdgeWidthScale / 2, -1f);
+                    bb.spriteRend.enabled = true;
                 }
             }
 
@@ -191,6 +405,62 @@ public class RoadControl : MonoBehaviour
             highestScreenLineDrawn = farEdgeHeight;
             //Debug.Log(highestScreenLineDrawn);
         }
+
+        float progressTrackLength = progressTrack.rectTransform.rect.height;
+        Vector2 pcPos = progressCar.rectTransform.anchoredPosition;
+        float pcPosOffset = (progressTrackLength / roadSegments.Count) * curSegmentIndex;
+
+        progressCar.rectTransform.anchoredPosition = new Vector2(progressCar.rectTransform.anchoredPosition.x, progressCarInitialY + pcPosOffset);
+    }
+
+    // This method is used when first loading the road to see if there are any sprites in the immediate vicinity (not just at the visibility edge)
+    private void LoadOpeningBillboards() {
+        foreach (BillboardSprite bb in billboardDataExpanded) {
+            if (bb.segmentIndex <= curSegmentIndex + numSegsToDraw) {
+                GameObject obj = new GameObject();
+                obj.AddComponent<SpriteRenderer>();
+                bb.spriteTransform = obj.transform;
+                bb.spriteRend = obj.GetComponent<SpriteRenderer>();
+                bb.spriteRend.enabled = false;
+                bb.spriteRend.sprite = bb.spriteType;
+
+
+                visibleBillboards.Add(bb);
+                Debug.Log(bb.spriteTransform);
+            }
+        }
+    }
+
+    private void UpdateBillboards() {
+
+        List<BillboardSprite> tempBBs = new List<BillboardSprite>();
+
+        foreach (BillboardSprite bb in billboardDataExpanded) {
+            if (bb.segmentIndex == curSegmentIndex + numSegsToDraw) {
+                GameObject obj = new GameObject();
+                obj.AddComponent<SpriteRenderer>();
+                bb.spriteTransform = obj.transform;
+                bb.spriteRend = obj.GetComponent<SpriteRenderer>();
+                bb.spriteRend.enabled = false;
+                bb.spriteRend.sprite = bb.spriteType;
+
+                visibleBillboards.Add(bb);
+                BillboardSprite tempBB = bb;
+                tempBBs.Add(tempBB);
+            }
+        }
+
+        foreach (BillboardSprite tmp in tempBBs) { billboardDataExpanded.Remove(tmp); }
+        tempBBs.Clear();
+
+        foreach (BillboardSprite bb in visibleBillboards) {
+            if (bb.segmentIndex < curSegmentIndex) {
+                Destroy(bb.spriteTransform.gameObject);
+                tempBBs.Add(bb);
+            }
+        }
+
+        foreach (BillboardSprite bb in tempBBs) { visibleBillboards.Remove(bb); }
     }
 
     private void AddRoadCurve(RoadCurve rdCurve) {
@@ -250,31 +520,97 @@ public class RoadControl : MonoBehaviour
 
         curPlayerTurning = maxTurning;
 
-        if (Input.GetKey(KeyCode.UpArrow)) {
-            if (curPlayerSpeed < topSpeed)  { curPlayerSpeed += acceleration * Time.deltaTime; }
-            else                            { curPlayerSpeed = topSpeed; }
+        speedometerNeedle.rectTransform.rotation = Quaternion.Euler(0, 0, curPlayerSpeed * speedometerRotationFactor);
+        speedometerReading.text = ((int)curPlayerSpeed / 12).ToString();
+
+        if (canDrive) {
+            if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.up] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.up].IsPressed()) {
+                if (curPlayerSpeed < topSpeed) { curPlayerSpeed += acceleration * Time.deltaTime; }
+                else { curPlayerSpeed = topSpeed; }
+            }
+            else {
+                if (curPlayerSpeed > 0) { curPlayerSpeed -= deceleration * Time.deltaTime; }
+                else { curPlayerSpeed = 0.0f; }
+            }
+
+            if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.left] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.left].IsPressed()) {
+
+                if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.action].IsPressed()) {
+                    playerCarSprite.sprite = playerCarHardLeft;
+                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
+                        playerCar.Translate(-maxTurning * Time.deltaTime, 0, 0);
+                    }
+                }
+                else {
+                    playerCarSprite.sprite = playerCarLeft;
+                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
+                        playerCar.Translate(-maxTurning / 2 * Time.deltaTime, 0, 0);
+                    }
+                }
+            }
+            else if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.right] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.right].IsPressed()) {
+
+                if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.action].IsPressed()) {
+                    playerCarSprite.sprite = playerCarHardRight;
+                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
+                        playerCar.Translate(maxTurning * Time.deltaTime, 0, 0);
+                    }
+                }
+                else {
+                    playerCarSprite.sprite = playerCarRight;
+                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
+                        playerCar.Translate(maxTurning / 2 * Time.deltaTime, 0, 0);
+                    }
+                }
+            }
+            else {
+                playerCarSprite.sprite = playerCarStraight;
+            }
+        }
+        else if (isOnAutopilot) {
+            curPlayerSpeed = autopilotSpeed;
         }
         else {
             if (curPlayerSpeed > 0) { curPlayerSpeed -= deceleration * Time.deltaTime; }
-            else                    { curPlayerSpeed = 0.0f; }
-        }
-
-        if (Input.GetKey(KeyCode.LeftArrow)) {
-            playerCarSprite.sprite = playerCarHardLeft;
-            if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
-                playerCar.Translate(-curPlayerTurning * Time.deltaTime, 0, 0);
-            }
-        }
-        else if (Input.GetKey(KeyCode.RightArrow)) {
-            playerCarSprite.sprite = playerCarHardRight;
-            if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
-                playerCar.Translate(curPlayerTurning * Time.deltaTime, 0, 0);
-            }
-        }
-        else {
-            playerCarSprite.sprite = playerCarStraight;
+            else { curPlayerSpeed = 0.0f; }
         }
 
         camCurZ += curPlayerSpeed * Time.deltaTime;
+    }
+
+    private void ShowHUD(bool showOrNo) {
+        if (showOrNo) {
+            armor.enabled = true;
+            armorLabel.enabled = true;
+            armorFrame.enabled = true;
+
+            speedometer.enabled = true;
+            speedometerNeedle.enabled = true;
+            speedometerReading.enabled = true;
+
+            timerLabel.enabled = true;
+
+            progressCar.enabled = true;
+            progressTrack.enabled = true;
+
+            
+        }
+        else {
+            armor.enabled = false;
+            armorFrame.enabled = false;
+            armorLabel.enabled = false;
+
+            speedometer.enabled = false;
+            speedometerNeedle.enabled = false;
+            speedometerReading.enabled = false;
+
+            timer.enabled = false;
+            timerLabel.enabled = false;
+
+            progressCar.enabled = false;
+            progressTrack.enabled = false;
+
+            messageText.enabled = false;
+        }
     }
 }
