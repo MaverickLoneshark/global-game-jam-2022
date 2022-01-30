@@ -28,7 +28,8 @@ public class CloseButton : MonoBehaviour {
 		//
 	}
 
-	void OnClick() {
+	private void OnClick() {
+        Debug.Log("hi");
 		targetMenuObject.SetActive(false);
 	}
 }
