@@ -1034,14 +1034,14 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 38e17d8335a3aac4fb47a599b7b27e66, type: 3}
   - {fileID: 21300000, guid: c88e7d8c9fcaf014f9a3b86b5a5bb98e, type: 3}
   camHeight: 120
-  roadLength: 5000
+  roadLength: 20000
   roadWidth: 2000
   screenHalfWidth: 160
   roadSegmentLength: 5
   roadStartZ: 109
   FOV: 2
   numStraightSegs: 10000
-  numSegsToDraw: 200
+  numSegsToDraw: 500
   roadCurves:
   - segmentInsertIndex: 200
     numEnterSegments: 50
@@ -1078,7 +1078,11 @@ MonoBehaviour:
   autopilotSpeed: 800
   acceleration: 250
   deceleration: 350
-  maxTurning: 80
+  centripetal: 150
+  maxTurning: 0.2
+  turnIncrease: 0.25
+  hardTurnIncrease: 0.4
+  lowTurnZeroThreshold: 0.01
   maxArmor: 0
   billboardData:
   - spriteType: {fileID: 21300000, guid: 1a3e41409895c5946b776eafa5db696b, type: 3}
@@ -1147,8 +1151,8 @@ MonoBehaviour:
   gameOverMessage: GAME OVER
   trackCompleteMessage: YOU HAVE THE HEART OF A WARRIOR
   speedometerRotationFactor: -0.11
-  timeLimit: 10
-  messageDelay: 2
+  timeLimit: 60
+  messageDelay: 0.5
 --- !u!1 &1102322470
 GameObject:
   m_ObjectHideFlags: 0
@@ -1400,7 +1404,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1368818166}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 68, z: -1}
+  m_LocalPosition: {x: 0, y: 68, z: -0.25}
   m_LocalScale: {x: 1, y: 2, z: 1}
   m_Children: []
   m_Father: {fileID: 1090046319}

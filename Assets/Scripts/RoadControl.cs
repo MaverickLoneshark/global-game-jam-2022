@@ -24,8 +24,6 @@ public class RoadControl : MonoBehaviour
     [SerializeField, Range(0.0f, 1.0f)]
     private float steeringDeadZoneAlpha, turnFrameThreshold, hardTurnFrameThreshold;
 
-    
-
     [SerializeField]
     private Transform refRoadStrip;
     [SerializeField]
@@ -60,8 +58,8 @@ public class RoadControl : MonoBehaviour
     private int curSegmentIndex;
 
     [SerializeField]
-    private float topSpeed, autopilotSpeed, acceleration, deceleration, maxTurning, maxArmor;
-    private float curPlayerSpeed, curPlayerTurning, camCurZ, playerZoffset, curPlayerPosX, curArmor;
+    private float topSpeed, autopilotSpeed, acceleration, deceleration, centripetal, maxTurning, turnIncrease, hardTurnIncrease, lowTurnZeroThreshold, maxArmor;
+    private float curPlayerSpeed, curPlayerTurning, curPlayerDrift, camCurZ, playerZoffset, curPlayerPosX, playerInitialY, curArmor;
 
     // GAME STATES
     private enum GameState { InMenu, TrackStart, Driving, Crashing, Exploding, TrackComplete, GameOver }
@@ -122,6 +120,7 @@ public class RoadControl : MonoBehaviour
         }
 
         curPlayerSpeed = 0;
+        curPlayerTurning = 0;
         camCurZ = 0;
         distCamToScreen = (numScreenLines / 2f) / (Mathf.Tan(FOV / 2f));
 
@@ -518,7 +517,9 @@ public class RoadControl : MonoBehaviour
 
     private void ManagePlayerPosition() {
 
-        curPlayerTurning = maxTurning;
+        float cumulativePlayerCarX;
+
+        //curPlayerTurning = maxTurning;
 
         speedometerNeedle.rectTransform.rotation = Quaternion.Euler(0, 0, curPlayerSpeed * speedometerRotationFactor);
         speedometerReading.text = ((int)curPlayerSpeed / 12).ToString();
@@ -536,35 +537,45 @@ public class RoadControl : MonoBehaviour
             if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.left] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.left].IsPressed()) {
 
                 if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.action].IsPressed()) {
-                    playerCarSprite.sprite = playerCarHardLeft;
-                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
-                        playerCar.Translate(-maxTurning * Time.deltaTime, 0, 0);
+                    //playerCarSprite.sprite = playerCarHardLeft;
+                    if (curPlayerTurning > -maxTurning) {
+                        curPlayerTurning -= hardTurnIncrease * Time.deltaTime;
                     }
                 }
                 else {
-                    playerCarSprite.sprite = playerCarLeft;
-                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
-                        playerCar.Translate(-maxTurning / 2 * Time.deltaTime, 0, 0);
+                    //playerCarSprite.sprite = playerCarLeft;
+                    if (curPlayerTurning > -maxTurning) {
+                        curPlayerTurning -= turnIncrease * Time.deltaTime;
                     }
                 }
             }
             else if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.right] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.right].IsPressed()) {
 
                 if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action] != null && InputMapper.inputMapper[(int)InputMapper.CONTROLS.action].IsPressed()) {
-                    playerCarSprite.sprite = playerCarHardRight;
-                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
-                        playerCar.Translate(maxTurning * Time.deltaTime, 0, 0);
+                    //playerCarSprite.sprite = playerCarHardRight;
+                    if (curPlayerTurning < maxTurning) {
+                        curPlayerTurning += hardTurnIncrease * Time.deltaTime;
                     }
                 }
                 else {
-                    playerCarSprite.sprite = playerCarRight;
-                    if (Mathf.Abs(playerCar.position.x) < screenHalfWidth) {
-                        playerCar.Translate(maxTurning / 2 * Time.deltaTime, 0, 0);
+                    //playerCarSprite.sprite = playerCarRight;
+                    if (curPlayerTurning < maxTurning) {
+                        curPlayerTurning += turnIncrease * Time.deltaTime;
                     }
                 }
             }
             else {
-                playerCarSprite.sprite = playerCarStraight;
+                if (Mathf.Abs(curPlayerTurning) > lowTurnZeroThreshold) {
+                    if (curPlayerTurning > 0) {
+                        curPlayerTurning -= hardTurnIncrease * 0.5f * Time.deltaTime;
+                    }
+                    else {
+                        curPlayerTurning += hardTurnIncrease * 0.5f * Time.deltaTime;
+                    }
+                }
+                else {
+                    curPlayerTurning = 0.0f;
+                }
             }
         }
         else if (isOnAutopilot) {
@@ -575,6 +586,25 @@ public class RoadControl : MonoBehaviour
             else { curPlayerSpeed = 0.0f; }
         }
 
+        if (curPlayerTurning < (0.75f * -maxTurning)) {
+            playerCarSprite.sprite = playerCarHardLeft;
+        }
+        else if ((curPlayerTurning > (0.75f * -maxTurning)) && (curPlayerTurning < (0.25f * -maxTurning))) {
+            playerCarSprite.sprite = playerCarLeft;
+        }
+        else if ((curPlayerTurning >= (0.25f * -maxTurning)) && (curPlayerTurning <= (0.25f * maxTurning))) {
+            playerCarSprite.sprite = playerCarStraight;
+        }
+        else if ((curPlayerTurning > (0.25f * maxTurning)) && (curPlayerTurning < (0.75f * maxTurning))) {
+            playerCarSprite.sprite = playerCarRight;
+        }
+        else if (curPlayerTurning > (0.75f * maxTurning)) {
+            playerCarSprite.sprite = playerCarHardRight;
+        }
+
+        curPlayerDrift = -(curPlayerSpeed / topSpeed) * roadSegments[curSegmentIndex].Curve * centripetal * Time.deltaTime;
+        cumulativePlayerCarX = curPlayerTurning + curPlayerDrift;
+        playerCar.Translate(cumulativePlayerCarX, 0, 0);
         camCurZ += curPlayerSpeed * Time.deltaTime;
     }
 
