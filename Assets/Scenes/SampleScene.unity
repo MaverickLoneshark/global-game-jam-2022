@@ -695,7 +695,9 @@ PrefabInstance:
       propertyPath: m_LocalPosition.y
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6004113017299971387, guid: 9130d3bfa7928e1488e0f0b1caae5383, type: 3}
+    - {fileID: 1137718393844690362, guid: 9130d3bfa7928e1488e0f0b1caae5383, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 9130d3bfa7928e1488e0f0b1caae5383, type: 3}
 --- !u!1001 &5702012794752689545
 PrefabInstance:
@@ -1091,7 +1093,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8622382669935419193, guid: bbf66d4f3993d344084f2f0e07e69a0f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8622382669935419193, guid: bbf66d4f3993d344084f2f0e07e69a0f, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1128,6 +1130,14 @@ PrefabInstance:
     - target: {fileID: 8622382669935419196, guid: bbf66d4f3993d344084f2f0e07e69a0f, type: 3}
       propertyPath: m_Name
       value: Main Camera
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622382669935419198, guid: bbf66d4f3993d344084f2f0e07e69a0f, type: 3}
+      propertyPath: orthographic
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8622382669935419198, guid: bbf66d4f3993d344084f2f0e07e69a0f, type: 3}
+      propertyPath: orthographic size
+      value: 100
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: bbf66d4f3993d344084f2f0e07e69a0f, type: 3}

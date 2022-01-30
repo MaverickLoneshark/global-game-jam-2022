@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class CloseButton : MonoBehaviour {
+public class PlayButton : MonoBehaviour {
 	[SerializeField]
 	private GameObject targetMenuObject;
 
@@ -28,7 +28,12 @@ public class CloseButton : MonoBehaviour {
 		//
 	}
 
+	private void OnEnable() {
+		Time.timeScale = 0.0f;
+	}
+
 	void OnClick() {
+		Time.timeScale = 1.0f;
 		targetMenuObject.SetActive(false);
 	}
 }
