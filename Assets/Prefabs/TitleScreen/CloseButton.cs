@@ -5,9 +5,10 @@ using UnityEngine.UI;
 
 public class CloseButton : MonoBehaviour {
     [SerializeField]
-	GameObject targetMenuObject;
+	private GameObject targetMenuObject;
 
 	private Button button;
+
 	private void Awake() {
 		button = GetComponent<Button>();
 		button.onClick.AddListener(OnClick);
