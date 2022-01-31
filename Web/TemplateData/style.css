@@ -76,7 +76,8 @@ body {
 	margin-right: 10px;
 	line-height: 38px;
 	font-family: arial;
-	font-size: 18px 
+	font-size: 18px;
+	color: #808080;
 }
 
 #unity-fullscreen-button {
