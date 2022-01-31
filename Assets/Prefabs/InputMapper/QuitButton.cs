@@ -18,6 +18,7 @@ public class QuitButton : MonoBehaviour {
 	}
 
 	private void OnClick() {
+		Time.timeScale = 1.0f;
 		UnityEngine.SceneManagement.SceneManager.LoadScene(0);
 		transform.parent.gameObject.SetActive(false);
 	}
