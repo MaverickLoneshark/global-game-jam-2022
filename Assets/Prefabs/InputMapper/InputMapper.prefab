@@ -44,6 +44,114 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67f1a7842b4c3aa439125621da166ddc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  execute_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/z
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  action_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/x
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  cancel_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/space
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  special_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/c
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  alternative_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/ctrl
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  extra_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/shift
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  start_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/enter
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  select_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/quote
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  up_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/uparrow
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  down_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/downarrow
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  left_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/leftarrow
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  right_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/rightarrow
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
   boundAction:
   - m_Name: execute
     m_Type: 0

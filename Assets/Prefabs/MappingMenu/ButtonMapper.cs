@@ -13,6 +13,7 @@ public class ButtonMapper : MonoBehaviour {
 	private Text button_text;
 	private InputMapper input_mapper;
 	private InputActionRebindingExtensions.RebindingOperation rebinding_operation;
+	private bool is_pressed = false;
 
 	private void Awake() {
 		button = GetComponent<Button>();
@@ -29,7 +30,16 @@ public class ButtonMapper : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update() {
-		//
+		if (input_mapper[(int)control_value]) {
+			if (!is_pressed) {
+				button.image.color = button.colors.pressedColor;
+				is_pressed = true;
+			}
+		}
+		else if (is_pressed) {
+			is_pressed = false;
+			button.image.color = button.colors.normalColor;
+		}
 	}
 
 	private void OnClick() {

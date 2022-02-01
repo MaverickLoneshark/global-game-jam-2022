@@ -41,24 +41,7 @@ public class MappingMenu : MonoBehaviour {
 	}
 
 	private void OnGUI() {
-		string pressed_buttons = "";
-
-		for (int i = 0; i < (int)InputMapper.CONTROLS.COUNT; i++) {
-			if (inputMapper[i]) {
-				if (pressed_buttons == "") {
-					pressed_buttons = ((InputMapper.CONTROLS)i).ToString();
-				}
-				else {
-					pressed_buttons += ", " + (InputMapper.CONTROLS)i;
-				}
-			}
-		}
-
 		GUILayout.TextField("Pointer: " + inputMapper.pointer_position_x + ", " + inputMapper.pointer_position_y);
-
-		if (pressed_buttons.Length > 0) {
-			GUILayout.TextField(pressed_buttons + " pressed");
-		}
 
 #if DEBUG
 		foreach (InputDevice device in InputSystem.devices) {
