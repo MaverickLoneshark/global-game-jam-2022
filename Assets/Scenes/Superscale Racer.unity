@@ -1125,30 +1125,18 @@ MonoBehaviour:
   numStraightSegs: 10000
   numSegsToDraw: 500
   roadCurves:
-  - segmentInsertIndex: 200
-    numEnterSegments: 50
-    numHoldSegments: 400
+  - segmentInsertIndex: 500
+    numEnterSegments: 100
+    numHoldSegments: 200
     numExitSegments: 100
-    curveIntensity: 0.25
-    elevationShift: 0
-  - segmentInsertIndex: 650
-    numEnterSegments: 50
-    numHoldSegments: 300
-    numExitSegments: 20
-    curveIntensity: -0.5
-    elevationShift: 0
+    curveIntensity: 0
+    elevationShift: 20
   - segmentInsertIndex: 1000
-    numEnterSegments: 50
-    numHoldSegments: 300
+    numEnterSegments: 100
+    numHoldSegments: 200
     numExitSegments: 100
-    curveIntensity: -0.5
-    elevationShift: 0
-  - segmentInsertIndex: 1500
-    numEnterSegments: 200
-    numHoldSegments: 400
-    numExitSegments: 300
-    curveIntensity: 0.75
-    elevationShift: 0
+    curveIntensity: 0
+    elevationShift: 40
   rdCurveExample:
     segmentInsertIndex: 0
     numEnterSegments: 0
@@ -1175,27 +1163,7 @@ MonoBehaviour:
   delayBeforeDropping: 1.25
   bombDropSpeed: 10
   bombSizeCorrectionFactor: 1.5
-  droids:
-  - segmentIndex: 1100
-    offsetX: 0
-    dropDelayRefTime: 0
-    droid: {fileID: 0}
-    droidSprite: {fileID: 0}
-  - segmentIndex: 1400
-    offsetX: 100
-    dropDelayRefTime: 0
-    droid: {fileID: 0}
-    droidSprite: {fileID: 0}
-  - segmentIndex: 1800
-    offsetX: -60
-    dropDelayRefTime: 0
-    droid: {fileID: 0}
-    droidSprite: {fileID: 0}
-  - segmentIndex: 1900
-    offsetX: 40
-    dropDelayRefTime: 0
-    droid: {fileID: 0}
-    droidSprite: {fileID: 0}
+  droids: []
   billboardData:
   - spriteType: {fileID: 21300000, guid: 1a3e41409895c5946b776eafa5db696b, type: 3}
     spriteTransform: {fileID: 0}

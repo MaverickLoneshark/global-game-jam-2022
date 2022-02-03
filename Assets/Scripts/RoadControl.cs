@@ -359,9 +359,11 @@ public class RoadControl : MonoBehaviour
         float x = 0;
         float dx;
 
+        int nearEdgeHeight, farEdgeHeight;
+
         for (int i = curSegmentIndex; i < (Mathf.Min(curSegmentIndex + numSegsToDraw - 1, numStraightSegs)); i++) {
-            int nearEdgeHeight = (int)(numScreenLines - Mathf.Floor(distCamToScreen * (camHeight - roadSegments[i].Y) / (roadSegments[i].EdgeNearZ - camCurZ)));
-            int farEdgeHeight = (int)(numScreenLines - Mathf.Floor(distCamToScreen * (camHeight - roadSegments[i].Y) / (roadSegments[i].EdgeFarZ - camCurZ)));
+            nearEdgeHeight = (int)(numScreenLines - Mathf.Floor(distCamToScreen * (camHeight - roadSegments[i].Y) / (roadSegments[i].EdgeNearZ - camCurZ)));
+            farEdgeHeight = (int)(numScreenLines - Mathf.Floor(distCamToScreen * (camHeight - roadSegments[i].Y) / (roadSegments[i].EdgeFarZ - camCurZ)));
             nearEdgeWidthScale = (distCamToScreen / (roadSegments[i].EdgeNearZ - camCurZ));
             farEdgeWidthScale = (distCamToScreen / (roadSegments[i].EdgeFarZ - camCurZ));
 
@@ -473,6 +475,10 @@ public class RoadControl : MonoBehaviour
             x += dx;
             highestScreenLineDrawn = farEdgeHeight;
             //Debug.Log(highestScreenLineDrawn);
+        }
+
+        for (int i = highestScreenLineDrawn + 1; i < roadScreenLines.Count - 1; i++) {
+            roadScreenLines[i].localScale = new Vector3(0.0f, 1.0f, 1.0f);
         }
 
         float progressTrackLength = progressTrack.rectTransform.rect.height;
