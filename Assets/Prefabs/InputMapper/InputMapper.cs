@@ -30,21 +30,47 @@ public class InputMapper : MonoBehaviour {
 	public int pointer_position_x { get; private set; } = 0;
 	public int pointer_position_y { get; private set; } = 0;
 
-	[SerializeField]
-	private InputAction[] boundAction = new InputAction[(int)CONTROLS.COUNT] {
-		new InputAction(name: CONTROLS.execute.ToString(), binding: "<Keyboard>/z"), //0: execute
-		new InputAction(name: CONTROLS.action.ToString(), binding: "<Keyboard>/x"), //1: action
-		new InputAction(name: CONTROLS.cancel.ToString(), binding: "<Keyboard>/space"), //2: cancel
-		new InputAction(name: CONTROLS.special.ToString(), binding: "<Keyboard>/c"), //3: special
-		new InputAction(name: CONTROLS.alternative.ToString(), binding: "<Keyboard>/ctrl"), //4: alternative
-		new InputAction(name: CONTROLS.extra.ToString(), binding: "<Keyboard>/shift"), //5: extra
-		new InputAction(name: CONTROLS.start.ToString(), binding: "<Keyboard>/enter"), //6: start
-		new InputAction(name: CONTROLS.select.ToString(), binding: "<Keyboard>/quote"), //7: select
-		new InputAction(name: CONTROLS.up.ToString(), binding: "<Keyboard>/uparrow"), //8: up
-		new InputAction(name: CONTROLS.down.ToString(), binding: "<Keyboard>/downarrow"), //9: down
-		new InputAction(name: CONTROLS.left.ToString(), binding: "<Keyboard>/leftarrow"), //10: left
-		new InputAction(name: CONTROLS.right.ToString(), binding: "<Keyboard>/rightarrow") //11: right
-	};
+	private GameObject pauseMenu;
+	private GameObject mappingMenu;
+	private bool holding_pause = false;
+
+	[SerializeField][Header("0: Execute Action")]
+	private InputAction execute_action = new InputAction(name: CONTROLS.execute.ToString(), binding: "<Keyboard>/z");
+
+	[SerializeField][Header("1: Action Action")]
+	private InputAction action_action = new InputAction(name: CONTROLS.action.ToString(), binding: "<Keyboard>/x");
+
+	[SerializeField][Header("2: Cancel Action")]
+	private InputAction cancel_action = new InputAction(name: CONTROLS.cancel.ToString(), binding: "<Keyboard>/space");
+
+	[SerializeField][Header("3: Special Action")]
+	private InputAction special_action = new InputAction(name: CONTROLS.special.ToString(), binding: "<Keyboard>/c");
+
+	[SerializeField][Header("4: Alternative Action")]
+	private InputAction alternative_action = new InputAction(name: CONTROLS.alternative.ToString(), binding: "<Keyboard>/ctrl");
+
+	[SerializeField][Header("5: Extra Action")]
+	private InputAction extra_action = new InputAction(name: CONTROLS.extra.ToString(), binding: "<Keyboard>/shift");
+
+	[SerializeField][Header("6: Start Action")]
+	private InputAction start_action = new InputAction(name: CONTROLS.start.ToString(), binding: "<Keyboard>/enter");
+
+	[SerializeField][Header("7: Select Action")]
+	private InputAction select_action = new InputAction(name: CONTROLS.select.ToString(), binding: "<Keyboard>/quote");
+
+	[SerializeField][Header("8: Up Action")]
+	private InputAction up_action = new InputAction(name: CONTROLS.up.ToString(), binding: "<Keyboard>/uparrow");
+
+	[SerializeField][Header("9: Down Action")]
+	private InputAction down_action = new InputAction(name: CONTROLS.down.ToString(), binding: "<Keyboard>/downarrow");
+
+	[SerializeField][Header("10: Left Action")]
+	private InputAction left_action = new InputAction(name: CONTROLS.left.ToString(), binding: "<Keyboard>/leftarrow");
+
+	[SerializeField][Header("11: Right Action")]
+	private InputAction right_action = new InputAction(name: CONTROLS.right.ToString(), binding: "<Keyboard>/rightarrow");
+
+	private InputAction[] boundAction = new InputAction[(int)CONTROLS.COUNT];
 
 	private Dictionary<string, CONTROLS> name2Control = new Dictionary<string, CONTROLS> {
 		{ ((CONTROLS)0).ToString(), (CONTROLS)0 },
@@ -79,10 +105,71 @@ public class InputMapper : MonoBehaviour {
 		else {
 			inputMapper = this;
 			DontDestroyOnLoad(gameObject);
+			pauseMenu = transform.Find("PauseCanvas").Find("OptionsMenu").gameObject;
+			mappingMenu = pauseMenu.transform.Find("MappingMenu").gameObject;
+
+			InputSystem.Update();
+
+			if (Keyboard.current == null) {
+				InputSystem.AddDevice<Keyboard>();
+			}
+
+			if (Gamepad.current == null) {
+				InputSystem.AddDevice<Gamepad>();
+			}
+
+			if (Joystick.current == null) {
+				InputSystem.AddDevice<Joystick>();
+			}
+
+			boundAction[0] = execute_action;
+			boundAction[1] = action_action;
+			boundAction[2] = cancel_action;
+			boundAction[3] = special_action;
+			boundAction[4] = alternative_action;
+			boundAction[5] = extra_action;
+			boundAction[6] = start_action;
+			boundAction[7] = select_action;
+			boundAction[8] = up_action;
+			boundAction[9] = down_action;
+			boundAction[10] = left_action;
+			boundAction[11] = right_action;
 
 			for (int i = 0; i < (int)CONTROLS.COUNT; i++) {
-				boundAction[i].performed += (context) => { pressed[(int)name2Control[context.action.name]] = true; };
-				boundAction[i].canceled += (context) => { pressed[(int)name2Control[context.action.name]] = false; };
+				boundAction[i].performed += (context) => {
+					try {
+						pressed[(int)name2Control[context.action.name]] = context.ReadValueAsButton();
+					}
+					catch {
+						Vector2 deltaVector = context.ReadValue<Vector2>();
+
+						switch (name2Control[context.action.name]) {
+							case CONTROLS.up:
+								pressed[(int)name2Control[context.action.name]] = deltaVector.y > 0.4f;
+							break;
+
+							case CONTROLS.right:
+								pressed[(int)name2Control[context.action.name]] = deltaVector.x > 0.4f;
+							break;
+
+							case CONTROLS.down:
+								pressed[(int)name2Control[context.action.name]] = deltaVector.y < -0.4f;
+							break;
+
+							case CONTROLS.left:
+								pressed[(int)name2Control[context.action.name]] = deltaVector.x < -0.4f;
+							break;
+
+							default:
+							break;
+						}
+					}
+				};
+				
+				boundAction[i].canceled += (context) => {
+					pressed[(int)name2Control[context.action.name]] = false;
+				};
+
 				boundAction[i].Enable();
 			}
 
@@ -122,7 +209,21 @@ Debug.Log(debug_text);
 
 	// Update is called once per frame
 	void Update() {
-		//
+		if (inputMapper[(int)CONTROLS.start]) {
+			if (!holding_pause) {
+				if (!mappingMenu.activeSelf && UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex > 0) {
+					pauseMenu.SetActive(!pauseMenu.activeSelf);
+					holding_pause = true;
+
+					if (!pauseMenu.activeSelf) {
+						Time.timeScale = 1.0f;
+					}
+				}
+			}
+		}
+		else {
+			holding_pause = false;
+		}
 	}
 
 	private void OnPointerMove(InputAction.CallbackContext context) {

@@ -27,7 +27,8 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 4803541580102475875}
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -43,196 +44,406 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67f1a7842b4c3aa439125621da166ddc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  execute_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/z
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  action_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/x
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  cancel_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/space
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  special_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/c
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  alternative_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/ctrl
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  extra_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/shift
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  start_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/enter
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  select_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/quote
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  up_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/uparrow
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  down_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/downarrow
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  left_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/leftarrow
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
+  right_binding:
+    m_Name: 
+    m_Id: 
+    m_Path: <Keyboard>/rightarrow
+    m_Interactions: 
+    m_Processors: 
+    m_Groups: 
+    m_Action: 
+    m_Flags: 0
   boundAction:
-  - m_Name: Element 0
+  - m_Name: execute
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 762ebdb8-505b-4967-9cb5-f94d22a46299
+    m_Id: 84eb4355-5624-476c-a714-2d9e7d6d1961
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 8d57c57e-c832-4a76-aa98-7570e751ef01
+      m_Id: 74670229-62ae-4874-9d50-242a06fe0298
       m_Path: <Keyboard>/z
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 0
+      m_Action: execute
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 1
+  - m_Name: action
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 8db64135-5ac0-494d-88cb-cc4d35c6f51d
+    m_Id: 35887be6-0886-48c0-bbd1-2fc3bdf8cff6
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: a8709419-cd17-4443-9891-2c24c8c6c3c7
+      m_Id: ce88a66c-8d74-4f83-a21c-b36c086473a2
       m_Path: <Keyboard>/x
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 1
+      m_Action: action
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 2
+  - m_Name: cancel
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: f636295b-b61d-44da-982d-d43950bea4f7
+    m_Id: 361ad1b2-1efe-47d0-9839-b670c6e7d06a
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: fe33717a-b2a8-4363-a3b5-7a5deac44156
+      m_Id: 9982f8e1-39b2-4fb7-86fc-7fbc7587d414
       m_Path: <Keyboard>/space
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 2
+      m_Action: cancel
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 3
+  - m_Name: special
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 83f4d9d8-edb5-4523-b786-abf9ab539efb
+    m_Id: e3f223e2-6c2b-45b9-a290-8e030efa4a7e
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: ace36fd7-65d5-4c7a-ac37-7e4eb155dc3a
+      m_Id: e7ba2c7e-048b-48c4-9ea1-5c530539c81a
       m_Path: <Keyboard>/c
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 3
+      m_Action: special
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 4
+  - m_Name: alternative
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 830f5eda-c493-448c-9d2b-79c509e28f78
+    m_Id: 3e3b45bf-dc01-4fe2-ae42-6c2f2895ae8e
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 2c87891a-8017-4bb0-8b2c-a22d0d6208b8
+      m_Id: 37796a5a-600e-44e2-96cc-24c7f2e81f63
       m_Path: <Keyboard>/ctrl
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 4
+      m_Action: alternative
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 5
+  - m_Name: extra
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: cb4d7a19-fda7-43d2-a173-4d5838bb0062
+    m_Id: 4759d86a-d669-406e-9b40-217574cf5150
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 17c63254-ccdf-4f04-b5b9-b6142c584db4
+      m_Id: 393cd40a-abca-46c1-b08c-6ac5723693ea
       m_Path: <Keyboard>/shift
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 5
+      m_Action: extra
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 6
+  - m_Name: start
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 9c7bd1ea-1b77-421a-ac42-9d1d2b71eda6
+    m_Id: 43a1cfb9-751d-49d7-a607-aeef282d6048
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: b7f88330-f4cd-477b-ae7a-6f594eda7482
+      m_Id: 70334a9e-ff0f-4683-bb64-26184cde58b6
       m_Path: <Keyboard>/enter
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 6
+      m_Action: start
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 7
+  - m_Name: select
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 24f1c22e-a024-4a86-80e7-ae9986b2ae19
+    m_Id: 05b48bbd-dc86-41b5-a665-05a5c71bd6e7
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 1e47695f-0d1a-4074-9d1a-311dce8efde2
+      m_Id: f0c101e7-364e-492c-ad44-732752355b8c
       m_Path: <Keyboard>/quote
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 7
+      m_Action: select
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 8
+  - m_Name: up
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: a4f1bc17-32fe-4f4a-a5a7-363720c08117
+    m_Id: 5f6827be-5436-439c-b270-42666bca807a
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 67d0f084-5709-4f9d-bb7a-0d64a9585e36
+      m_Id: 10b399f0-3d1a-4691-9afb-2dc138679b01
       m_Path: <Keyboard>/uparrow
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 8
+      m_Action: up
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 9
+  - m_Name: down
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 79759cae-4208-4ede-b848-0ebe031db705
+    m_Id: 7e51f898-a0ac-4a6d-84b8-99ff2a0a2e8f
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 5398bcef-bdd6-4f5f-bb4b-72ce1a3fb3ef
+      m_Id: 91cd4091-9d62-4398-afa3-300e3cef8a5f
       m_Path: <Keyboard>/downarrow
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 9
+      m_Action: down
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 10
+  - m_Name: left
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: a12ff16c-bcf4-4130-92bc-e9f422af324c
+    m_Id: dbc3c610-ec5b-4601-9cd1-5dc865a1f7ff
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 7594341b-c989-435d-8939-e6ee3de98727
+      m_Id: 1bd75b14-f8a2-4c99-94b3-dae7e7d6d8da
       m_Path: <Keyboard>/leftarrow
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 10
+      m_Action: left
       m_Flags: 0
     m_Flags: 0
-  - m_Name: Element 11
+  - m_Name: right
     m_Type: 0
     m_ExpectedControlType: 
-    m_Id: 8e6a138f-37ef-48e2-8a47-ee31c30a1d98
+    m_Id: ab67af04-e0c9-4414-9629-f2ce9a50cfbb
     m_Processors: 
     m_Interactions: 
     m_SingletonActionBindings:
     - m_Name: 
-      m_Id: 51221b17-10bf-4304-a7f3-d0f28a02be15
+      m_Id: 6a6e9a27-2289-4e95-972e-2cbffcb1e335
       m_Path: <Keyboard>/rightarrow
       m_Interactions: 
       m_Processors: 
       m_Groups: 
-      m_Action: Element 11
+      m_Action: right
       m_Flags: 0
     m_Flags: 0
+--- !u!1001 &2837591755791677992
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 6191410267055874413}
+    m_Modifications:
+    - target: {fileID: 3179848504142338995, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_Name
+      value: PauseCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+--- !u!224 &4803541580102475875 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 7334320037166684747, guid: ce62c868a2172834d83d88f1c3bd3bb0, type: 3}
+  m_PrefabInstance: {fileID: 2837591755791677992}
+  m_PrefabAsset: {fileID: 0}
