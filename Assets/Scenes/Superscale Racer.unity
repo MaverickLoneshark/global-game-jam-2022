@@ -1128,14 +1128,62 @@ MonoBehaviour:
     numEnterSegments: 100
     numHoldSegments: 200
     numExitSegments: 100
-    curveIntensity: 0
-    elevationShift: 20
+    curveIntensity: -0.25
+    elevationShift: 0
   - segmentInsertIndex: 1000
     numEnterSegments: 100
-    numHoldSegments: 200
+    numHoldSegments: 500
     numExitSegments: 100
-    curveIntensity: 0
-    elevationShift: 40
+    curveIntensity: 0.4
+    elevationShift: 0
+  - segmentInsertIndex: 1500
+    numEnterSegments: 100
+    numHoldSegments: 500
+    numExitSegments: 100
+    curveIntensity: 0.2
+    elevationShift: 0
+  - segmentInsertIndex: 2000
+    numEnterSegments: 100
+    numHoldSegments: 500
+    numExitSegments: 100
+    curveIntensity: 1
+    elevationShift: 0
+  - segmentInsertIndex: 2500
+    numEnterSegments: 100
+    numHoldSegments: 500
+    numExitSegments: 100
+    curveIntensity: 1.5
+    elevationShift: 0
+  - segmentInsertIndex: 3000
+    numEnterSegments: 100
+    numHoldSegments: 500
+    numExitSegments: 100
+    curveIntensity: -0.3
+    elevationShift: 0
+  - segmentInsertIndex: 3500
+    numEnterSegments: 100
+    numHoldSegments: 500
+    numExitSegments: 100
+    curveIntensity: 0.7
+    elevationShift: 0
+  - segmentInsertIndex: 4000
+    numEnterSegments: 100
+    numHoldSegments: 500
+    numExitSegments: 100
+    curveIntensity: 0.5
+    elevationShift: 0
+  - segmentInsertIndex: 4500
+    numEnterSegments: 100
+    numHoldSegments: 500
+    numExitSegments: 100
+    curveIntensity: -0.8
+    elevationShift: 0
+  - segmentInsertIndex: 5000
+    numEnterSegments: 100
+    numHoldSegments: 500
+    numExitSegments: 100
+    curveIntensity: 0.4
+    elevationShift: 0
   rdCurveExample:
     segmentInsertIndex: 0
     numEnterSegments: 0
@@ -1163,6 +1211,19 @@ MonoBehaviour:
   bombDropSpeed: 10
   bombSizeCorrectionFactor: 1.5
   droids: []
+  trafficCars:
+  - {fileID: 11400000, guid: 25cdf2c7706a8484e80bd574a7ab4035, type: 2}
+  - {fileID: 11400000, guid: 2040541cbe5d369469b6a1dc1dce78f8, type: 2}
+  - {fileID: 11400000, guid: f1823409e4777f844aba244cb413c411, type: 2}
+  - {fileID: 11400000, guid: dbc8ea9e4f5fe4347813835548523f1b, type: 2}
+  numEnemyModels: 0
+  numInnocentModels: 20
+  enemySpeedMin: 0
+  enemySpeedMax: 0
+  innocentSpeedMin: 500
+  innocentSpeedMax: 800
+  laneChangeMin: 0
+  LaneChangeMax: 0
   billboardData:
   - spriteType: {fileID: 21300000, guid: 1a3e41409895c5946b776eafa5db696b, type: 3}
     spriteTransform: {fileID: 0}
@@ -1927,6 +1988,114 @@ PrefabInstance:
     - target: {fileID: 6191410267055874413, guid: 784bc99a04e655747802b422aab10777, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: up_action.m_Id
+      value: c7669a0b-7975-442a-873c-fba98cfef126
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: down_action.m_Id
+      value: df035a35-b2c0-41db-930f-1a4633e68c6c
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: left_action.m_Id
+      value: 38d93471-852a-4cc7-b9a3-6aa01de91683
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: extra_action.m_Id
+      value: 89062098-9fd7-4366-a550-6b231cdd2d6a
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: right_action.m_Id
+      value: da0fe885-8bf6-4ddf-b78b-e178ce88db9b
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: start_action.m_Id
+      value: fb779537-5c4a-4ba6-a792-6b950ba135d3
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: action_action.m_Id
+      value: 170e9dbb-d4cf-4bc4-b133-e3dae001eea0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: cancel_action.m_Id
+      value: e2f9dd41-4075-4a06-9bef-57ef0eff6483
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: select_action.m_Id
+      value: 4d436efe-c13e-42e1-a516-170ae8658dcd
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: execute_action.m_Id
+      value: b3ce9262-f61d-4220-be17-f7091958b2d8
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: special_action.m_Id
+      value: dcf3ca69-70da-4cfa-93ec-008d0de5ca6a
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: alternative_action.m_Id
+      value: c82b54fe-8924-447b-a6d1-2cd8882e2f36
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: up_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: dd930aa8-948c-4fc5-8eb5-b40360398adf
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: down_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: fc48ac55-ccb6-4972-91c3-015074a66cb1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: left_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: 3d2c5893-69ad-4edd-a3a6-807ce3e3806b
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: extra_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: d6f637a4-2ff4-425b-9a53-46c91bd2a36a
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: right_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: bdcafcb2-dd87-4d64-82d8-33eb584afd6a
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: start_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: 295dfa0d-c410-4a7e-923c-f330cb52721b
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: action_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: aa444491-7682-47a8-a084-a4c2f3e4a1fb
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: cancel_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: c6a7e04e-36e4-4bf1-a155-3400799b84a0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: select_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: f286ed57-8d3c-48aa-bbcc-c41db074dfe7
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: execute_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: 4410cac7-b41e-4714-9e76-2d86d1622abc
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: special_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: 1da2f89d-0ce9-4dcc-92a6-bd6509ff3351
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: action_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/space
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: cancel_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/c
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: special_action.m_SingletonActionBindings.Array.data[0].m_Path
+      value: <Keyboard>/leftCtrl
+      objectReference: {fileID: 0}
+    - target: {fileID: 6311894885499679627, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: alternative_action.m_SingletonActionBindings.Array.data[0].m_Id
+      value: 0a56d77a-7f49-4891-a8e7-7a8c132ae63a
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 784bc99a04e655747802b422aab10777, type: 3}

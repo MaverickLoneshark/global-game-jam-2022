@@ -79,6 +79,16 @@ public class RoadControl : MonoBehaviour
     private List<BombDroid> visibleDroids = new List<BombDroid>();
     private List<Bomb> activeBombPool = new List<Bomb>();
 
+    public List<CarModel> trafficCars;
+    private List<CarModel> enemyModels = new List<CarModel>();
+    private List<CarModel> innocentModels = new List<CarModel>();
+    private List<NPCar> carsOnRoad = new List<NPCar>();
+
+    [SerializeField]
+    private int numEnemyModels, numInnocentModels;
+    [SerializeField, Range(0.0f, 2000.0f)]
+    private float enemySpeedMin, enemySpeedMax, innocentSpeedMin, innocentSpeedMax, laneChangeMin, LaneChangeMax;
+
     // BILLBOARDS and OTHER SPRITES
     public List<BillboardSprite> billboardData;
 
@@ -152,6 +162,7 @@ public class RoadControl : MonoBehaviour
 
         ShowHUD(false);
         InitializeRoadStrips();
+        LoadOpeningEnemies();
         ShowHUD(true);
 
         //Debug.Log("# road screen line sprites = " + roadScreenSprites.Count);
@@ -343,6 +354,8 @@ public class RoadControl : MonoBehaviour
             
             straightSegCounter++;
         }
+
+        Debug.Log(roadSegments.Count);
     }
 
     private int GetCurrentRoadSegmentIndex() {
@@ -472,6 +485,49 @@ public class RoadControl : MonoBehaviour
                 }
             }
 
+            if (carsOnRoad.Count > 0) {
+                foreach (NPCar car in carsOnRoad) {
+                    if (car.curSegIndex == i) {
+                        if (!car.isVisible) {
+                            GameObject obj = new GameObject();
+                            car.trafficCar = obj.transform;
+                            obj.AddComponent<SpriteRenderer>();
+                            car.carSprite = obj.GetComponent<SpriteRenderer>();
+                            car.carSprite.enabled = true;
+                            car.isVisible = true;
+                        }
+
+                        if (car.carSprite != null) {
+
+                            Debug.Log("on the road");
+                            //if (car.curLaneChangeSpeed < 0) { car.carSprite.sprite = car.model.left; }
+                            //else if (car.curLaneChangeSpeed > 0) { car.carSprite.sprite = car.model.right; }
+                            //else { car.carSprite.sprite = car.model.straightOverhead; }
+
+                            if (car.trafficCar.position.x < -20) { car.carSprite.sprite = car.model.right; }
+                            else if (car.trafficCar.position.x > 20) { car.carSprite.sprite = car.model.left; }
+                            else { car.carSprite.sprite = car.model.straightOverhead; }
+                        }
+
+                        car.trafficCar.localScale = new Vector3(nearEdgeWidthScale * 2, nearEdgeWidthScale * 2, 1);
+                        car.trafficCar.position = new Vector3(x + (car.curPosX) * nearEdgeWidthScale,
+                                                                    nearEdgeHeight + car.carSprite.sprite.rect.height * nearEdgeWidthScale / 2, -1.5f);
+
+                    }
+                    else if (car.curSegIndex < curSegmentIndex || car.curSegIndex > curSegmentIndex + numSegsToDraw) {
+
+                        if (car.trafficCar != null) {
+                            Destroy(car.trafficCar.gameObject);
+
+                            car.trafficCar = null;
+                            car.carSprite = null;
+
+                            car.isVisible = false;
+                        }
+                    }
+                }
+            }
+
             x += dx;
             highestScreenLineDrawn = farEdgeHeight;
             //Debug.Log(highestScreenLineDrawn);
@@ -553,6 +609,48 @@ public class RoadControl : MonoBehaviour
                 Debug.Log(bd.droid);
             }
         }
+
+        if (trafficCars.Count > 0) {
+
+            enemyModels.Clear();
+            innocentModels.Clear();
+
+            foreach (CarModel mod in trafficCars) {
+                if (mod.Behavior == CarModel.BehaviorType.Attacker) { enemyModels.Add(mod); }
+                else                                                { innocentModels.Add(mod); }
+            }
+
+            if (enemyModels.Count > 0) {
+                for (int i = 0; i < numEnemyModels; i++) {
+                    NPCar car = new NPCar();
+                    car.isVisible = false;
+                    car.model = enemyModels[Random.Range(0, enemyModels.Count)];
+                    car.curSegIndex = Random.Range(0, roadSegments.Count);
+                    car.curPosX = Random.Range(-roadWidth, roadWidth);
+                    car.curPosZ = car.curSegIndex * roadSegmentLength;
+                    car.targetSpeed = Random.Range(enemySpeedMin, enemySpeedMax);
+                    car.curForwardSpeed = car.targetSpeed;
+                    car.curLaneChangeSpeed = 0;
+                    carsOnRoad.Add(car);
+                }
+            }
+
+            if (innocentModels.Count > 0) {
+                for (int i = 0; i < numInnocentModels; i++) {
+                    NPCar car = new NPCar();
+                    car.isVisible = false;
+                    car.model = innocentModels[Random.Range(0, innocentModels.Count)];
+                    car.curSegIndex = Random.Range(0, roadSegments.Count);
+                    car.curPosX = Random.Range(-screenHalfWidth, screenHalfWidth);
+                    car.curPosZ = car.curSegIndex * roadSegmentLength;
+                    car.targetSpeed = Random.Range(innocentSpeedMin, innocentSpeedMax);
+                    car.curForwardSpeed = car.targetSpeed;
+                    car.curLaneChangeSpeed = 0;
+                    carsOnRoad.Add(car);
+                    Debug.Log(car.curSegIndex + ", " + car.curPosZ + ", " + car.curForwardSpeed + ", " + car);
+                }
+            }
+        }
     }
 
     private void UpdateEnemies() {
@@ -599,6 +697,14 @@ public class RoadControl : MonoBehaviour
         }
 
         foreach (Bomb bmb in tempBombs) { activeBombPool.Remove(bmb); }
+
+        if (carsOnRoad.Count > 0) {
+            foreach (NPCar car in carsOnRoad) {
+                car.curPosZ += car.curForwardSpeed * Time.deltaTime;
+                car.curPosX += car.curLaneChangeSpeed * Time.deltaTime;
+                car.curSegIndex = (int)(car.curPosZ / roadSegmentLength);
+            }
+        }
     }
 
     private void AddRoadCurve(RoadCurve rdCurve) {
