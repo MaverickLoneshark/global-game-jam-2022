@@ -65,7 +65,7 @@ public class RoadControl : MonoBehaviour
     private enum GameState { InMenu, TrackStart, Driving, Crashing, Exploding, TrackComplete, GameOver }
     private GameState GameMode;
 
-    private bool canDrive, isOnAutopilot, isSlipping, isOffRoading, isCrashing, isSpinningOut, isExploding, isRolling;
+    private bool canDrive, isOnAutopilot, isSlipping, isOffRoading, isCrashing, isSpinningOut, isExploding, isRolling, isInvulnerable;
 
     // ENEMIES
     [SerializeField]
@@ -108,7 +108,10 @@ public class RoadControl : MonoBehaviour
     [SerializeField]
     private Text speedometerReading, timer, timerLabel, armorLabel, messageText;
     [SerializeField]
-    private string trackStartReadyMessage, trackStartGoMessage, gameOverMessage, trackCompleteMessage; 
+    private string trackStartReadyMessage, trackStartGoMessage, gameOverMessage, trackCompleteMessage;
+    [SerializeField]
+    private float crashTime, invulnTime, invulnFlashIntervalTime;
+    private float crashRefTime, invulnRefTime, invulnFlashIntervalRefTime;
     [SerializeField]
     private float speedometerRotationFactor, timeLimit;
     private float timeElapsed, lastStartTime;
@@ -127,9 +130,11 @@ public class RoadControl : MonoBehaviour
             foreach (BillboardSprite bb in billboardData) {
                 if (bb.howMany > 1) {
                     for (int i = 0; i < bb.howMany; i++) {
-                        BillboardSprite bbTemp = bb;
+                        BillboardSprite bbTemp = new BillboardSprite();
+                        bbTemp.offsetX = bb.offsetX;
+                        bbTemp.spriteType = bb.spriteType;
                         bbTemp.howMany = 1;
-                        bbTemp.segmentIndex = bb.segmentIndex + 1;
+                        bbTemp.segmentIndex = bb.segmentIndex + (i * bb.spacingInSegs);
                         billboardDataExpanded.Add(bbTemp);
                     }
                 }
@@ -155,6 +160,7 @@ public class RoadControl : MonoBehaviour
         GameMode = GameState.TrackStart;
         canDrive = false;
         isOnAutopilot = false;
+        isInvulnerable = false;
         readyMessageShown = false;
         goMessageShown = false;
         victoryMessageShown = false;
@@ -248,6 +254,39 @@ public class RoadControl : MonoBehaviour
 
                 break;
             case GameState.Crashing:
+
+                curSegmentIndex = GetCurrentRoadSegmentIndex();
+
+                ManagePlayerPosition();
+                UpdateRoad();
+
+                if (isCrashing) {
+
+                    // Run through crash animation frames
+
+                    if (Time.time - crashRefTime > crashTime) {
+                        isCrashing = false;
+                        canDrive = true;
+                        playerCarSprite.sprite = playerCarStraight;
+
+                        invulnRefTime = Time.time;
+                        invulnFlashIntervalRefTime = Time.time;
+                    }
+                }
+                else {
+
+                    if (Time.time - invulnFlashIntervalRefTime > invulnFlashIntervalTime) {
+                        playerCarSprite.enabled = !playerCarSprite.enabled;
+                        invulnFlashIntervalRefTime = Time.time;
+                    }
+
+                    if (Time.time - invulnRefTime > invulnTime) {
+                        isInvulnerable = false;
+                        playerCarSprite.enabled = true;
+                        GameMode = GameState.Driving;
+                    }
+                }
+
                 break;
             case GameState.Exploding:
                 break;
@@ -513,6 +552,36 @@ public class RoadControl : MonoBehaviour
                         car.trafficCar.position = new Vector3(x + (car.curPosX) * nearEdgeWidthScale,
                                                                     nearEdgeHeight + car.carSprite.sprite.rect.height * nearEdgeWidthScale / 2, -1.5f);
 
+                        // Check for collision with player car
+                        if (!isInvulnerable && canDrive) {
+                            if (i < (curSegmentIndex + car.model.lengthInRoadSegs / 2) && i > (curSegmentIndex - car.model.lengthInRoadSegs / 2)) {
+                                if (Mathf.Abs(car.trafficCar.position.x - playerCar.position.x) < car.model.width) {
+                                    if (i >= curSegmentIndex) {
+                                        if (car.trafficCar.position.x >= playerCar.position.x) {
+                                            playerCarSprite.sprite = playerCarCrashLeft;
+                                        }
+                                        else {
+                                            playerCarSprite.sprite = playerCarCrashRight;
+                                        }
+                                    }
+                                    else {
+                                        if (car.trafficCar.position.x >= playerCar.position.x) {
+                                            playerCarSprite.sprite = playerCarCrashRight;
+                                        }
+                                        else {
+                                            playerCarSprite.sprite = playerCarCrashLeft;
+                                        }
+                                    }
+
+                                    canDrive = false;
+                                    isCrashing = true;
+                                    isInvulnerable = true;
+                                    crashRefTime = Time.time;
+
+                                    GameMode = GameState.Crashing;
+                                }
+                            }
+                        }
                     }
                     else if (car.curSegIndex < curSegmentIndex || car.curSegIndex > curSegmentIndex + numSegsToDraw) {
 
@@ -852,26 +921,30 @@ public class RoadControl : MonoBehaviour
             else { curPlayerSpeed = 0.0f; }
         }
 
-        if (curPlayerTurning < (0.75f * -maxTurning)) {
-            playerCarSprite.sprite = playerCarHardLeft;
-        }
-        else if ((curPlayerTurning > (0.75f * -maxTurning)) && (curPlayerTurning < (0.25f * -maxTurning))) {
-            playerCarSprite.sprite = playerCarLeft;
-        }
-        else if ((curPlayerTurning >= (0.25f * -maxTurning)) && (curPlayerTurning <= (0.25f * maxTurning))) {
-            playerCarSprite.sprite = playerCarStraight;
-        }
-        else if ((curPlayerTurning > (0.25f * maxTurning)) && (curPlayerTurning < (0.75f * maxTurning))) {
-            playerCarSprite.sprite = playerCarRight;
-        }
-        else if (curPlayerTurning > (0.75f * maxTurning)) {
-            playerCarSprite.sprite = playerCarHardRight;
+        if (canDrive) {
+            if (curPlayerTurning < (0.75f * -maxTurning)) {
+                playerCarSprite.sprite = playerCarHardLeft;
+            }
+            else if ((curPlayerTurning > (0.75f * -maxTurning)) && (curPlayerTurning < (0.25f * -maxTurning))) {
+                playerCarSprite.sprite = playerCarLeft;
+            }
+            else if ((curPlayerTurning >= (0.25f * -maxTurning)) && (curPlayerTurning <= (0.25f * maxTurning))) {
+                playerCarSprite.sprite = playerCarStraight;
+            }
+            else if ((curPlayerTurning > (0.25f * maxTurning)) && (curPlayerTurning < (0.75f * maxTurning))) {
+                playerCarSprite.sprite = playerCarRight;
+            }
+            else if (curPlayerTurning > (0.75f * maxTurning)) {
+                playerCarSprite.sprite = playerCarHardRight;
+            }
         }
 
         curPlayerDrift = -(curPlayerSpeed / topSpeed) * roadSegments[curSegmentIndex].Curve * centripetal * Time.deltaTime;
         cumulativePlayerCarX = curPlayerTurning + curPlayerDrift;
         playerCar.Translate(cumulativePlayerCarX, 0, 0);
         camCurZ += curPlayerSpeed * Time.deltaTime;
+
+
     }
 
     private void ShowHUD(bool showOrNo) {

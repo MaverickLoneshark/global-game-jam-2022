@@ -1091,8 +1091,8 @@ MonoBehaviour:
   playerCarRight: {fileID: 21300000, guid: c2490eabae59ce74699a4bcc56906835, type: 3}
   playerCarHardRight: {fileID: 21300000, guid: 0baedb33ec378424ab28b534f272acda, type: 3}
   playerCarCrash: {fileID: 0}
-  playerCarCrashLeft: {fileID: 0}
-  playerCarCrashRight: {fileID: 0}
+  playerCarCrashLeft: {fileID: 21300000, guid: 24834d8179d28ee4cad13a73e0dda1eb, type: 3}
+  playerCarCrashRight: {fileID: 21300000, guid: 0baedb33ec378424ab28b534f272acda, type: 3}
   playerCarSpinoutFrames: []
   playerCarExplodeFrames: []
   playerCarRollFrames: []
@@ -1112,14 +1112,14 @@ MonoBehaviour:
   numScreenLines: 200
   screenLineHeight: 1
   roadStripSprites:
-  - {fileID: 21300000, guid: 38e17d8335a3aac4fb47a599b7b27e66, type: 3}
-  - {fileID: 21300000, guid: c88e7d8c9fcaf014f9a3b86b5a5bb98e, type: 3}
+  - {fileID: 21300000, guid: 9c3ace28161515a4392a3d9dc55048a2, type: 3}
+  - {fileID: 21300000, guid: 82c051df1f047ab42ad2f35896d2dfd0, type: 3}
   camHeight: 120
   roadLength: 20000
   roadWidth: 2000
   screenHalfWidth: 160
   roadSegmentLength: 5
-  roadStartZ: 109
+  roadStartZ: 100
   FOV: 2
   numStraightSegs: 10000
   numSegsToDraw: 500
@@ -1164,7 +1164,7 @@ MonoBehaviour:
     numEnterSegments: 100
     numHoldSegments: 500
     numExitSegments: 100
-    curveIntensity: 0.7
+    curveIntensity: 0.4
     elevationShift: 0
   - segmentInsertIndex: 4000
     numEnterSegments: 100
@@ -1176,7 +1176,7 @@ MonoBehaviour:
     numEnterSegments: 100
     numHoldSegments: 500
     numExitSegments: 100
-    curveIntensity: -0.8
+    curveIntensity: -0.2
     elevationShift: 0
   - segmentInsertIndex: 5000
     numEnterSegments: 100
@@ -1196,9 +1196,9 @@ MonoBehaviour:
   acceleration: 250
   deceleration: 350
   centripetal: 250
-  maxTurning: 0.4
-  turnIncrease: 0.7
-  hardTurnIncrease: 1
+  maxTurning: 1.5
+  turnIncrease: 1
+  hardTurnIncrease: 3
   lowTurnZeroThreshold: 0.01
   maxArmor: 0
   bombVisible: {fileID: 21300000, guid: dd9506d0d088ec044af21401d1243233, type: 3}
@@ -1217,7 +1217,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f1823409e4777f844aba244cb413c411, type: 2}
   - {fileID: 11400000, guid: dbc8ea9e4f5fe4347813835548523f1b, type: 2}
   numEnemyModels: 0
-  numInnocentModels: 20
+  numInnocentModels: 80
   enemySpeedMin: 0
   enemySpeedMax: 0
   innocentSpeedMin: 500
@@ -1229,50 +1229,30 @@ MonoBehaviour:
     spriteTransform: {fileID: 0}
     spriteRend: {fileID: 0}
     segmentIndex: 550
-    offsetX: -350
-    howMany: 1
-  - spriteType: {fileID: 21300000, guid: 1a3e41409895c5946b776eafa5db696b, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
-    segmentIndex: 560
-    offsetX: -250
-    howMany: 1
-  - spriteType: {fileID: 21300000, guid: 1a3e41409895c5946b776eafa5db696b, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
-    segmentIndex: 570
-    offsetX: -250
-    howMany: 1
+    offsetX: -500
+    howMany: 10
+    spacingInSegs: 80
   - spriteType: {fileID: 21300000, guid: 6c6597904d19ce14eba34926c6560510, type: 3}
     spriteTransform: {fileID: 0}
     spriteRend: {fileID: 0}
     segmentIndex: 550
-    offsetX: 250
-    howMany: 1
+    offsetX: 500
+    howMany: 10
+    spacingInSegs: 80
+  - spriteType: {fileID: 21300000, guid: 1a3e41409895c5946b776eafa5db696b, type: 3}
+    spriteTransform: {fileID: 0}
+    spriteRend: {fileID: 0}
+    segmentIndex: 4000
+    offsetX: -500
+    howMany: 10
+    spacingInSegs: 80
   - spriteType: {fileID: 21300000, guid: 6c6597904d19ce14eba34926c6560510, type: 3}
     spriteTransform: {fileID: 0}
     spriteRend: {fileID: 0}
-    segmentIndex: 560
-    offsetX: 250
-    howMany: 1
-  - spriteType: {fileID: 21300000, guid: 6c6597904d19ce14eba34926c6560510, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
-    segmentIndex: 570
-    offsetX: 250
-    howMany: 1
-  - spriteType: {fileID: 21300000, guid: 337a29fff36e16b4799b0e9b000f6595, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
-    segmentIndex: 620
-    offsetX: 350
-    howMany: 1
-  - spriteType: {fileID: 21300000, guid: 337a29fff36e16b4799b0e9b000f6595, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
-    segmentIndex: 400
-    offsetX: 350
-    howMany: 1
+    segmentIndex: 4000
+    offsetX: 500
+    howMany: 10
+    spacingInSegs: 80
   billboardSizeCorrectionFactor: 3
   menuBgd: {fileID: 1071796905}
   speedometer: {fileID: 2038170204}
@@ -1290,6 +1270,9 @@ MonoBehaviour:
   trackStartGoMessage: GO!!!!!!
   gameOverMessage: GAME OVER
   trackCompleteMessage: YOU HAVE THE HEART OF A WARRIOR
+  crashTime: 0.5
+  invulnTime: 2
+  invulnFlashIntervalTime: 0.05
   speedometerRotationFactor: -0.11
   timeLimit: 60
   messageDelay: 0.5

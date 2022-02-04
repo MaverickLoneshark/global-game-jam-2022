@@ -23,4 +23,6 @@ MonoBehaviour:
   spinRightFrames: []
   crashFrames: []
   explodeFrames: []
+  width: 20
+  lengthInRoadSegs: 50
   Behavior: 1
