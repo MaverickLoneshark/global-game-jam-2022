@@ -211,7 +211,7 @@ Debug.Log(debug_text);
 	void Update() {
 		if (inputMapper[(int)CONTROLS.start]) {
 			if (!holding_pause) {
-				if (!mappingMenu.activeSelf && UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex > 0) {
+				if (!mappingMenu.activeSelf && UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex > 1) {
 					pauseMenu.SetActive(!pauseMenu.activeSelf);
 					holding_pause = true;
 
