@@ -110,18 +110,6 @@ public class InputMapper : MonoBehaviour {
 
 			InputSystem.Update();
 
-			if (Keyboard.current == null) {
-				InputSystem.AddDevice<Keyboard>();
-			}
-
-			if (Gamepad.current == null) {
-				InputSystem.AddDevice<Gamepad>();
-			}
-
-			if (Joystick.current == null) {
-				InputSystem.AddDevice<Joystick>();
-			}
-
 			boundAction[0] = execute_action;
 			boundAction[1] = action_action;
 			boundAction[2] = cancel_action;
