@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -9,6 +10,8 @@ public class SplashScreen : MonoBehaviour {
 
 	InputMapper inputMapper;
 	AudioPlayer audioPlayer;
+	
+	GameObject credits;
 	GameObject programmingCredits;
 	GameObject artCredits;
 	GameObject audioCredits;
@@ -23,14 +26,19 @@ public class SplashScreen : MonoBehaviour {
 			videoPlayer.targetCamera = Camera.main;
 		}
 
+		if (!videoPlayer.clip || (videoPlayer.source == VideoSource.Url)) {
+			videoPlayer.url = Path.Combine(Application.streamingAssetsPath, "Video", "GGJ2022 Intro Video.mp4");
+		}
+
 		videoPlayer.Prepare();
 		videoPlayer.prepareCompleted += BeginVideo;
 		videoPlayer.loopPointReached += (context) => { UnityEngine.SceneManagement.SceneManager.LoadScene(1); };
 
-		programmingCredits = transform.Find("ProgrammingCredits").gameObject;
-		artCredits = transform.Find("ArtCredits").gameObject;
-		audioCredits = transform.Find("AudioCredits").gameObject;
-		producerDirectorCredits = transform.Find("ProducerDirectorCredits").gameObject;
+		credits = transform.Find("Credits").gameObject;
+		programmingCredits = credits.transform.Find("ProgrammingCredits").gameObject;
+		artCredits = credits.transform.Find("ArtCredits").gameObject;
+		audioCredits = credits.transform.Find("AudioCredits").gameObject;
+		producerDirectorCredits = credits.transform.Find("ProducerDirectorCredits").gameObject;
 	}
 
 	void Start() {
@@ -67,6 +75,7 @@ public class SplashScreen : MonoBehaviour {
 		for (int i = 0; i < (int)InputMapper.CONTROLS.COUNT; i++) {
 			if (inputMapper[i]) {
 				UnityEngine.SceneManagement.SceneManager.LoadScene(1);
+				break;
 			}
 		}
 	}

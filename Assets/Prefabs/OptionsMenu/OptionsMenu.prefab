@@ -165,6 +165,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 2757964407066529274}
     m_Modifications:
+    - target: {fileID: 415423670045253443, guid: c5653271e94629e4fb9556463e8f5907, type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 12
+      objectReference: {fileID: 0}
+    - target: {fileID: 415423670045253443, guid: c5653271e94629e4fb9556463e8f5907, type: 3}
+      propertyPath: m_FontData.m_FontStyle
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8196519876153442285, guid: c5653271e94629e4fb9556463e8f5907, type: 3}
       propertyPath: m_RootOrder
       value: 0
@@ -234,6 +242,10 @@ PrefabInstance:
     - target: {fileID: 6917447199438990229, guid: 88d13ca32cbe9d943af591c22c6307db, type: 3}
       propertyPath: m_Name
       value: OptionsButton
+      objectReference: {fileID: 0}
+    - target: {fileID: 7936449996525327049, guid: 88d13ca32cbe9d943af591c22c6307db, type: 3}
+      propertyPath: m_FontData.m_FontStyle
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8087384430481425167, guid: 88d13ca32cbe9d943af591c22c6307db, type: 3}
       propertyPath: subMenuObject

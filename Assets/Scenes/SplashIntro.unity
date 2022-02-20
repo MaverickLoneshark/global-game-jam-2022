@@ -412,11 +412,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!20 &1099269684 stripped
-Camera:
-  m_CorrespondingSourceObject: {fileID: 8622382669935419198, guid: bbf66d4f3993d344084f2f0e07e69a0f, type: 3}
-  m_PrefabInstance: {fileID: 197622456}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1784214207
 GameObject:
   m_ObjectHideFlags: 0
@@ -604,18 +599,6 @@ PrefabInstance:
     - target: {fileID: 3334620438840544077, guid: 8beec6d3bfb76f04d841ac159d93841a, type: 3}
       propertyPath: m_Name
       value: SplashScreenCanvas
-      objectReference: {fileID: 0}
-    - target: {fileID: 6434427866822069221, guid: 8beec6d3bfb76f04d841ac159d93841a, type: 3}
-      propertyPath: m_RenderMode
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 6434427866822069221, guid: 8beec6d3bfb76f04d841ac159d93841a, type: 3}
-      propertyPath: m_TargetCamera
-      value: 
-      objectReference: {fileID: 1099269684}
-    - target: {fileID: 8242563391166924726, guid: 8beec6d3bfb76f04d841ac159d93841a, type: 3}
-      propertyPath: m_Name
-      value: VideoPlayer
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 8beec6d3bfb76f04d841ac159d93841a, type: 3}
