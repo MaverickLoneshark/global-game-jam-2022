@@ -10,5 +10,5 @@ public class BillboardSprite
     public Transform spriteTransform;
     [HideInInspector]
     public SpriteRenderer spriteRend;
-    public int segmentIndex, offsetX, howMany = 1, spacingInSegs = 20;
+    public int segmentIndex, offsetX, howManyRows = 1, howManyCols = 1, rowSpacingInSegs = 20, colSpacingInPixels;
 }

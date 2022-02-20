@@ -18,4 +18,15 @@ public class NPCar
     public Transform trafficCar;
     [HideInInspector]
     public SpriteRenderer carSprite;
+    [HideInInspector]
+    public Sprite curStraightOverhead, curSlightLeft, curLeft, curHardLeft, curSlightRight, curRight, curHardRight, curUphill, curDownhill;
+    [HideInInspector]
+    public List<Sprite> curSpinLeftFrames, curSpinRightFrames, curCrashFrames, curExplodeFrames;
+    [HideInInspector]
+    public float sparkOffsetFront, sparkOffsetBack, sparkOffsetLeft, sparkOffsetRight;
+
+    public enum BehaviorState { StayingInLane, Crashing, SlowingDown, SpeedingUp, Ramming, Shooting, Exploding }
+    public BehaviorState BehaviorMode;
+
+
 }

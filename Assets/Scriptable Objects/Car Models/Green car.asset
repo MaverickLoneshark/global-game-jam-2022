@@ -12,17 +12,60 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01463bdd4c7b75c4591103a30c7e3d1a, type: 3}
   m_Name: Green car
   m_EditorClassIdentifier: 
-  straightOverhead: {fileID: 21300000, guid: 02a6388f1caa8d2408892fd46e4efdb9, type: 3}
-  left: {fileID: 21300000, guid: d51d88fd063861a4c8e69e31bae903d9, type: 3}
-  hardLeft: {fileID: 0}
-  right: {fileID: 21300000, guid: 753fb4a89ec73df48bf808e708417ae4, type: 3}
-  hardRight: {fileID: 0}
+  straightOverhead: {fileID: 21300000, guid: 5dfe0f94b8d503f4ebbf77adcd93e7d7, type: 3}
+  slightLeft: {fileID: 21300000, guid: 553f132d5cb74174fb9ac067330f1e24, type: 3}
+  left: {fileID: 21300000, guid: adf5a336856194a4e806fe3d89cb0f46, type: 3}
+  hardLeft: {fileID: 21300000, guid: 6f3a1fc086941ae4684c1b150262aca2, type: 3}
+  slightRight: {fileID: 21300000, guid: 8627d5f921c4cb64ea9a40cf3bb647fc, type: 3}
+  right: {fileID: 21300000, guid: bbc20daa3686c34449a745f753b258d9, type: 3}
+  hardRight: {fileID: 21300000, guid: 042d1ee6a56c7f14cba35f6c3a096b4d, type: 3}
   uphill: {fileID: 0}
   downhill: {fileID: 0}
-  spinLeftFrames: []
-  spinRightFrames: []
+  redStraightOverhead: {fileID: 21300000, guid: ae98a11156d1c6c4c8b1aa222368a1db, type: 3}
+  redSlightLeft: {fileID: 21300000, guid: dd66930dbefa7dc438843bc0428054c7, type: 3}
+  redLeft: {fileID: 21300000, guid: d6ae733e0cdab774fac73b19f530bb75, type: 3}
+  redHardLeft: {fileID: 21300000, guid: 8dcf00d1ab6f9d94eb50d0154c6b7858, type: 3}
+  redSlightRight: {fileID: 21300000, guid: ea158e4c88f58ec4e9804a0acca0711a, type: 3}
+  redRight: {fileID: 21300000, guid: 87b3ef9689054754e8b0aac4c08c62ae, type: 3}
+  redHardRight: {fileID: 21300000, guid: 2578fc988cc829946b6c8f14258eff40, type: 3}
+  redUphill: {fileID: 0}
+  redDownhill: {fileID: 0}
+  spinLeftFrames:
+  - {fileID: 21300000, guid: d188b35adadb5ad429a42cc3ae5b13b0, type: 3}
+  - {fileID: 21300000, guid: 7eab86ec44a98494ca0e02bf8cac3dbe, type: 3}
+  - {fileID: 21300000, guid: ed115b7f46edce249ae88f481bc437ea, type: 3}
+  - {fileID: 21300000, guid: 0857134d27a963141b4289f14620957f, type: 3}
+  - {fileID: 21300000, guid: a657486fad5e53a418393065f0bb97de, type: 3}
+  - {fileID: 21300000, guid: 5dfe0f94b8d503f4ebbf77adcd93e7d7, type: 3}
+  spinRightFrames:
+  - {fileID: 21300000, guid: d5f11226042987b44a125f8a929ea797, type: 3}
+  - {fileID: 21300000, guid: 97da0b6477b8da04dba8b2ae14b95b9c, type: 3}
+  - {fileID: 21300000, guid: 75b5060936679304f9b35656ceab2e94, type: 3}
+  - {fileID: 21300000, guid: 18dae70b012d52446b5193b99263ea11, type: 3}
+  - {fileID: 21300000, guid: 303412de2756f49469dc62c182c09d37, type: 3}
+  - {fileID: 21300000, guid: 5dfe0f94b8d503f4ebbf77adcd93e7d7, type: 3}
   crashFrames: []
   explodeFrames: []
-  width: 20
+  redSpinLeftFrames:
+  - {fileID: 21300000, guid: 53cf8bcf9d30afc4283dc7182820257c, type: 3}
+  - {fileID: 21300000, guid: 32f2c53ce6ffecf468750e90b1ecebb0, type: 3}
+  - {fileID: 21300000, guid: 28d190e75e0a4684f93849019a9f15c3, type: 3}
+  - {fileID: 21300000, guid: 7850d2a7fa022514b9371fb386093d45, type: 3}
+  - {fileID: 21300000, guid: d059e6e77a56beb43af8d96f0f460d89, type: 3}
+  - {fileID: 21300000, guid: ae98a11156d1c6c4c8b1aa222368a1db, type: 3}
+  redSpinRightFrames:
+  - {fileID: 21300000, guid: 518b26a1f1d0d7348bbf2fb1810fe941, type: 3}
+  - {fileID: 21300000, guid: e8c7e4b96949cb34f83f832bd54d757b, type: 3}
+  - {fileID: 21300000, guid: 5a0513eae54a9214ea48a3ca84f8e523, type: 3}
+  - {fileID: 21300000, guid: 3bb37414b327ca646a064b0204355c7e, type: 3}
+  - {fileID: 21300000, guid: 44c2b8260ba0dc9478606b5b6ce22d17, type: 3}
+  - {fileID: 21300000, guid: ae98a11156d1c6c4c8b1aa222368a1db, type: 3}
+  redCrashFrames: []
+  redExplodeFrames: []
+  width: 40
   lengthInRoadSegs: 50
+  sparkOffsetFront: 0
+  sparkOffsetBack: 0
+  sparkOffsetLeft: 0
+  sparkOffsetRight: 0
   Behavior: 1

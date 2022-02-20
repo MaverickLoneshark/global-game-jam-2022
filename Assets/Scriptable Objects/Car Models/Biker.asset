@@ -13,16 +13,35 @@ MonoBehaviour:
   m_Name: Biker
   m_EditorClassIdentifier: 
   straightOverhead: {fileID: 21300000, guid: 4fb35a1221bccbb49ae32931885be5c9, type: 3}
+  slightLeft: {fileID: 21300000, guid: 58a7ad52cc12fa2448d5ce8070886240, type: 3}
   left: {fileID: 21300000, guid: 58a7ad52cc12fa2448d5ce8070886240, type: 3}
-  hardLeft: {fileID: 0}
+  hardLeft: {fileID: 21300000, guid: 58a7ad52cc12fa2448d5ce8070886240, type: 3}
+  slightRight: {fileID: 21300000, guid: 15d98525891d62847ac67d7052831dab, type: 3}
   right: {fileID: 21300000, guid: 15d98525891d62847ac67d7052831dab, type: 3}
-  hardRight: {fileID: 0}
+  hardRight: {fileID: 21300000, guid: 15d98525891d62847ac67d7052831dab, type: 3}
   uphill: {fileID: 0}
   downhill: {fileID: 0}
+  redStraightOverhead: {fileID: 21300000, guid: 4fb35a1221bccbb49ae32931885be5c9, type: 3}
+  redSlightLeft: {fileID: 21300000, guid: 58a7ad52cc12fa2448d5ce8070886240, type: 3}
+  redLeft: {fileID: 21300000, guid: 58a7ad52cc12fa2448d5ce8070886240, type: 3}
+  redHardLeft: {fileID: 21300000, guid: 58a7ad52cc12fa2448d5ce8070886240, type: 3}
+  redSlightRight: {fileID: 21300000, guid: 15d98525891d62847ac67d7052831dab, type: 3}
+  redRight: {fileID: 21300000, guid: 15d98525891d62847ac67d7052831dab, type: 3}
+  redHardRight: {fileID: 21300000, guid: 15d98525891d62847ac67d7052831dab, type: 3}
+  redUphill: {fileID: 0}
+  redDownhill: {fileID: 0}
   spinLeftFrames: []
   spinRightFrames: []
   crashFrames: []
   explodeFrames: []
-  width: 20
+  redSpinLeftFrames: []
+  redSpinRightFrames: []
+  redCrashFrames: []
+  redExplodeFrames: []
+  width: 15
   lengthInRoadSegs: 50
+  sparkOffsetFront: 0
+  sparkOffsetBack: 0
+  sparkOffsetLeft: 0
+  sparkOffsetRight: 0
   Behavior: 1

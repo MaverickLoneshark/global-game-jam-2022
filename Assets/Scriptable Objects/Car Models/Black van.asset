@@ -12,17 +12,36 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01463bdd4c7b75c4591103a30c7e3d1a, type: 3}
   m_Name: Black van
   m_EditorClassIdentifier: 
-  straightOverhead: {fileID: 21300000, guid: cf34c86c174d6714f93ae9ee1c681fe8, type: 3}
-  left: {fileID: 21300000, guid: 76a0d0dfada54174ca3f00b43d774df7, type: 3}
-  hardLeft: {fileID: 0}
-  right: {fileID: 21300000, guid: 2e22939579fe89f4f8f124e2ebbf986f, type: 3}
-  hardRight: {fileID: 0}
+  straightOverhead: {fileID: 21300000, guid: edfe67eb423d4b549a9e4fa6e2fb37bd, type: 3}
+  slightLeft: {fileID: 21300000, guid: 8d888e57ce1768d4981355ce82a58a80, type: 3}
+  left: {fileID: 21300000, guid: a764787f5cc5ceb44b7519b122ca88c3, type: 3}
+  hardLeft: {fileID: 21300000, guid: e947015bb2c66db46a520479ef59844d, type: 3}
+  slightRight: {fileID: 21300000, guid: de93f43665bcabc49a28b7678e85bcae, type: 3}
+  right: {fileID: 21300000, guid: 01f9e49a968fe144dae1a78feaa21861, type: 3}
+  hardRight: {fileID: 21300000, guid: 1dd76d9c3205e714faa91bb31e15ba14, type: 3}
   uphill: {fileID: 0}
   downhill: {fileID: 0}
+  redStraightOverhead: {fileID: 21300000, guid: edfe67eb423d4b549a9e4fa6e2fb37bd, type: 3}
+  redSlightLeft: {fileID: 21300000, guid: 8d888e57ce1768d4981355ce82a58a80, type: 3}
+  redLeft: {fileID: 21300000, guid: a764787f5cc5ceb44b7519b122ca88c3, type: 3}
+  redHardLeft: {fileID: 21300000, guid: e947015bb2c66db46a520479ef59844d, type: 3}
+  redSlightRight: {fileID: 21300000, guid: de93f43665bcabc49a28b7678e85bcae, type: 3}
+  redRight: {fileID: 21300000, guid: 01f9e49a968fe144dae1a78feaa21861, type: 3}
+  redHardRight: {fileID: 21300000, guid: 1dd76d9c3205e714faa91bb31e15ba14, type: 3}
+  redUphill: {fileID: 0}
+  redDownhill: {fileID: 0}
   spinLeftFrames: []
   spinRightFrames: []
   crashFrames: []
   explodeFrames: []
-  width: 20
+  redSpinLeftFrames: []
+  redSpinRightFrames: []
+  redCrashFrames: []
+  redExplodeFrames: []
+  width: 50
   lengthInRoadSegs: 50
+  sparkOffsetFront: 0
+  sparkOffsetBack: 0
+  sparkOffsetLeft: 0
+  sparkOffsetRight: 0
   Behavior: 0

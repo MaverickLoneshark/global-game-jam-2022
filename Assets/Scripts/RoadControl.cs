@@ -7,19 +7,40 @@ using UnityEngine.UI;
 public class RoadControl : MonoBehaviour
 {
     [SerializeField]
+    private Camera mainCam;
+    [SerializeField]
     private Transform playerCar, playerCarEffect;
     private SpriteRenderer playerCarSprite, playerCarEffectSprite;
     [SerializeField]
-    private Sprite playerCarStraight, playerCarLeft, playerCarHardLeft, playerCarRight, playerCarHardRight, 
-                    playerCarCrash, playerCarCrashLeft, playerCarCrashRight;
-    public List<Sprite> playerCarSpinoutFrames, playerCarExplodeFrames, playerCarRollFrames,
-                        smokeStraightFrames, smokeLeftFrames, smokeRightFrames,
-                        sparkStraightFrames, sparkLeftFrames, sparkRightFrames,
-                        explosionFrames;
+    private Sprite playerCarStraight, playerCarSlightLeft, playerCarLeft, playerCarHardLeft, playerCarSlightRight, playerCarRight, playerCarHardRight,
+                    playerCarStraightRed, playerCarSlightLeftRed, playerCarLeftRed, playerCarHardLeftRed, playerCarSlightRightRed, playerCarRightRed, playerCarHardRightRed;
+
+    public List<Sprite> playerCarSpinoutLeftFrames, playerCarSpinoutRightFrames,
+                        playerCarCrashLeftFrames, playerCarCrashRightFrames,
+                        playerCarExplodeFrames,
+                        playerCarRollLeftFrames, playerCarRollRightFrames;
+    public List<Sprite> redPlayerCarSpinoutLeftFrames, redPlayerCarSpinoutRightFrames,
+                        redPlayerCarCrashLeftFrames, redPlayerCarCrashRightFrames,
+                        redPlayerCarExplodeFrames,
+                        redPlayerCarRollLeftFrames, redPlayerCarRollRightFrames;
+
+    private Sprite curPlayerCarStraight, curPlayerCarSlightLeft, curPlayerCarLeft, curPlayerCarHardLeft, curPlayerCarSlightRight, curPlayerCarRight, curPlayerCarHardRight;
+    private List<Sprite> curPlayerCarSpinoutLeftFrames = new List<Sprite>(), curPlayerCarSpinoutRightFrames = new List<Sprite>(),
+                        curPlayerCarCrashLeftFrames = new List<Sprite>(), curPlayerCarCrashRightFrames = new List<Sprite>(),
+                        curPlayerCarExplodeFrames = new List<Sprite>(), 
+                        curPlayerCarRollLeftFrames = new List<Sprite>(), curPlayerCarRollRightFrames = new List<Sprite>();
+                        
     [SerializeField]
     private float playerCarAnimationFrameTime;
-    private float playerCarAnimationRefTime;
+    [SerializeField, Range(0.0f, 100.0f)]
+    private float decayFrameTimeFactor;     // This is a percentage increase on the frame time for certain animations (e.g., spinning car rotation slows down)
+    [SerializeField]
+    private bool isDecayLinear;             // If true, the percentage increase is constant (not scaling up with the increasing frame time)
+    private float playerCarAnimationFrameTimeAdjusted, playerCarAnimationRefTime;
     private int playerCarAnimationIndex;
+    private bool playerIsCrashingLeft = false, playerIsCrashingRight = false, 
+                    playerIsSpinningOutLeft = false, playerIsSpinningOutRight = false,
+                    playerIsRollingLeft = false, playerIsRollingRight = false;
 
     [SerializeField, Range(0.0f, 1.0f)]
     private float steeringDeadZoneAlpha, turnFrameThreshold, hardTurnFrameThreshold;
@@ -30,6 +51,10 @@ public class RoadControl : MonoBehaviour
     private int numSegsPerRumble, numScreenLines;
     [SerializeField]
     private float screenLineHeight;
+    [SerializeField]
+    private Transform roadTopLineCoverStrip, bgd;
+    [SerializeField]
+    private float bgdOffset;
     public List<Sprite> roadStripSprites;
 
     private List<Transform> roadScreenLines = new List<Transform>();
@@ -39,14 +64,15 @@ public class RoadControl : MonoBehaviour
     [SerializeField]
     private float camHeight, roadLength, roadWidth, screenHalfWidth, roadSegmentLength, roadStartZ, FOV;    // roadwidth is actually half the width
     [SerializeField]
-    private int numStraightSegs, numSegsToDraw;
+    private int numStraightSegs, numSegsToDraw, segIndexSkipSegThreshold, numOfSegsToSkipPerPass;   // Skipping segments past a certain distance for improved performance
     private int straightSegCounter;         // This is essentially an index for determining where to add the RoadCurves
     private int rumbleStripCounter;         // Used to determine when a rumble strip is complete and the sprite should be changed for the next one
     private float curAddedSegmentZ;         // This is for keeping track of the Z position of the near edge of the next RoadSegment to add to the track
     private int curRoadStripSpriteIndex;
     private Sprite curRoadStripSprite;
-    private float distCamToScreen;
+    private float FOVInRads, distCamToScreen;
     private float nearEdgeWidthScale, farEdgeWidthScale;
+    private float curCamY;
 
     private List<RoadSegment> roadSegments = new List<RoadSegment>();
     
@@ -58,20 +84,22 @@ public class RoadControl : MonoBehaviour
     private int curSegmentIndex;
 
     [SerializeField]
-    private float topSpeed, autopilotSpeed, acceleration, deceleration, centripetal, maxTurning, turnIncrease, hardTurnIncrease, lowTurnZeroThreshold, maxArmor;
-    private float curPlayerSpeed, curPlayerTurning, curPlayerDrift, camCurZ, playerZoffset, curPlayerPosX, playerInitialY, curArmor;
+    private float topSpeed, autopilotSpeed, maxAcceleration, deceleration, centripetal, 
+                    maxTurning, turnIncrease, hardTurnIncrease, lowTurnZeroThreshold, slipThreshold, 
+                    maxArmor;
+    private float curPlayerSpeed, curPlayerAcceleration, curPlayerTurning, curPlayerDrift, curPlayerPosZ, playerZoffset, curPlayerPosX, playerInitialY, 
+                    curArmor;
 
     // GAME STATES
     private enum GameState { InMenu, TrackStart, Driving, Crashing, Exploding, TrackComplete, GameOver }
     private GameState GameMode;
 
-    private bool canDrive, isOnAutopilot, isSlipping, isOffRoading, isCrashing, isSpinningOut, isExploding, isRolling, isInvulnerable;
+    private bool canDrive, isOnAutopilot, isSlipping, isOffRoading, isCrashing, isSpinningOut, 
+                    isSmoking, isFinishedSlideSmoking, isExploding, isRolling, isInvulnerable;
 
     // ENEMIES
     [SerializeField]
     private Sprite bombVisible, bombCamo, droidHolding, droidEmptyHanded;
-    [SerializeField]
-    private SpriteRenderer scannerBgd;
     [SerializeField]
     private float droidHeight, delayBeforeDropping, bombDropSpeed, bombSizeCorrectionFactor;
 
@@ -88,6 +116,8 @@ public class RoadControl : MonoBehaviour
     private int numEnemyModels, numInnocentModels;
     [SerializeField, Range(0.0f, 2000.0f)]
     private float enemySpeedMin, enemySpeedMax, innocentSpeedMin, innocentSpeedMax, laneChangeMin, LaneChangeMax;
+    [SerializeField]
+    private float enemySlightTurnRotationThreshold, enemyTurnRotationThreshold, enemyHardTurnRotationThreshold;
 
     // BILLBOARDS and OTHER SPRITES
     public List<BillboardSprite> billboardData;
@@ -96,7 +126,40 @@ public class RoadControl : MonoBehaviour
     private List<BillboardSprite> visibleBillboards = new List<BillboardSprite>();
 
     [SerializeField]
-    private float billboardSizeCorrectionFactor;
+    private float billboardSizeCorrectionFactor, spriteBgdZ;
+
+    // SPECIAL EFFECTS
+    [SerializeField]
+    public List<Sprite> smokeFrontFrames, smokeLeftFrames, smokeRightFrames,
+                        sparkFrontFrames, sparkBackFrames, 
+                        sparkLeftFrames, sparkRightFrames,
+                        fireFrames, explosionFrames,
+                        smokeFrontFramesRed, smokeLeftFramesRed, smokeRightFramesRed,
+                        sparkFrontFramesRed, sparkBackFramesRed, 
+                        sparkLeftFramesRed, sparkRightFramesRed,
+                        fireFramesRed, explosionFramesRed;
+
+    private List<Sprite> curSmokeFrontFrames = new List<Sprite>(), curSmokeLeftFrames = new List<Sprite>(), curSmokeRightFrames = new List<Sprite>(),
+                        curSparkFrontFrames = new List<Sprite>(), curSparkBackFrames = new List<Sprite>(), 
+                        curSparkLeftFrames = new List<Sprite>(), curSparkRightFrames = new List<Sprite>(),
+                        curFireFrames = new List<Sprite>(), curExplosionFrames = new List<Sprite>();
+
+    private List<Spark> playerSparks = new List<Spark>();
+    private List<Spark> sparks = new List<Spark>();
+
+    [SerializeField]
+    private float maxBombIntensity, bombExplosionFrameTime;
+    [SerializeField]
+    private float smokeFrameTime, sparkFrameTime;
+    [SerializeField]
+    private int restartSmokeStartFrameIndex;
+    [SerializeField, Range(0.0f, 100.0f)]
+    private float percentTopSpeedSlipStartThreshold, percentTopSpeedSlipStopThreshold,
+                    percentMaxAccelerationSlipStartThreshold, percentMaxAccelerationSlipStopThreshold;
+    private float smokeFrameRefTime;
+    private int curSmokeFrameIndex;
+    [SerializeField]
+    private float playerSparkFrontOffset, playerSparkBackOffset, playerSparkLeftOffset, playerSparkRightOffset;
 
     // Menu
     [SerializeField]
@@ -104,38 +167,70 @@ public class RoadControl : MonoBehaviour
 
     // HUD
     [SerializeField]
-    private RawImage speedometer, speedometerNeedle, progressTrack, progressCar, armor, armorFrame;
+    private RawImage centerConsole, centerConsoleCover, speedometerNeedle, 
+                        progressTrack, progressCar, 
+                        armor, armorFrame, armorBarCutter;
     [SerializeField]
-    private Text speedometerReading, timer, timerLabel, armorLabel, messageText;
+    private SpriteRenderer sensorOverlay, sensorScanline;
+    public List<RawImage> warningRoadLines;
+    private List<RawImage> warningRoadBlips = new List<RawImage>();
+
+    [SerializeField]
+    private Sprite warningRoadLineSprite, warningRoadLineAlternateSprite, warningRoadCarBlipSprite, warningRoadBombBlipSprite;
+
+    [SerializeField]
+    private Text messageText;
     [SerializeField]
     private string trackStartReadyMessage, trackStartGoMessage, gameOverMessage, trackCompleteMessage;
     [SerializeField]
-    private float crashTime, invulnTime, invulnFlashIntervalTime;
+    private float crashTime, spinoutTime, invulnTime, invulnFlashIntervalTime;
+    [SerializeField]
+    private float impactThresholdForSpinout, ricochetSpeedMultiplier, ricochetDecayFactor, ricochetEndThreshold;
+    private Vector3 collisionSpeedEffect = new Vector3();
     private float crashRefTime, invulnRefTime, invulnFlashIntervalRefTime;
     [SerializeField]
-    private float speedometerRotationFactor, timeLimit;
-    private float timeElapsed, lastStartTime;
+    private float speedometerRotationFactor;
     [SerializeField]
     private float messageDelay;
     private float messageDelayRefTime;
     private bool readyMessageShown, goMessageShown, victoryMessageShown, gameOverMessageShown;
     private float progressCarInitialY;
 
+    [SerializeField]
+    private float armorMaxValue, armorBarWidth, damageIncurredByCrashing, damageIncurredBySpinoutCrash;
+    private float curArmorValue, damageTaken, armorCutterInitialX;
+
+    public List<Sprite> sensorOverlayLoadFrames, sensorOverlayUnloadFrames;
+    [SerializeField]
+    private float sensorOverlayFrameTime;
+    private float sensorOverlayFrameRefTime;
+    private int curSensorOverlayFrameIndex;
+    [SerializeField]
+    private float sensorScanLineLowestHeight, sensorScanLineDisplacement;
+    private float sensorScanLineInitialHeight;
+    private bool sensorOverlayIsActive, sensorOverlayIsLoading, sensorOverlayIsTotallyLoaded, sensorOverlayIsUnloading;
+
     // Start is called before the first frame update
     void Start()
     {
         playerCarSprite = playerCar.GetComponent<SpriteRenderer>();
+        playerCarEffectSprite = playerCarEffect.GetComponent<SpriteRenderer>();
 
         if (billboardData.Count > 0) {
             foreach (BillboardSprite bb in billboardData) {
-                if (bb.howMany > 1) {
-                    for (int i = 0; i < bb.howMany; i++) {
-                        BillboardSprite bbTemp = new BillboardSprite();
-                        bbTemp.offsetX = bb.offsetX;
-                        bbTemp.spriteType = bb.spriteType;
-                        bbTemp.howMany = 1;
-                        bbTemp.segmentIndex = bb.segmentIndex + (i * bb.spacingInSegs);
-                        billboardDataExpanded.Add(bbTemp);
+
+                if (bb.howManyRows > 1 || bb.howManyCols > 1) {
+                    for (int i = 0; i < bb.howManyRows; i++) {
+                        for (int j = 0; j < bb.howManyCols; j++) {
+                            BillboardSprite bbTemp = new BillboardSprite();
+                            bbTemp.spriteType = bb.spriteType;
+                            bbTemp.howManyRows = 1;
+                            bbTemp.howManyCols = 1;
+                            bbTemp.segmentIndex = bb.segmentIndex + (i * bb.rowSpacingInSegs);
+                            if (bb.offsetX >= 0)    { bbTemp.offsetX = bb.offsetX + (j * bb.colSpacingInPixels); }
+                            else                        { bbTemp.offsetX = bb.offsetX + (-j * bb.colSpacingInPixels); }
+                            billboardDataExpanded.Add(bbTemp);
+                        }
                     }
                 }
                 else {
@@ -146,32 +241,48 @@ public class RoadControl : MonoBehaviour
 
         curPlayerSpeed = 0;
         curPlayerTurning = 0;
-        camCurZ = 0;
-        distCamToScreen = (numScreenLines / 2f) / (Mathf.Tan(FOV / 2f));
+        curPlayerPosZ = 0;
+        FOVInRads = FOV * Mathf.PI / 180f;
+        distCamToScreen = (numScreenLines / 2f) / (Mathf.Tan(FOVInRads / 2f));
+        //curCamY = camHeight;
+        playerInitialY = playerCar.position.y;
 
-        curAddedSegmentZ = camCurZ + roadStartZ;
+        curAddedSegmentZ = curPlayerPosZ + roadStartZ;
         straightSegCounter = 0;
         rumbleStripCounter = 0;
 
         progressCarInitialY = progressCar.rectTransform.anchoredPosition.y;
 
-        scannerBgd.enabled = false;
-
         GameMode = GameState.TrackStart;
         canDrive = false;
         isOnAutopilot = false;
         isInvulnerable = false;
+        isFinishedSlideSmoking = false;
+        collisionSpeedEffect = Vector3.zero;
+
+        sensorOverlayIsActive = false;
+        sensorOverlayIsLoading = false;
+        sensorOverlayIsTotallyLoaded = false;
+        sensorOverlayIsUnloading = false;
+        sensorScanLineInitialHeight = sensorScanline.transform.position.y;
+        SetPlayerCarSprites();
+        SetEffectSprites();
+
         readyMessageShown = false;
         goMessageShown = false;
         victoryMessageShown = false;
         gameOverMessageShown = false;
 
+        curArmorValue = armorMaxValue;
+        damageTaken = 0.0f;
+
+        sparks.Clear();
+
         ShowHUD(false);
         InitializeRoadStrips();
         LoadOpeningEnemies();
         ShowHUD(true);
-
-        //Debug.Log("# road screen line sprites = " + roadScreenSprites.Count);
+        
     }
 
     // Update is called once per frame
@@ -187,13 +298,12 @@ public class RoadControl : MonoBehaviour
             case GameState.TrackStart:
 
                 menuBgd.enabled = false;
-                
 
                 curSegmentIndex = GetCurrentRoadSegmentIndex();
 
                 UpdateRoad();
                 isOnAutopilot = true;
-                ManagePlayerPosition();
+                ManageControlsAndPlayerPosition();
 
                 if (!goMessageShown) {
                     if (!readyMessageShown) {
@@ -219,11 +329,6 @@ public class RoadControl : MonoBehaviour
                         messageText.enabled = false;
                         GameMode = GameState.Driving;
 
-                        lastStartTime = Time.time;
-                        timer.text = ((int)timeLimit).ToString();
-                        timer.enabled = true;
-                        timerLabel.enabled = true;
-
                         progressTrack.enabled = true;
                         progressCar.enabled = true;
 
@@ -235,21 +340,15 @@ public class RoadControl : MonoBehaviour
                 break;
             case GameState.Driving:
 
-                timer.text = ((int)(timeLimit - (Time.time - lastStartTime))).ToString();
-
                 curSegmentIndex = GetCurrentRoadSegmentIndex();
 
-                ManagePlayerPosition();
+                ManageControlsAndPlayerPosition();
                 UpdateRoad();
 
-                if (Time.time - lastStartTime >= timeLimit) {
-                    canDrive = false;
-
+                if (curArmorValue < 0) {
                     messageDelayRefTime = Time.time;
+                    gameOverMessageShown = false;
                     GameMode = GameState.GameOver;
-                }
-                else {
-
                 }
 
                 break;
@@ -257,17 +356,70 @@ public class RoadControl : MonoBehaviour
 
                 curSegmentIndex = GetCurrentRoadSegmentIndex();
 
-                ManagePlayerPosition();
+                ManageControlsAndPlayerPosition();
                 UpdateRoad();
 
                 if (isCrashing) {
 
+                    curPlayerAcceleration = 0;
+
                     // Run through crash animation frames
+                    if (Time.time - playerCarAnimationRefTime > playerCarAnimationFrameTimeAdjusted) {
+                        if (playerIsCrashingLeft) {
+                            if (playerCarAnimationIndex < curPlayerCarCrashLeftFrames.Count - 1) {
+                                playerCarAnimationIndex++;
+                            }
+                            playerCarSprite.sprite = curPlayerCarCrashLeftFrames[playerCarAnimationIndex];
+                        }
+                        else if (playerIsCrashingRight) {
+                            if (playerCarAnimationIndex < curPlayerCarCrashRightFrames.Count - 1) {
+                                playerCarAnimationIndex++;
+                            }
+                            playerCarSprite.sprite = curPlayerCarCrashRightFrames[playerCarAnimationIndex];
+                        }
+                        else if (playerIsSpinningOutLeft) {
+                            playerCarAnimationIndex = (playerCarAnimationIndex + 1) % curPlayerCarSpinoutLeftFrames.Count;
+                            playerCarSprite.sprite = curPlayerCarSpinoutLeftFrames[playerCarAnimationIndex];
+                        }
+                        else if (playerIsSpinningOutRight) {
+                            playerCarAnimationIndex = (playerCarAnimationIndex + 1) % curPlayerCarSpinoutRightFrames.Count;
+                            playerCarSprite.sprite = curPlayerCarSpinoutRightFrames[playerCarAnimationIndex];
+                        }
+                        else if (playerIsRollingLeft) {
+                            if (playerCarAnimationIndex < curPlayerCarRollLeftFrames.Count - 1) {
+                                playerCarAnimationIndex++;
+                            }
+                            playerCarSprite.sprite = curPlayerCarRollLeftFrames[playerCarAnimationIndex];
+                        }
+                        else if (playerIsRollingRight) {
+                            if (playerCarAnimationIndex < curPlayerCarRollRightFrames.Count - 1) {
+                                playerCarAnimationIndex++;
+                            }
+                            playerCarSprite.sprite = curPlayerCarRollRightFrames[playerCarAnimationIndex];
+                        }
+
+                        if (isDecayLinear)  { playerCarAnimationFrameTimeAdjusted += (decayFrameTimeFactor * playerCarAnimationFrameTime) / 100f; }
+                        else                { playerCarAnimationFrameTimeAdjusted += (decayFrameTimeFactor * playerCarAnimationFrameTimeAdjusted) / 100f; }
+                        
+                        playerCarAnimationRefTime = Time.time;
+                    }
+
+                    if (collisionSpeedEffect.magnitude > ricochetEndThreshold)  { collisionSpeedEffect = collisionSpeedEffect * ricochetDecayFactor; }
+                    else                                                        { collisionSpeedEffect = Vector3.zero; }
 
                     if (Time.time - crashRefTime > crashTime) {
+                        playerIsCrashingLeft = false;
+                        playerIsCrashingRight = false;
+                        playerIsSpinningOutLeft = false;
+                        playerIsSpinningOutRight = false;
+                        playerIsRollingLeft = false;
+                        playerIsRollingRight = false;
                         isCrashing = false;
                         canDrive = true;
-                        playerCarSprite.sprite = playerCarStraight;
+
+                        collisionSpeedEffect = Vector3.zero;
+
+                        playerCarSprite.sprite = curPlayerCarStraight;
 
                         invulnRefTime = Time.time;
                         invulnFlashIntervalRefTime = Time.time;
@@ -294,7 +446,7 @@ public class RoadControl : MonoBehaviour
 
                 curSegmentIndex = GetCurrentRoadSegmentIndex();
 
-                ManagePlayerPosition();
+                ManageControlsAndPlayerPosition();
                 UpdateRoad();
 
                 if (!victoryMessageShown) {
@@ -320,7 +472,7 @@ public class RoadControl : MonoBehaviour
 
                 curSegmentIndex = GetCurrentRoadSegmentIndex();
 
-                ManagePlayerPosition();
+                ManageControlsAndPlayerPosition();
                 UpdateRoad();
 
                 if (!gameOverMessageShown) {
@@ -398,7 +550,7 @@ public class RoadControl : MonoBehaviour
     }
 
     private int GetCurrentRoadSegmentIndex() {
-        return ((int)(Mathf.Floor(camCurZ / roadSegmentLength) % roadSegments.Count));
+        return ((int)(Mathf.Floor(curPlayerPosZ / roadSegmentLength) % roadSegments.Count));
     }
 
     private void UpdateRoad() {
@@ -407,204 +559,388 @@ public class RoadControl : MonoBehaviour
 
         UpdateBillboards();
         UpdateEnemies();
+        UpdateSparks();
 
         float x = 0;
         float dx;
 
         int nearEdgeHeight, farEdgeHeight;
+        int absHighestScreenLineDrawn = -1, roadSegIndexOfHighestScreenLine = 0;
 
         for (int i = curSegmentIndex; i < (Mathf.Min(curSegmentIndex + numSegsToDraw - 1, numStraightSegs)); i++) {
-            nearEdgeHeight = (int)(numScreenLines - Mathf.Floor(distCamToScreen * (camHeight - roadSegments[i].Y) / (roadSegments[i].EdgeNearZ - camCurZ)));
-            farEdgeHeight = (int)(numScreenLines - Mathf.Floor(distCamToScreen * (camHeight - roadSegments[i].Y) / (roadSegments[i].EdgeFarZ - camCurZ)));
-            nearEdgeWidthScale = (distCamToScreen / (roadSegments[i].EdgeNearZ - camCurZ));
-            farEdgeWidthScale = (distCamToScreen / (roadSegments[i].EdgeFarZ - camCurZ));
+            farEdgeHeight = (int)(0.5f * numScreenLines - Mathf.Floor(distCamToScreen * (camHeight - roadSegments[i].Y) / (roadSegments[i].EdgeFarZ - curPlayerPosZ)));
+            if (farEdgeHeight > absHighestScreenLineDrawn) { roadSegIndexOfHighestScreenLine = i; }
+            absHighestScreenLineDrawn = Mathf.Max(absHighestScreenLineDrawn, farEdgeHeight);
+        }
 
-            //Debug.Log(roadSegments[i].EdgeNearZ);
-            //Debug.Log(nearEdgeHeight + ", " + farEdgeHeight);
+        //Debug.Log(absHighestScreenLineDrawn + ", " + roadSegIndexOfHighestScreenLine);
 
-            nearEdgeHeight -= 130;
-            farEdgeHeight -= 130;
+        for (int i = curSegmentIndex; i < (Mathf.Min(curSegmentIndex + numSegsToDraw - 1, numStraightSegs)); i++) {
 
-            dx = roadSegments[i].Curve;
+            int segNumDrawn = i - curSegmentIndex;
 
-            if (farEdgeHeight > highestScreenLineDrawn && farEdgeHeight < numScreenLines) {
-                if (farEdgeHeight > nearEdgeHeight) {
-                    for (int j = nearEdgeHeight; j <= farEdgeHeight; j++) {
-                        float dxFraction = (j - nearEdgeHeight) * (dx / (farEdgeHeight - nearEdgeHeight));
-                        float scaleIncreaseFromNearEdge = (j - nearEdgeHeight) * ((farEdgeWidthScale - nearEdgeWidthScale) / (farEdgeHeight - nearEdgeHeight));
-                        if (j >= 0) {
-                            roadScreenSprites[j].sprite = roadSegments[i].SpriteVariation;
-                            roadScreenLines[j].position = new Vector3(x + dxFraction,
-                                                                    roadScreenLines[j].position.y, roadScreenLines[j].position.z);
-                            roadScreenLines[j].localScale = new Vector3(nearEdgeWidthScale + scaleIncreaseFromNearEdge, 1.0f, 1.0f);
-                            //Debug.Log(roadScreenLines[j].localScale.x);
+            if (segNumDrawn >= 0) {//((segNumDrawn < segIndexSkipSegThreshold) || ((segNumDrawn > segIndexSkipSegThreshold) && (segNumDrawn % numOfSegsToSkipPerPass == 0))) {
+                nearEdgeHeight = (int)(0.5f * numScreenLines - Mathf.Floor(distCamToScreen * (camHeight - roadSegments[i].Y) / (roadSegments[i].EdgeNearZ - curPlayerPosZ)));
+                farEdgeHeight = (int)(0.5f * numScreenLines - Mathf.Floor(distCamToScreen * (camHeight - roadSegments[i].Y) / (roadSegments[i].EdgeFarZ - curPlayerPosZ)));
+                nearEdgeWidthScale = (distCamToScreen / (roadSegments[i].EdgeNearZ - curPlayerPosZ + (camHeight + roadSegments[i].Y) / Mathf.Tan(FOVInRads)));
+                farEdgeWidthScale = (distCamToScreen / (roadSegments[i].EdgeFarZ - curPlayerPosZ + (camHeight + roadSegments[i].Y) / Mathf.Tan(FOVInRads)));
+
+                //if (segNumDrawn % numOfSegsToSkipPerPass == 0){
+                //    Debug.Log(curSegmentIndex + ", " + i);
+                //}
+                //Debug.Log(roadSegments[i].EdgeNearZ);
+                //Debug.Log(nearEdgeHeight + ", " + farEdgeHeight);
+
+                //nearEdgeHeight -= 100;
+                //farEdgeHeight -= 100;
+
+                dx = roadSegments[i].Curve;
+
+                if (farEdgeHeight > highestScreenLineDrawn && farEdgeHeight < numScreenLines) {
+                    if (farEdgeHeight > nearEdgeHeight) {
+                        for (int j = nearEdgeHeight; j <= farEdgeHeight; j++) {
+                            float dxFraction = (j - nearEdgeHeight) * (dx / (farEdgeHeight - nearEdgeHeight));
+                            float scaleIncreaseFromNearEdge = (j - nearEdgeHeight) * ((farEdgeWidthScale - nearEdgeWidthScale) / (farEdgeHeight - nearEdgeHeight));
+                            if (j >= 0) {
+                                roadScreenSprites[j].sprite = roadSegments[i].SpriteVariation;
+                                roadScreenLines[j].position = new Vector3(x + dxFraction,
+                                                                        roadScreenLines[j].position.y, roadScreenLines[j].position.z);
+                                roadScreenLines[j].localScale = new Vector3(nearEdgeWidthScale + scaleIncreaseFromNearEdge, 1.0f, 1.0f);
+                                //Debug.Log(roadScreenLines[j].localScale.x);
+                            }
+                        }
+                        //Debug.Log("thick seg, screen line #" + nearEdgeHeight);
+                    }
+                    else {
+                        roadScreenSprites[farEdgeHeight].sprite = roadSegments[i].SpriteVariation;
+                        roadScreenLines[farEdgeHeight].position = new Vector3(x + dx,
+                                                                            roadScreenLines[farEdgeHeight].position.y, roadScreenLines[farEdgeHeight].position.z);
+                        roadScreenLines[farEdgeHeight].localScale = new Vector3(farEdgeWidthScale, 1.0f, 1.0f);
+                        //Debug.Log("single seg, screen line #" + nearEdgeHeight);
+                    }
+                }
+
+                if (segNumDrawn < segIndexSkipSegThreshold) {
+                    if (visibleBillboards.Count > 0) {
+                        foreach (BillboardSprite bb in visibleBillboards) {
+                            if (bb.segmentIndex == i) {
+
+                                float roadWidthOffset;
+                                if (bb.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
+                                else { roadWidthOffset = screenHalfWidth; }
+
+                                float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
+
+                                float spriteZ;
+                                float spriteElevation = nearEdgeHeight + bb.spriteType.rect.height * nearEdgeWidthScale / 2;
+                                if (nearEdgeHeight < absHighestScreenLineDrawn && roadSegIndexOfHighestScreenLine < i) { spriteZ = spriteBgdZ; }
+                                else { spriteZ = -1f; }
+
+                                bb.spriteTransform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                                bb.spriteTransform.position = new Vector3(x + (bb.offsetX) * nearEdgeWidthScale,
+                                                                            spriteElevation, spriteZ);
+                                bb.spriteRend.enabled = true;
+                            }
                         }
                     }
-                    //Debug.Log("thick seg, screen line #" + nearEdgeHeight);
-                }
-                else {
-                    roadScreenSprites[farEdgeHeight].sprite = roadSegments[i].SpriteVariation;
-                    roadScreenLines[farEdgeHeight].position = new Vector3(x + dx,
-                                                                        roadScreenLines[farEdgeHeight].position.y, roadScreenLines[farEdgeHeight].position.z);
-                    roadScreenLines[farEdgeHeight].localScale = new Vector3(farEdgeWidthScale, 1.0f, 1.0f);
-                    //Debug.Log("single seg, screen line #" + nearEdgeHeight);
-                }
-            }
 
-            if (visibleBillboards.Count > 0) {
-                foreach (BillboardSprite bb in visibleBillboards) {
-                    if (bb.segmentIndex == i) {
+                    if (visibleDroids.Count > 0) {
+                        foreach (BombDroid bd in visibleDroids) {
 
-                        float roadWidthOffset;
-                        if (bb.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
-                        else { roadWidthOffset = screenHalfWidth; }
+                            if (bd.segmentIndex == i) {
 
-                        float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
+                                float roadWidthOffset;
+                                if (bd.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
+                                else { roadWidthOffset = screenHalfWidth; }
 
-                        bb.spriteTransform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
-                        bb.spriteTransform.position = new Vector3(x + (bb.offsetX + roadWidthOffset) * nearEdgeWidthScale,
-                                                                    nearEdgeHeight + bb.spriteType.rect.height * nearEdgeWidthScale / 2, -1f);
-                        bb.spriteRend.enabled = true;
-                    }
-                }
-            }
+                                float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
 
-            if (visibleDroids.Count > 0) {
-                foreach (BombDroid bd in visibleDroids) {
+                                bd.droid.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                                bd.droid.position = new Vector3(x + (bd.offsetX) * nearEdgeWidthScale,
+                                                                            nearEdgeHeight + (droidHeight + bd.droidSprite.sprite.rect.height) * nearEdgeWidthScale / 2, -1f);
+                                bd.droidSprite.enabled = true;
+                            }
 
-                    if (bd.segmentIndex == i) {
+                            //if ((Time.time - bd.dropDelayRefTime > delayBeforeDropping) && bd.droidSprite.sprite == droidHolding) {
+                            if ((bd.segmentIndex < curSegmentIndex + 200) && bd.droidSprite.sprite == droidHolding) {
+                                bd.droidSprite.sprite = droidEmptyHanded;
+                                Bomb bmb = new Bomb();
+                                GameObject obj = new GameObject();
+                                obj.AddComponent<SpriteRenderer>().enabled = false;
+                                bmb.segmentIndex = bd.segmentIndex;
+                                bmb.singleBomb = obj.transform;
+                                bmb.offsetX = bd.offsetX;
+                                bmb.isExploding = false;
+                                bmb.explosionHeightOffset = 50f;
+                                bmb.bombSprite = obj.GetComponent<SpriteRenderer>();
+                                bmb.bombSprite.sprite = bombCamo;
+                                bmb.bombSprite.enabled = true;
 
-                        float roadWidthOffset;
-                        if (bd.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
-                        else { roadWidthOffset = screenHalfWidth; }
-
-                        float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
-
-                        bd.droid.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
-                        bd.droid.position = new Vector3(x + (bd.offsetX) * nearEdgeWidthScale,
-                                                                    nearEdgeHeight + (droidHeight + bd.droidSprite.sprite.rect.height) * nearEdgeWidthScale / 2, -1f);
-                        bd.droidSprite.enabled = true;
-                    }
-
-                    if ((Time.time - bd.dropDelayRefTime > delayBeforeDropping) && bd.droidSprite.sprite == droidHolding) {
-                        bd.droidSprite.sprite = droidEmptyHanded;
-                        Bomb bmb = new Bomb();
-                        GameObject obj = new GameObject();
-                        obj.AddComponent<SpriteRenderer>().enabled = false;
-                        bmb.segmentIndex = i + 200;
-                        bmb.singleBomb = obj.transform;
-                        bmb.offsetX = bd.offsetX;
-                        bmb.bombSprite = obj.GetComponent<SpriteRenderer>();
-                        bmb.bombSprite.sprite = bombCamo;
-                        bmb.bombSprite.enabled = true;
-
-                        activeBombPool.Add(bmb);
-                    }
-                }
-            }
-
-            if (activeBombPool.Count > 0) {
-
-                foreach (Bomb bmb in activeBombPool) {
-                    if (bmb.segmentIndex == i) {
-
-                        Debug.Log("hi");
-
-                        float roadWidthOffset;
-                        if (bmb.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
-                        else { roadWidthOffset = screenHalfWidth; }
-
-                        float sizeCorrection = nearEdgeWidthScale * bombSizeCorrectionFactor; //* billboardSizeCorrectionFactor;
-
-                        bmb.singleBomb.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
-                        bmb.singleBomb.position = new Vector3(x + (bmb.offsetX) * nearEdgeWidthScale,
-                                                                    nearEdgeHeight + bmb.bombSprite.sprite.rect.height * nearEdgeWidthScale / 2, -1.5f);
-                        bmb.bombSprite.enabled = true;
-                    }
-                }
-            }
-
-            if (carsOnRoad.Count > 0) {
-                foreach (NPCar car in carsOnRoad) {
-                    if (car.curSegIndex == i) {
-                        if (!car.isVisible) {
-                            GameObject obj = new GameObject();
-                            car.trafficCar = obj.transform;
-                            obj.AddComponent<SpriteRenderer>();
-                            car.carSprite = obj.GetComponent<SpriteRenderer>();
-                            car.carSprite.enabled = true;
-                            car.isVisible = true;
+                                activeBombPool.Add(bmb);
+                            }
                         }
+                    }
 
-                        if (car.carSprite != null) {
+                    if (activeBombPool.Count > 0) {
 
-                            Debug.Log("on the road");
-                            //if (car.curLaneChangeSpeed < 0) { car.carSprite.sprite = car.model.left; }
-                            //else if (car.curLaneChangeSpeed > 0) { car.carSprite.sprite = car.model.right; }
-                            //else { car.carSprite.sprite = car.model.straightOverhead; }
+                        foreach (Bomb bmb in activeBombPool) {
 
-                            if (car.trafficCar.position.x < -20) { car.carSprite.sprite = car.model.right; }
-                            else if (car.trafficCar.position.x > 20) { car.carSprite.sprite = car.model.left; }
-                            else { car.carSprite.sprite = car.model.straightOverhead; }
-                        }
+                            if (bmb.isExploding) {
 
-                        car.trafficCar.localScale = new Vector3(nearEdgeWidthScale * 2, nearEdgeWidthScale * 2, 1);
-                        car.trafficCar.position = new Vector3(x + (car.curPosX) * nearEdgeWidthScale,
-                                                                    nearEdgeHeight + car.carSprite.sprite.rect.height * nearEdgeWidthScale / 2, -1.5f);
+                                bmb.segmentIndex = curSegmentIndex + 5;
 
-                        // Check for collision with player car
-                        if (!isInvulnerable && canDrive) {
-                            if (i < (curSegmentIndex + car.model.lengthInRoadSegs / 2) && i > (curSegmentIndex - car.model.lengthInRoadSegs / 2)) {
-                                if (Mathf.Abs(car.trafficCar.position.x - playerCar.position.x) < car.model.width) {
-                                    if (i >= curSegmentIndex) {
-                                        if (car.trafficCar.position.x >= playerCar.position.x) {
-                                            playerCarSprite.sprite = playerCarCrashLeft;
-                                        }
-                                        else {
-                                            playerCarSprite.sprite = playerCarCrashRight;
-                                        }
+                                if (Time.time - bmb.explosionRefTime > bombExplosionFrameTime) {
+                                    if (bmb.explosionFrameIndex < curExplosionFrames.Count - 1) {
+                                        bmb.explosionFrameIndex++;
+                                        bmb.bombSprite.sprite = curExplosionFrames[bmb.explosionFrameIndex];
+                                        bmb.explosionRefTime = Time.time;
                                     }
                                     else {
-                                        if (car.trafficCar.position.x >= playerCar.position.x) {
-                                            playerCarSprite.sprite = playerCarCrashRight;
+                                        bmb.isExploding = false;
+                                    }
+                                }
+                            }
+
+                            if (bmb.segmentIndex == i) {
+
+                                float roadWidthOffset;
+                                if (bmb.offsetX < 0) { roadWidthOffset = screenHalfWidth * -1; }
+                                else { roadWidthOffset = screenHalfWidth; }
+
+                                float sizeCorrection = nearEdgeWidthScale * bombSizeCorrectionFactor; //* billboardSizeCorrectionFactor;
+
+                                bmb.singleBomb.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                                bmb.singleBomb.position = new Vector3(x + (bmb.offsetX) * nearEdgeWidthScale,
+                                                                            nearEdgeHeight + (bmb.bombSprite.sprite.rect.height + bmb.explosionHeightOffset)* nearEdgeWidthScale / 2, -1.5f);
+                                bmb.bombSprite.enabled = true;
+
+                                if (!isInvulnerable && canDrive) {
+                                    if (i == curSegmentIndex + 5 && Mathf.Abs(bmb.singleBomb.position.x - playerCar.position.x) < 30) {
+
+                                        if (bmb.singleBomb.position.x >= playerCar.position.x) {
+                                            collisionSpeedEffect = new Vector3(maxBombIntensity / (Mathf.Max(playerCar.position.x - bmb.singleBomb.position.x, -1)),
+                                                                                -curPlayerSpeed);
+                                            playerIsRollingLeft = true;
                                         }
                                         else {
-                                            playerCarSprite.sprite = playerCarCrashLeft;
+                                            collisionSpeedEffect = new Vector3(maxBombIntensity / (Mathf.Min(playerCar.position.x - bmb.singleBomb.position.x, 1)),
+                                                                                -curPlayerSpeed);
+                                            playerIsRollingRight = true;
                                         }
+
+                                        canDrive = false;
+                                        isCrashing = true;
+                                        isInvulnerable = true;
+                                        bmb.isExploding = true;
+                                        crashRefTime = Time.time;
+                                        playerCarAnimationRefTime = Time.time;
+                                        playerCarAnimationFrameTimeAdjusted = playerCarAnimationFrameTime;
+                                        playerCarAnimationIndex = 0;
+
+                                        GameMode = GameState.Crashing;
                                     }
-
-                                    canDrive = false;
-                                    isCrashing = true;
-                                    isInvulnerable = true;
-                                    crashRefTime = Time.time;
-
-                                    GameMode = GameState.Crashing;
                                 }
                             }
                         }
                     }
-                    else if (car.curSegIndex < curSegmentIndex || car.curSegIndex > curSegmentIndex + numSegsToDraw) {
 
-                        if (car.trafficCar != null) {
-                            Destroy(car.trafficCar.gameObject);
+                    if (carsOnRoad.Count > 0) {
+                        foreach (NPCar car in carsOnRoad) {
+                            if (car.curSegIndex == i) {
+                                if (!car.isVisible) {
+                                    GameObject obj = new GameObject();
+                                    car.trafficCar = obj.transform;
+                                    obj.AddComponent<SpriteRenderer>();
+                                    car.carSprite = obj.GetComponent<SpriteRenderer>();
+                                    car.carSprite.enabled = true;
+                                    car.isVisible = true;
 
-                            car.trafficCar = null;
-                            car.carSprite = null;
+                                    SetOtherCarSprites(car);
+                                }
 
-                            car.isVisible = false;
+                                if (car.trafficCar != null && car.carSprite != null) {
+
+                                    //if (car.curLaneChangeSpeed < 0) { car.carSprite.sprite = car.model.left; }
+                                    //else if (car.curLaneChangeSpeed > 0) { car.carSprite.sprite = car.model.right; }
+                                    //else { car.carSprite.sprite = car.model.straightOverhead; }
+
+                                    if (car.curSegIndex > curSegmentIndex) {
+                                        float rotationFactor = roadSegments[car.curSegIndex].Curve * 50f + 
+                                                                (playerCar.position.x - car.trafficCar.position.x) / (Mathf.Abs(car.curPosZ - curPlayerPosZ) + 10f);
+
+                                        if (Mathf.Abs(rotationFactor) < enemySlightTurnRotationThreshold) {
+                                            car.carSprite.sprite = car.curStraightOverhead;
+                                        }
+                                        else if (Mathf.Abs(rotationFactor) >= enemySlightTurnRotationThreshold && Mathf.Abs(rotationFactor) < enemyTurnRotationThreshold) {
+                                            if (rotationFactor > 0) { car.carSprite.sprite = car.curSlightRight; }
+                                            else                    { car.carSprite.sprite = car.curSlightLeft; }
+                                        }
+                                        else if (Mathf.Abs(rotationFactor) >+ enemyTurnRotationThreshold && Mathf.Abs(rotationFactor) < enemyHardTurnRotationThreshold) {
+                                            if (rotationFactor > 0) { car.carSprite.sprite = car.curRight; }
+                                            else                    { car.carSprite.sprite = car.curLeft; }
+                                        }
+                                        else if (Mathf.Abs(rotationFactor) >= enemyHardTurnRotationThreshold) {
+                                            if (rotationFactor > 0) { car.carSprite.sprite = car.curHardRight; }
+                                            else                    { car.carSprite.sprite = car.curHardLeft; }
+                                        }
+                                    }
+
+                                    //if (car.trafficCar.position.x < -20) { car.carSprite.sprite = car.model.right; }
+                                    //else if (car.trafficCar.position.x > 20) { car.carSprite.sprite = car.model.left; }
+                                    //else { car.carSprite.sprite = car.model.straightOverhead; }
+
+                                    if (car.carSprite.sprite != null) {
+                                        car.trafficCar.localScale = new Vector3(nearEdgeWidthScale * 2, nearEdgeWidthScale * 2, 1);
+                                        car.trafficCar.position = new Vector3(x + (car.curPosX) * nearEdgeWidthScale,
+                                                                                nearEdgeHeight + car.carSprite.sprite.rect.height * nearEdgeWidthScale / 2, -1.5f);
+                                    }
+
+                                    // Check for collision with player car
+                                    if (!isInvulnerable && canDrive) {
+                                        if (i < (curSegmentIndex + car.model.lengthInRoadSegs / 2) && i > (curSegmentIndex - car.model.lengthInRoadSegs / 2)) {
+                                            if (Mathf.Abs(car.trafficCar.position.x - playerCar.position.x) < car.model.width) {
+
+                                                bool triggerSpinout = new Vector2(curPlayerTurning - car.curLaneChangeSpeed,
+                                                                            curPlayerSpeed - car.curForwardSpeed).magnitude > impactThresholdForSpinout;
+                                                collisionSpeedEffect = new Vector3(car.curLaneChangeSpeed - curPlayerTurning,
+                                                                            car.curForwardSpeed - curPlayerSpeed);
+
+                                                if (triggerSpinout) { UpdateArmorValue(damageIncurredBySpinoutCrash); }
+                                                else                { UpdateArmorValue(damageIncurredByCrashing); }
+
+                                                Spark newSpark = new Spark();
+                                                GameObject obj = new GameObject();
+                                                newSpark.sparkInstance = obj.transform;
+                                                newSpark.sparkSprite = obj.AddComponent<SpriteRenderer>();
+                                                newSpark.curSparkFrameIndex = 0;
+
+                                                if (i >= curSegmentIndex) {
+                                                    if (car.trafficCar.position.x >= playerCar.position.x) {
+                                                        if (triggerSpinout) { playerIsSpinningOutLeft = true; }
+                                                        else { playerIsCrashingLeft = true; }
+
+                                                        if (Mathf.Abs(car.curPosX - playerCar.position.x) >
+                                                                Mathf.Abs(car.curSegIndex - curSegmentIndex) * roadSegmentLength) {
+                                                            newSpark.SparkSide = Spark.SparkDirection.Right;
+                                                            newSpark.sparkInstance.position = playerCar.position + new Vector3(playerSparkRightOffset, 0, 0);
+                                                            newSpark.sparkInstance.SetParent(playerCar);
+                                                            newSpark.sparkSprite.sprite = curSparkRightFrames[newSpark.curSparkFrameIndex];
+                                                        }
+                                                        else {
+                                                            newSpark.SparkSide = Spark.SparkDirection.Front;
+                                                            newSpark.sparkInstance.position = playerCar.position + new Vector3(0, playerSparkFrontOffset, 0);
+                                                            newSpark.sparkInstance.SetParent(playerCar);
+                                                            newSpark.sparkSprite.sprite = curSparkFrontFrames[newSpark.curSparkFrameIndex];
+                                                        }
+                                                    }
+                                                    else {
+                                                        if (triggerSpinout) { playerIsSpinningOutRight = true; }
+                                                        else { playerIsCrashingRight = true; }
+
+                                                        if (Mathf.Abs(car.curPosX - playerCar.position.x) >
+                                                                Mathf.Abs(car.curSegIndex - curSegmentIndex) * roadSegmentLength) {
+                                                            newSpark.SparkSide = Spark.SparkDirection.Left;
+                                                            newSpark.sparkInstance.position = playerCar.position + new Vector3(playerSparkLeftOffset, 0, 0);
+                                                            newSpark.sparkInstance.SetParent(playerCar);
+                                                            newSpark.sparkSprite.sprite = curSparkLeftFrames[newSpark.curSparkFrameIndex];
+                                                        }
+                                                        else {
+                                                            newSpark.SparkSide = Spark.SparkDirection.Front;
+                                                            newSpark.sparkInstance.position = playerCar.position + new Vector3(0, playerSparkFrontOffset, 0);
+                                                            newSpark.sparkInstance.SetParent(playerCar);
+                                                            newSpark.sparkSprite.sprite = curSparkFrontFrames[newSpark.curSparkFrameIndex];
+                                                        }
+                                                    }
+                                                }
+                                                else {
+                                                    if (car.trafficCar.position.x >= playerCar.position.x) {
+                                                        if (triggerSpinout) { playerIsSpinningOutRight = true; }
+                                                        else { playerIsCrashingRight = true; }
+
+                                                        if (Mathf.Abs(car.curPosX - playerCar.position.x) >
+                                                                Mathf.Abs(car.curSegIndex - curSegmentIndex) * roadSegmentLength) {
+                                                            newSpark.SparkSide = Spark.SparkDirection.Right;
+                                                            newSpark.sparkInstance.position = playerCar.position + new Vector3(playerSparkRightOffset, 0, 0);
+                                                            newSpark.sparkInstance.SetParent(playerCar);
+                                                            newSpark.sparkSprite.sprite = curSparkRightFrames[newSpark.curSparkFrameIndex];
+                                                        }
+                                                        else {
+                                                            newSpark.SparkSide = Spark.SparkDirection.Back;
+                                                            newSpark.sparkInstance.position = playerCar.position + new Vector3(0, playerSparkBackOffset, 0);
+                                                            newSpark.sparkInstance.SetParent(playerCar);
+                                                            newSpark.sparkSprite.sprite = curSparkBackFrames[newSpark.curSparkFrameIndex];
+                                                        }
+                                                    }
+                                                    else {
+                                                        if (triggerSpinout) { playerIsSpinningOutLeft = true; }
+                                                        else { playerIsCrashingLeft = true; }
+
+                                                        if (Mathf.Abs(car.curPosX - playerCar.position.x) >
+                                                                Mathf.Abs(car.curSegIndex - curSegmentIndex) * roadSegmentLength) {
+                                                            newSpark.SparkSide = Spark.SparkDirection.Left;
+                                                            newSpark.sparkInstance.position = playerCar.position + new Vector3(playerSparkLeftOffset, 0, 0);
+                                                            newSpark.sparkInstance.SetParent(playerCar);
+                                                            newSpark.sparkSprite.sprite = curSparkLeftFrames[newSpark.curSparkFrameIndex];
+                                                        }
+                                                        else {
+                                                            newSpark.SparkSide = Spark.SparkDirection.Back;
+                                                            newSpark.sparkInstance.position = playerCar.position + new Vector3(0, playerSparkBackOffset, 0);
+                                                            newSpark.sparkInstance.SetParent(playerCar);
+                                                            newSpark.sparkSprite.sprite = curSparkBackFrames[newSpark.curSparkFrameIndex];
+                                                        }
+                                                    }
+                                                }
+
+                                                playerSparks.Add(newSpark);
+                                                newSpark.sparkFrameRefTime = Time.time;
+
+                                                canDrive = false;
+                                                isCrashing = true;
+                                                isInvulnerable = true;
+                                                crashRefTime = Time.time;
+                                                playerCarAnimationRefTime = Time.time;
+                                                playerCarAnimationFrameTimeAdjusted = playerCarAnimationFrameTime;
+                                                playerCarAnimationIndex = 0;
+
+                                                GameMode = GameState.Crashing;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            else if (car.curSegIndex < curSegmentIndex || car.curSegIndex > curSegmentIndex + numSegsToDraw) {
+
+                                if (car.trafficCar != null) {
+                                    Destroy(car.trafficCar.gameObject);
+
+                                    car.trafficCar = null;
+                                    car.carSprite = null;
+
+                                    car.isVisible = false;
+                                }
+                            }
                         }
                     }
                 }
-            }
 
-            x += dx;
-            highestScreenLineDrawn = farEdgeHeight;
-            //Debug.Log(highestScreenLineDrawn);
+                x += dx;
+                highestScreenLineDrawn = Mathf.Max(farEdgeHeight, highestScreenLineDrawn);
+                //Debug.Log(highestScreenLineDrawn);
+            }
         }
 
         for (int i = highestScreenLineDrawn + 1; i < roadScreenLines.Count - 1; i++) {
             roadScreenLines[i].localScale = new Vector3(0.0f, 1.0f, 1.0f);
         }
+
+        //foreach (BillboardSprite bb in visibleBillboards) {
+        //    if (bb.spriteTransform.position.y < highestScreenLineDrawn) {
+        //        bb.spriteTransform.position = new Vector3(bb.spriteTransform.position.x, bb.spriteTransform.position.y, spriteBgdZ);
+        //    }
+        //}
+
+        roadTopLineCoverStrip.position = new Vector3(roadTopLineCoverStrip.position.x, highestScreenLineDrawn + 0.5f, roadTopLineCoverStrip.position.z);
+        bgd.position = new Vector3(bgd.position.x, highestScreenLineDrawn + bgdOffset + 0.5f, bgd.position.z);
 
         float progressTrackLength = progressTrack.rectTransform.rect.height;
         Vector2 pcPos = progressCar.rectTransform.anchoredPosition;
@@ -700,7 +1036,12 @@ public class RoadControl : MonoBehaviour
                     car.targetSpeed = Random.Range(enemySpeedMin, enemySpeedMax);
                     car.curForwardSpeed = car.targetSpeed;
                     car.curLaneChangeSpeed = 0;
+                    car.sparkOffsetFront = car.model.sparkOffsetFront;
+                    car.sparkOffsetBack = car.model.sparkOffsetBack;
+                    car.sparkOffsetLeft = car.model.sparkOffsetLeft;
+                    car.sparkOffsetRight = car.model.sparkOffsetRight;
                     carsOnRoad.Add(car);
+                    SetOtherCarSprites(car);
                 }
             }
 
@@ -715,8 +1056,12 @@ public class RoadControl : MonoBehaviour
                     car.targetSpeed = Random.Range(innocentSpeedMin, innocentSpeedMax);
                     car.curForwardSpeed = car.targetSpeed;
                     car.curLaneChangeSpeed = 0;
+                    car.sparkOffsetFront = car.model.sparkOffsetFront;
+                    car.sparkOffsetBack = car.model.sparkOffsetBack;
+                    car.sparkOffsetLeft = car.model.sparkOffsetLeft;
+                    car.sparkOffsetRight = car.model.sparkOffsetRight;
                     carsOnRoad.Add(car);
-                    Debug.Log(car.curSegIndex + ", " + car.curPosZ + ", " + car.curForwardSpeed + ", " + car);
+                    //Debug.Log(car.curSegIndex + ", " + car.curPosZ + ", " + car.curForwardSpeed + ", " + car);
                 }
             }
         }
@@ -767,11 +1112,212 @@ public class RoadControl : MonoBehaviour
 
         foreach (Bomb bmb in tempBombs) { activeBombPool.Remove(bmb); }
 
+        List<NPCar> carsToDelete = new List<NPCar>();
+
         if (carsOnRoad.Count > 0) {
             foreach (NPCar car in carsOnRoad) {
                 car.curPosZ += car.curForwardSpeed * Time.deltaTime;
                 car.curPosX += car.curLaneChangeSpeed * Time.deltaTime;
                 car.curSegIndex = (int)(car.curPosZ / roadSegmentLength);
+
+                //if (car.curSegIndex < curSegmentIndex || car.curSegIndex > curSegmentIndex + numSegsToDraw) {
+
+                //    if (car.trafficCar != null) {
+                //        carsOnRoad.Remove(car);
+                //        Destroy(car.trafficCar.gameObject);
+
+                //        car.trafficCar = null;
+                //        car.carSprite = null;
+
+                //        car.isVisible = false;
+                //    }
+                //}
+            }
+        }
+    }
+
+    private void SetPlayerCarSprites() {
+        if (sensorOverlayIsActive) {
+            curPlayerCarStraight = playerCarStraightRed;
+            curPlayerCarSlightLeft = playerCarSlightLeftRed;
+            curPlayerCarLeft = playerCarLeftRed;
+            curPlayerCarHardLeft = playerCarHardLeftRed;
+            curPlayerCarSlightRight = playerCarSlightRightRed;
+            curPlayerCarRight = playerCarRightRed;
+            curPlayerCarHardRight = playerCarHardRightRed;
+            
+            curPlayerCarSpinoutLeftFrames = redPlayerCarSpinoutLeftFrames;
+            curPlayerCarSpinoutRightFrames = redPlayerCarSpinoutRightFrames;
+            curPlayerCarCrashLeftFrames = redPlayerCarCrashLeftFrames;
+            curPlayerCarCrashRightFrames = redPlayerCarCrashRightFrames;
+            curPlayerCarExplodeFrames = redPlayerCarExplodeFrames;
+            curPlayerCarRollLeftFrames = redPlayerCarRollLeftFrames;
+            curPlayerCarRollRightFrames = redPlayerCarRollRightFrames;
+        }
+        else {
+            curPlayerCarStraight = playerCarStraight;
+            curPlayerCarSlightLeft = playerCarSlightLeft;
+            curPlayerCarLeft = playerCarLeft;
+            curPlayerCarHardLeft = playerCarHardLeft;
+            curPlayerCarSlightRight = playerCarSlightRight;
+            curPlayerCarRight = playerCarRight;
+            curPlayerCarHardRight = playerCarHardRight;
+            
+            curPlayerCarSpinoutLeftFrames = playerCarSpinoutLeftFrames;
+            curPlayerCarSpinoutRightFrames = playerCarSpinoutRightFrames;
+            curPlayerCarCrashLeftFrames = playerCarCrashLeftFrames;
+            curPlayerCarCrashRightFrames = playerCarCrashRightFrames;
+            curPlayerCarExplodeFrames = playerCarExplodeFrames;
+            curPlayerCarRollLeftFrames = playerCarRollLeftFrames;
+            curPlayerCarRollRightFrames = playerCarRollRightFrames;
+        }
+    }
+
+    private void SetOtherCarSprites (NPCar otherCar) {
+        if (sensorOverlayIsActive) {
+            otherCar.curStraightOverhead = otherCar.model.redStraightOverhead;
+            otherCar.curSlightLeft = otherCar.model.redSlightLeft;
+            otherCar.curLeft = otherCar.model.redLeft;
+            otherCar.curHardLeft = otherCar.model.redHardLeft;
+            otherCar.curSlightRight = otherCar.model.redSlightRight;
+            otherCar.curRight = otherCar.model.redRight;
+            otherCar.curHardRight = otherCar.model.redHardRight;
+
+            //otherCar.curSpinLeftFrames.Clear();
+            //otherCar.curSpinLeftFrames = otherCar.model.redSpinLeftFrames;
+            //otherCar.curSpinRightFrames.Clear();
+            //otherCar.curSpinRightFrames = otherCar.model.redSpinRightFrames;
+            //otherCar.curCrashFrames.Clear();
+            //otherCar.curCrashFrames = otherCar.model.redCrashFrames;
+            //otherCar.curExplodeFrames.Clear();
+            //otherCar.curExplodeFrames = otherCar.model.redExplodeFrames;
+        }
+        else {
+            otherCar.curStraightOverhead = otherCar.model.straightOverhead;
+            otherCar.curSlightLeft = otherCar.model.slightLeft;
+            otherCar.curLeft = otherCar.model.left;
+            otherCar.curHardLeft = otherCar.model.hardLeft;
+            otherCar.curSlightRight = otherCar.model.slightRight;
+            otherCar.curRight = otherCar.model.right;
+            otherCar.curHardRight = otherCar.model.hardRight;
+
+            //otherCar.curSpinLeftFrames.Clear();
+            //otherCar.curSpinLeftFrames = otherCar.model.spinLeftFrames;
+            //otherCar.curSpinRightFrames.Clear();
+            //otherCar.curSpinRightFrames = otherCar.model.spinRightFrames;
+            //otherCar.curCrashFrames.Clear();
+            //otherCar.curCrashFrames = otherCar.model.crashFrames;
+            //otherCar.curExplodeFrames.Clear();
+            //otherCar.curExplodeFrames = otherCar.model.explodeFrames;
+        }
+    }
+
+    private void SetEffectSprites() {
+        if (sensorOverlayIsActive) {
+            curSparkFrontFrames = sparkFrontFramesRed;
+            curSparkBackFrames = sparkBackFramesRed;
+            curSparkLeftFrames = sparkLeftFramesRed;
+            curSparkRightFrames = sparkRightFramesRed;
+
+            curSmokeFrontFrames = smokeFrontFramesRed;
+            curSmokeLeftFrames = smokeLeftFramesRed;
+            curSmokeRightFrames = smokeRightFramesRed;
+
+            curExplosionFrames = explosionFramesRed;
+        }
+        else {
+            curSparkFrontFrames = sparkFrontFrames;
+            curSparkBackFrames = sparkBackFrames;
+            curSparkLeftFrames = sparkLeftFrames;
+            curSparkRightFrames = sparkRightFrames;
+
+            curSmokeFrontFrames = smokeFrontFrames;
+            curSmokeLeftFrames = smokeLeftFrames;
+            curSmokeRightFrames = smokeRightFrames;
+
+            curExplosionFrames = explosionFrames;
+        }
+    }
+
+    private void UpdateSparks() {
+
+        List<Spark> playerSparksToDelete = new List<Spark>();
+
+        if (playerSparks.Count > 0) {
+            foreach (Spark spk in playerSparks) {
+                if (Time.time - spk.sparkFrameRefTime > sparkFrameTime) {
+                    switch (spk.SparkSide) {
+                        case Spark.SparkDirection.Front:
+                            if (spk.curSparkFrameIndex < curSparkFrontFrames.Count - 1)    { spk.curSparkFrameIndex++; }
+                            else                                                        { playerSparksToDelete.Add(spk); }
+                            spk.sparkSprite.sprite = curSparkFrontFrames[spk.curSparkFrameIndex];
+                            break;
+                        case Spark.SparkDirection.Back:
+                            if (spk.curSparkFrameIndex < curSparkBackFrames.Count - 1)     { spk.curSparkFrameIndex++; }
+                            else                                                        { playerSparksToDelete.Add(spk); }
+                            spk.sparkSprite.sprite = curSparkBackFrames[spk.curSparkFrameIndex];
+                            break;
+                        case Spark.SparkDirection.Left:
+                            if (spk.curSparkFrameIndex < curSparkLeftFrames.Count - 1)     { spk.curSparkFrameIndex++; }
+                            else                                                        { playerSparksToDelete.Add(spk); }
+                            spk.sparkSprite.sprite = curSparkLeftFrames[spk.curSparkFrameIndex];
+                            break;
+                        case Spark.SparkDirection.Right:
+                            if (spk.curSparkFrameIndex < curSparkRightFrames.Count - 1)    { spk.curSparkFrameIndex++; }
+                            else                                                        { playerSparksToDelete.Add(spk); }
+                            spk.sparkSprite.sprite = curSparkRightFrames[spk.curSparkFrameIndex];
+                            break;
+                    }
+
+                    spk.sparkFrameRefTime = Time.time;
+                }
+            }
+        }
+
+        if (playerSparksToDelete.Count > 0) {
+            foreach (Spark spk in playerSparksToDelete) {
+                playerSparks.Remove(spk);
+                Destroy(spk.sparkInstance.gameObject);
+            }
+        }
+
+        List<Spark> sparksToDelete = new List<Spark>();
+
+        if (sparks.Count > 0) {
+            foreach (Spark spk in sparks) {
+                if (Time.time - spk.sparkFrameRefTime > sparkFrameTime) {
+                    switch (spk.SparkSide) {
+                        case Spark.SparkDirection.Front:
+                            if (spk.curSparkFrameIndex < curSparkFrontFrames.Count - 1)    { spk.curSparkFrameIndex++; }
+                            else                                                        { sparksToDelete.Add(spk); }
+                            spk.sparkSprite.sprite = curSparkFrontFrames[spk.curSparkFrameIndex];
+                            break;
+                        case Spark.SparkDirection.Back:
+                            if (spk.curSparkFrameIndex < curSparkBackFrames.Count - 1)     { spk.curSparkFrameIndex++; }
+                            else                                                        { sparksToDelete.Add(spk); }
+                            spk.sparkSprite.sprite = curSparkBackFrames[spk.curSparkFrameIndex];
+                            break;
+                        case Spark.SparkDirection.Left:
+                            if (spk.curSparkFrameIndex < curSparkLeftFrames.Count - 1)     { spk.curSparkFrameIndex++; }
+                            else                                                        { sparksToDelete.Add(spk); }
+                            spk.sparkSprite.sprite = curSparkLeftFrames[spk.curSparkFrameIndex];
+                            break;
+                        case Spark.SparkDirection.Right:
+                            if (spk.curSparkFrameIndex < curSparkRightFrames.Count - 1)    { spk.curSparkFrameIndex++; }
+                            else                                                        { sparksToDelete.Add(spk); }
+                            spk.sparkSprite.sprite = curSparkRightFrames[spk.curSparkFrameIndex];
+                            break;
+                    }
+
+                    spk.sparkFrameRefTime = Time.time;
+                }
+            }
+        }
+
+        if (sparksToDelete.Count > 0) {
+            foreach (Spark spk in sparksToDelete) {
+                sparks.Remove(spk);
+                Destroy(spk.sparkInstance.gameObject);
             }
         }
     }
@@ -781,6 +1327,7 @@ public class RoadControl : MonoBehaviour
         float startY = roadSegments[roadSegments.Count - 1].Y;
         float endY = startY + rdCurve.elevationShift * roadSegmentLength;
         float total = rdCurve.numEnterSegments + rdCurve.numHoldSegments + rdCurve.numExitSegments;
+        float decI;
 
         for (int i = 0; i < rdCurve.numEnterSegments; i++) {
             CheckRumbleStripCounter();
@@ -788,8 +1335,9 @@ public class RoadControl : MonoBehaviour
             seg.EdgeNearZ = curAddedSegmentZ;
             IncrementSegmentsAndRumbleStrips();
             seg.EdgeFarZ = curAddedSegmentZ;
-            seg.Curve = rdCurve.curveIntensity * Mathf.Pow(i / rdCurve.numEnterSegments, 2);
-            seg.Y = startY + (endY - startY) * ((-Mathf.Cos((i / total) * Mathf.PI) / 2) + 0.5f);
+            decI = (float)i;
+            seg.Curve = EaseIn(0, rdCurve.curveIntensity, (float)(decI / rdCurve.numEnterSegments));
+            seg.Y = EaseIn(startY, endY, (float)(decI / total));
             seg.SpriteVariation = curRoadStripSprite;
             roadSegments.Add(seg);
         }
@@ -799,18 +1347,21 @@ public class RoadControl : MonoBehaviour
             seg.EdgeNearZ = curAddedSegmentZ;
             IncrementSegmentsAndRumbleStrips();
             seg.EdgeFarZ = curAddedSegmentZ;
+            decI = (float)i;
             seg.Curve = rdCurve.curveIntensity;
-            seg.Y = startY + (endY - startY) * ((-Mathf.Cos(((i + rdCurve.numEnterSegments) / total) * Mathf.PI) / 2) + 0.5f);
+            seg.Y = EaseInOut(startY, endY, ((float)((decI + rdCurve.numEnterSegments) / total)));
             seg.SpriteVariation = curRoadStripSprite;
             roadSegments.Add(seg);
         }
         for (int i = 0; i < rdCurve.numExitSegments; i++) {
+            CheckRumbleStripCounter();
             RoadSegment seg = new RoadSegment();
             seg.EdgeNearZ = curAddedSegmentZ;
             IncrementSegmentsAndRumbleStrips();
             seg.EdgeFarZ = curAddedSegmentZ;
-            seg.Curve = rdCurve.curveIntensity - rdCurve.curveIntensity * (-Mathf.Cos((i / rdCurve.numEnterSegments) * Mathf.PI) / 2 + 0.5f);
-            seg.Y = startY + (endY - startY) * ((-Mathf.Cos(((i + rdCurve.numEnterSegments + rdCurve.numHoldSegments) / total) * Mathf.PI) / 2) + 0.5f);
+            decI = (float)i;
+            seg.Curve = EaseOut(rdCurve.curveIntensity, 0, (float)(decI / rdCurve.numExitSegments));
+            seg.Y = EaseOut(startY, endY, ((float)((decI + rdCurve.numEnterSegments + rdCurve.numHoldSegments) / total)));
             seg.SpriteVariation = curRoadStripSprite;
             roadSegments.Add(seg);
         }
@@ -824,26 +1375,90 @@ public class RoadControl : MonoBehaviour
         }
     }
 
+    // EASING FUNCTIONS
+    private float EaseIn(float start, float end, float percent) {
+        return start + (end - start) * Mathf.Pow(percent, 2.0f);
+    }
+    private float EaseInOut(float start, float end, float percent) {
+        return start + (end - start) * (-Mathf.Cos(percent * Mathf.PI) / 2.0f + 0.5f);
+    }
+    private float EaseOut(float start, float end, float percent) {
+        return start + (end - start) * (1.0f - Mathf.Pow((1.0f - percent), 2.0f));
+        //return start + (end - start) * -(Mathf.Cos(Mathf.PI * percent) - 1.0f) / 2.0f;
+        //return start + (end - start) * Mathf.Sin(Mathf.PI * percent) / 2.0f;
+    }
+
     private void IncrementSegmentsAndRumbleStrips() {
         curAddedSegmentZ += roadSegmentLength;
         rumbleStripCounter++;
     }
 
-    private void ManagePlayerPosition() {
+    private void UpdateSensorModeVisuals() {
+
+        if (Time.time - sensorOverlayFrameRefTime > sensorOverlayFrameTime) {
+            if (sensorOverlayIsLoading) {
+                if (curSensorOverlayFrameIndex < sensorOverlayLoadFrames.Count - 1) {
+                    curSensorOverlayFrameIndex++;
+                    sensorOverlay.sprite = sensorOverlayLoadFrames[curSensorOverlayFrameIndex];
+                }
+                else {
+                    sensorOverlayIsLoading = false;
+                    sensorOverlayIsTotallyLoaded = true;
+                    curSensorOverlayFrameIndex = 0;
+                    sensorScanline.enabled = true;
+                }
+            }
+            else if (sensorOverlayIsTotallyLoaded) {
+                if (sensorScanline.transform.position.y > sensorScanLineLowestHeight) {
+                    sensorScanline.transform.position = sensorScanline.transform.position +
+                                                                        new Vector3(0, sensorScanLineDisplacement * Time.deltaTime, 
+                                                                        sensorScanline.transform.position.z);
+                }
+                else {
+                    sensorScanline.transform.position = new Vector2(sensorScanline.transform.position.x, sensorScanLineInitialHeight);
+                }
+            }
+            else if (sensorOverlayIsUnloading) {
+                if (curSensorOverlayFrameIndex < sensorOverlayUnloadFrames.Count - 1) {
+                    curSensorOverlayFrameIndex++;
+                    sensorOverlay.sprite = sensorOverlayUnloadFrames[curSensorOverlayFrameIndex];
+                }
+                else {
+                    sensorOverlayIsUnloading = false;
+                    sensorOverlay.enabled = false;
+                }
+            }
+
+            sensorOverlayFrameRefTime = Time.time;
+        }
+    }
+
+    private void UpdateArmorValue(float damageDone) {
+        damageTaken += damageDone;
+        curArmorValue = armorMaxValue - damageTaken;
+        float damageBarWidth = armorBarWidth * (damageTaken / armorMaxValue);
+
+        armorBarCutter.rectTransform.sizeDelta = new Vector2(damageBarWidth, armorBarCutter.rectTransform.rect.height);
+        armorBarCutter.rectTransform.anchoredPosition = new Vector2(armorCutterInitialX + armorBarWidth - (damageBarWidth / 2), 
+                                                                    armorBarCutter.rectTransform.anchoredPosition.y);
+    }
+
+    private void ManageControlsAndPlayerPosition() {
 
         float cumulativePlayerCarX;
 
         //curPlayerTurning = maxTurning;
 
-        speedometerNeedle.rectTransform.rotation = Quaternion.Euler(0, 0, curPlayerSpeed * speedometerRotationFactor);
-        speedometerReading.text = ((int)curPlayerSpeed / 12).ToString();
+        speedometerNeedle.rectTransform.rotation = Quaternion.Euler(0, 0, (curPlayerSpeed * speedometerRotationFactor) + 90f);
 
         if (canDrive) {
             if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.up]) {
-                if (curPlayerSpeed < topSpeed) { curPlayerSpeed += acceleration * Time.deltaTime; }
+                curPlayerAcceleration = maxAcceleration;
+                if (curPlayerSpeed < topSpeed) { curPlayerSpeed += maxAcceleration * Time.deltaTime; }
                 else { curPlayerSpeed = topSpeed; }
             }
             else {
+                curPlayerAcceleration = 0;
                 if (curPlayerSpeed > 0) { curPlayerSpeed -= deceleration * Time.deltaTime; }
                 else { curPlayerSpeed = 0.0f; }
             }
@@ -851,14 +1466,14 @@ public class RoadControl : MonoBehaviour
             if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.left]) {
 
                 if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action]) {
-                    playerCarSprite.sprite = playerCarHardLeft;
-                    if (curPlayerTurning > -maxTurning) {
+                    playerCarSprite.sprite = curPlayerCarHardLeft;
+                    if (curPlayerTurning > -maxTurning * 1.3f) {
                         curPlayerTurning -= hardTurnIncrease * Time.deltaTime;
                     }
                 }
                 else {
                     //playerCarSprite.sprite = playerCarLeft;
-                    if (curPlayerTurning > -maxTurning) {
+                    if (curPlayerTurning > -maxTurning * 0.9f) {
                         curPlayerTurning -= turnIncrease * Time.deltaTime;
                     }
                 }
@@ -867,13 +1482,13 @@ public class RoadControl : MonoBehaviour
 
                 if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action]) {
                     //playerCarSprite.sprite = playerCarHardRight;
-                    if (curPlayerTurning < maxTurning) {
+                    if (curPlayerTurning < maxTurning * 1.1f) {
                         curPlayerTurning += hardTurnIncrease * Time.deltaTime;
                     }
                 }
                 else {
                     //playerCarSprite.sprite = playerCarRight;
-                    if (curPlayerTurning < maxTurning) {
+                    if (curPlayerTurning < maxTurning * 0.9f) {
                         curPlayerTurning += turnIncrease * Time.deltaTime;
                     }
                 }
@@ -881,10 +1496,10 @@ public class RoadControl : MonoBehaviour
             else {
                 if (Mathf.Abs(curPlayerTurning) > lowTurnZeroThreshold) {
                     if (curPlayerTurning > 0) {
-                        curPlayerTurning -= hardTurnIncrease * 0.5f * Time.deltaTime;
+                        curPlayerTurning -= hardTurnIncrease * Time.deltaTime;
                     }
                     else {
-                        curPlayerTurning += hardTurnIncrease * 0.5f * Time.deltaTime;
+                        curPlayerTurning += hardTurnIncrease * Time.deltaTime;
                     }
                 }
                 else {
@@ -894,7 +1509,27 @@ public class RoadControl : MonoBehaviour
 
             if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.special]) {
 
-                scannerBgd.enabled = true;
+                if (!sensorOverlayIsActive) {
+
+                    sensorOverlayIsActive = true;
+
+                    SetPlayerCarSprites();
+                    if (carsOnRoad.Count > 0) {
+                        foreach (NPCar car in carsOnRoad) {
+                            if (car.isVisible) { SetOtherCarSprites(car); }
+                        }
+                    }
+
+                    SetEffectSprites();
+
+                    sensorOverlayIsLoading = true;
+                    sensorOverlayFrameRefTime = Time.time;
+                    curSensorOverlayFrameIndex = 0;
+                    sensorOverlay.sprite = sensorOverlayLoadFrames[curSensorOverlayFrameIndex];
+                    sensorOverlay.enabled = true;
+                }
+
+                UpdateSensorModeVisuals();
 
                 if (activeBombPool.Count > 0) {
                     foreach (Bomb bmb in activeBombPool) {
@@ -904,7 +1539,27 @@ public class RoadControl : MonoBehaviour
             }
             else {
 
-                scannerBgd.enabled = false;
+                if (sensorOverlayIsActive) {
+
+                    sensorOverlayIsActive = false;
+
+                    SetPlayerCarSprites();
+                    if (carsOnRoad.Count > 0) {
+                        foreach (NPCar car in carsOnRoad) {
+                            if (car.isVisible) { SetOtherCarSprites(car); }
+                        }
+                    }
+
+                    SetEffectSprites();
+
+                    sensorScanline.enabled = false;
+                    sensorOverlayIsTotallyLoaded = false;
+                    sensorOverlayIsUnloading = true;
+                    sensorOverlayFrameRefTime = Time.time;
+                    curSensorOverlayFrameIndex = 0;
+                }
+
+                if (sensorOverlayIsUnloading) { UpdateSensorModeVisuals(); }
 
                 if (activeBombPool.Count > 0) {
                     foreach (Bomb bmb in activeBombPool) {
@@ -922,42 +1577,134 @@ public class RoadControl : MonoBehaviour
         }
 
         if (canDrive) {
-            if (curPlayerTurning < (0.75f * -maxTurning)) {
-                playerCarSprite.sprite = playerCarHardLeft;
+            if (curPlayerTurning <= (-maxTurning)) {
+                playerCarSprite.sprite = curPlayerCarHardLeft;
             }
-            else if ((curPlayerTurning > (0.75f * -maxTurning)) && (curPlayerTurning < (0.25f * -maxTurning))) {
-                playerCarSprite.sprite = playerCarLeft;
+            else if ((curPlayerTurning > (-maxTurning)) && (curPlayerTurning < (0.7f * -maxTurning))) {
+                playerCarSprite.sprite = curPlayerCarLeft;
+                isFinishedSlideSmoking = false;
+            } else if ((curPlayerTurning >= (0.7f * -maxTurning)) && (curPlayerTurning < (0.3f * -maxTurning))) {
+                playerCarSprite.sprite = curPlayerCarSlightLeft;
             }
-            else if ((curPlayerTurning >= (0.25f * -maxTurning)) && (curPlayerTurning <= (0.25f * maxTurning))) {
-                playerCarSprite.sprite = playerCarStraight;
+            else if ((curPlayerTurning >= (0.3f * -maxTurning)) && (curPlayerTurning <= (0.3f * maxTurning))) {
+                playerCarSprite.sprite = curPlayerCarStraight;
             }
-            else if ((curPlayerTurning > (0.25f * maxTurning)) && (curPlayerTurning < (0.75f * maxTurning))) {
-                playerCarSprite.sprite = playerCarRight;
+            else if ((curPlayerTurning > (0.3f * maxTurning)) && (curPlayerTurning < (0.7f * maxTurning))) {
+                playerCarSprite.sprite = curPlayerCarSlightRight;
             }
-            else if (curPlayerTurning > (0.75f * maxTurning)) {
-                playerCarSprite.sprite = playerCarHardRight;
+            else if ((curPlayerTurning >= (0.7f * maxTurning)) && (curPlayerTurning < (maxTurning))) {
+                playerCarSprite.sprite = curPlayerCarRight;
+                isFinishedSlideSmoking = false;
+            }
+            else if (curPlayerTurning >= (maxTurning)) {
+                playerCarSprite.sprite = curPlayerCarHardRight;
             }
         }
 
+        curPlayerSpeed += collisionSpeedEffect.y * 10f * Time.deltaTime;
         curPlayerDrift = -(curPlayerSpeed / topSpeed) * roadSegments[curSegmentIndex].Curve * centripetal * Time.deltaTime;
-        cumulativePlayerCarX = curPlayerTurning + curPlayerDrift;
-        playerCar.Translate(cumulativePlayerCarX, 0, 0);
-        camCurZ += curPlayerSpeed * Time.deltaTime;
 
+        float slipfactor;
+        if ((Mathf.Abs(curPlayerDrift) > Mathf.Abs(curPlayerTurning)) && (Mathf.Abs(curPlayerTurning) > maxTurning)) {
+            isSlipping = true;
+            slipfactor = Mathf.Sin(Time.time * Mathf.PI * 15) * 0.1f;
+        }
+        else {
+            slipfactor = 0f;
+            isSlipping = false;
+        }
 
+        if (!isSmoking & !isFinishedSlideSmoking) {
+            if ((curPlayerSpeed < (percentTopSpeedSlipStartThreshold * topSpeed / 100f) && 
+                    curPlayerAcceleration > (percentMaxAccelerationSlipStartThreshold * maxAcceleration / 100f)) ||
+                    isSlipping ||
+                    playerCarSprite.sprite == curPlayerCarHardLeft ||
+                    playerCarSprite.sprite == curPlayerCarHardRight) {
+                isSmoking = true;
+                smokeFrameRefTime = Time.time;
+                curSmokeFrameIndex = 0;
+                if (playerCarSprite.sprite == curPlayerCarHardLeft)        { playerCarEffectSprite.sprite = curSmokeLeftFrames[curSmokeFrameIndex]; }
+                else if (playerCarSprite.sprite == curPlayerCarHardRight)  { playerCarEffectSprite.sprite = curSmokeRightFrames[curSmokeFrameIndex]; }
+                else                                                    { playerCarEffectSprite.sprite = curSmokeFrontFrames[curSmokeFrameIndex]; }
+                playerCarEffectSprite.enabled = true;
+            }
+        }
+        else {
+            if (Time.time - smokeFrameRefTime > smokeFrameTime) {
+                if (playerCarSprite.sprite == curPlayerCarStraight) {
+                    if (curSmokeFrameIndex < curSmokeFrontFrames.Count - 1){ curSmokeFrameIndex++; }
+                    else                                                {
+                        curSmokeFrameIndex = restartSmokeStartFrameIndex;
+                    }
+                    playerCarEffectSprite.sprite = curSmokeFrontFrames[curSmokeFrameIndex];
+                }
+                if (playerCarSprite.sprite == curPlayerCarHardLeft) {
+                    if (curSmokeFrameIndex < curSmokeLeftFrames.Count - 1) { curSmokeFrameIndex++; }
+                    else                                                {
+                        //curSmokeFrameIndex = restartSmokeStartFrameIndex;
+                        isFinishedSlideSmoking = true;
+                        isSmoking = false;
+                        playerCarEffectSprite.enabled = false;
+                    }
+                    playerCarEffectSprite.sprite = curSmokeLeftFrames[curSmokeFrameIndex];
+                }
+                if (playerCarSprite.sprite == curPlayerCarHardRight) {
+                    if (curSmokeFrameIndex < curSmokeRightFrames.Count - 1){ curSmokeFrameIndex++; }
+                    else                                                {
+                        //curSmokeFrameIndex = restartSmokeStartFrameIndex;
+                        isFinishedSlideSmoking = true;
+                        isSmoking = false;
+                        playerCarEffectSprite.enabled = false;
+                    }
+                    playerCarEffectSprite.sprite = curSmokeRightFrames[curSmokeFrameIndex];
+                }
+
+                smokeFrameRefTime = Time.time;
+            }
+
+            if ((curPlayerSpeed > (percentTopSpeedSlipStopThreshold * topSpeed / 100f) || 
+                    curPlayerAcceleration < (percentMaxAccelerationSlipStopThreshold * maxAcceleration / 100f)) && 
+                    playerCarSprite.sprite != curPlayerCarHardLeft && 
+                    playerCarSprite.sprite != curPlayerCarHardRight) {
+                playerCarEffectSprite.enabled = false;
+                isSmoking = false;
+            }
+        }
+
+        cumulativePlayerCarX = curPlayerTurning + curPlayerDrift + slipfactor + collisionSpeedEffect.x * Time.deltaTime;
+        if (playerCar.position.x + cumulativePlayerCarX >= 0) {
+            //playerCar.position = new Vector3(Mathf.Min(playerCar.position.x + cumulativePlayerCarX, screenHalfWidth),
+            //                            playerInitialY + roadSegments[curSegmentIndex].Y / 2,
+            //                            playerCar.position.z);
+            playerCar.position = new Vector3(Mathf.Min(playerCar.position.x + cumulativePlayerCarX, screenHalfWidth),
+                                        playerInitialY,
+                                        -1f);
+        } 
+        else {
+            //playerCar.position = new Vector3(Mathf.Max(playerCar.position.x + cumulativePlayerCarX, -screenHalfWidth),
+            //                            playerInitialY + roadSegments[curSegmentIndex].Y / 2,
+            //                            playerCar.position.z);
+            playerCar.position = new Vector3(Mathf.Max(playerCar.position.x + cumulativePlayerCarX, -screenHalfWidth),
+                                        playerInitialY,
+                                        -1f);
+        }
+        
+        curPlayerPosZ += curPlayerSpeed * Time.deltaTime;
+
+        //camHeight = 150 + roadSegments[curSegmentIndex].Y / 2;
+        //mainCam.transform.position = new Vector3(mainCam.transform.position.x, 100 + roadSegments[curSegmentIndex].Y / 2, mainCam.transform.position.z);
+        mainCam.transform.position = new Vector3(mainCam.transform.position.x, playerCar.position.y + 70, playerCar.position.z - 1f);
     }
 
     private void ShowHUD(bool showOrNo) {
         if (showOrNo) {
             armor.enabled = true;
-            armorLabel.enabled = true;
             armorFrame.enabled = true;
+            armorBarCutter.enabled = true;
+            UpdateArmorValue(0.0f);
 
-            speedometer.enabled = true;
+            centerConsole.enabled = true;
             speedometerNeedle.enabled = true;
-            speedometerReading.enabled = true;
-
-            timerLabel.enabled = true;
 
             progressCar.enabled = true;
             progressTrack.enabled = true;
@@ -967,19 +1714,27 @@ public class RoadControl : MonoBehaviour
         else {
             armor.enabled = false;
             armorFrame.enabled = false;
-            armorLabel.enabled = false;
+            armorBarCutter.enabled = false;
 
-            speedometer.enabled = false;
+            centerConsole.enabled = false;
+            centerConsoleCover.enabled = false;
             speedometerNeedle.enabled = false;
-            speedometerReading.enabled = false;
 
-            timer.enabled = false;
-            timerLabel.enabled = false;
+            if (warningRoadBlips.Count > 0) {
+                foreach (RawImage img in warningRoadBlips) { img.enabled = false; }
+            }
+
+            if (warningRoadLines.Count > 0) {
+                foreach (RawImage img in warningRoadLines) { img.enabled = false; }
+            }
 
             progressCar.enabled = false;
             progressTrack.enabled = false;
 
             messageText.enabled = false;
+
+            sensorOverlay.enabled = false;
+            sensorScanline.enabled = false;
         }
     }
 }
