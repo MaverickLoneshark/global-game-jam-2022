@@ -31,8 +31,9 @@ public class InputMapper : MonoBehaviour {
 	public int pointer_position_y { get; private set; } = 0;
 
 	private GameObject pauseMenu;
+	private GameObject specialMenu;
 	private GameObject mappingMenu;
-	private bool holding_pause = false;
+	private bool holding_start = true;
 
 	[SerializeField][Header("0: Execute Action")]
 	private InputAction execute_action = new InputAction(name: CONTROLS.execute.ToString(), binding: "<Keyboard>/z");
@@ -106,41 +107,77 @@ public class InputMapper : MonoBehaviour {
 			inputMapper = this;
 			DontDestroyOnLoad(gameObject);
 			pauseMenu = transform.Find("PauseCanvas").Find("OptionsMenu").gameObject;
+			specialMenu = transform.Find("PauseCanvas").Find("SpecialMenu").gameObject;
 			mappingMenu = pauseMenu.transform.Find("MappingMenu").gameObject;
+		}
+	}
 
-			InputSystem.Update();
+	// Start is called before the first frame update
+	void Start() {
+		InputSystem.FlushDisconnectedDevices();
+		InputSystem.Update();
 
-			if (Keyboard.current == null) {
-				InputSystem.AddDevice<Keyboard>();
-			}
+		InputSystem.onDeviceChange += (device, change) => {
+			switch (change) {
+				case InputDeviceChange.Reconnected:
+				case InputDeviceChange.Added:
+					InputSystem.ResetDevice(device);
 
-			if (Gamepad.current == null) {
-				InputSystem.AddDevice<Gamepad>();
-			}
-
-			if (Joystick.current == null) {
-				InputSystem.AddDevice<Joystick>();
-			}
-
-			boundAction[0] = execute_action;
-			boundAction[1] = action_action;
-			boundAction[2] = cancel_action;
-			boundAction[3] = special_action;
-			boundAction[4] = alternative_action;
-			boundAction[5] = extra_action;
-			boundAction[6] = start_action;
-			boundAction[7] = select_action;
-			boundAction[8] = up_action;
-			boundAction[9] = down_action;
-			boundAction[10] = left_action;
-			boundAction[11] = right_action;
-
-			for (int i = 0; i < (int)CONTROLS.COUNT; i++) {
-				boundAction[i].performed += (context) => {
-					try {
-						pressed[(int)name2Control[context.action.name]] = context.ReadValueAsButton();
+					if (!device.enabled) {
+						InputSystem.EnableDevice(device);
 					}
-					catch {
+				break;
+
+				default:
+				break;
+			}
+		};
+
+#if DEBUG
+Debug.Log(InputSystem.devices.Count + " input device(s) detected");
+		string debug_text;
+		UnityEngine.InputSystem.Utilities.ReadOnlyArray<InputControl> all_controls;
+
+		foreach (InputDevice device in InputSystem.devices) {
+			debug_text = device.displayName + " detected: " + device.description + '\n' +
+				device.usages + '\n' +
+				device.valueType + '\n';
+
+			switch (device.valueType) {
+				default:
+					all_controls = device.allControls;
+
+					for (int i = 0; i < all_controls.Count; i++) {
+						debug_text += '\t' + all_controls[i].displayName + '\n';
+					}
+				break;
+			}
+
+Debug.Log(debug_text);
+		}
+#endif
+
+		boundAction[0] = execute_action;
+		boundAction[1] = action_action;
+		boundAction[2] = cancel_action;
+		boundAction[3] = special_action;
+		boundAction[4] = alternative_action;
+		boundAction[5] = extra_action;
+		boundAction[6] = start_action;
+		boundAction[7] = select_action;
+		boundAction[8] = up_action;
+		boundAction[9] = down_action;
+		boundAction[10] = left_action;
+		boundAction[11] = right_action;
+
+		for (int i = 0; i < (int)CONTROLS.COUNT; i++) {
+			boundAction[i].performed += (context) => {
+				try {
+					pressed[(int)name2Control[context.action.name]] = context.ReadValueAsButton();
+				}
+				catch {
+					if ((context.control.GetType() == typeof(UnityEngine.InputSystem.Controls.DpadControl)) ||
+						(context.control.GetType() == typeof(UnityEngine.InputSystem.Controls.StickControl))) {
 						Vector2 deltaVector = context.ReadValue<Vector2>();
 
 						switch (name2Control[context.action.name]) {
@@ -164,56 +201,27 @@ public class InputMapper : MonoBehaviour {
 							break;
 						}
 					}
-				};
-				
-				boundAction[i].canceled += (context) => {
-					pressed[(int)name2Control[context.action.name]] = false;
-				};
-
-				boundAction[i].Enable();
-			}
-
-			pointer_move.performed += context => OnPointerMove(context);
-			pointer_move.Enable();
-
-#if DEBUG
-Debug.Log(InputSystem.devices.Count + " input device(s) detected");
-			string debug_text;
-			UnityEngine.InputSystem.Utilities.ReadOnlyArray<InputControl> all_controls;
-
-			foreach (InputDevice device in InputSystem.devices) {
-				debug_text = device.displayName + " detected: " + device.description + '\n' +
-					device.usages + '\n' +
-					device.valueType + '\n';
-
-				switch (device.valueType) {
-					default:
-						all_controls = device.allControls;
-
-						for (int i = 0; i < all_controls.Count; i++) {
-							debug_text += '\t' + all_controls[i].displayName + '\n';
-						}
-					break;
 				}
+			};
+				
+			boundAction[i].canceled += (context) => {
+				pressed[(int)name2Control[context.action.name]] = false;
+			};
 
-Debug.Log(debug_text);
-			}
-#endif
+			boundAction[i].Enable();
 		}
-	}
 
-	// Start is called before the first frame update
-	void Start() {
-		//
+		pointer_move.performed += context => OnPointerMove(context);
+		pointer_move.Enable();
 	}
 
 	// Update is called once per frame
 	void Update() {
 		if (inputMapper[(int)CONTROLS.start]) {
-			if (!holding_pause) {
-				if (!mappingMenu.activeSelf && UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex > 0) {
-					pauseMenu.SetActive(!pauseMenu.activeSelf);
-					holding_pause = true;
+			if (!holding_start) {
+				if (!mappingMenu.activeSelf && UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex > 1) {
+					TogglePauseMenu();
+					holding_start = true;
 
 					if (!pauseMenu.activeSelf) {
 						Time.timeScale = 1.0f;
@@ -222,8 +230,17 @@ Debug.Log(debug_text);
 			}
 		}
 		else {
-			holding_pause = false;
+			holding_start = false;
 		}
+	}
+
+	public void TogglePauseMenu() {
+		pauseMenu.SetActive(!pauseMenu.activeSelf);
+		specialMenu.SetActive(pauseMenu.activeSelf);
+	}
+
+	public void HoldStart() {
+		holding_start = true;
 	}
 
 	private void OnPointerMove(InputAction.CallbackContext context) {

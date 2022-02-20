@@ -6,7 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
+    path: Assets/Scenes/SplashIntro.unity
+    guid: 35a5848c27113774cbc5b16d3b18981d
+  - enabled: 1
+    path: Assets/Scenes/TitleScreen.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1
     path: Assets/Scenes/Superscale Racer.unity
