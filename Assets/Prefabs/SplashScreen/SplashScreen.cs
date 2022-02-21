@@ -26,7 +26,7 @@ public class SplashScreen : MonoBehaviour {
 			videoPlayer.targetCamera = Camera.main;
 		}
 
-		if (!videoPlayer.clip || (videoPlayer.source == VideoSource.Url)) {
+		if (!File.Exists(videoPlayer.url)) {
 			videoPlayer.url = Path.Combine(Application.streamingAssetsPath, "Video", "GGJ2022 Intro Video.mp4");
 		}
 
