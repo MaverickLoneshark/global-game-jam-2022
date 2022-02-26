@@ -38,10 +38,11 @@ MonoBehaviour:
   redSpinRightFrames: []
   redCrashFrames: []
   redExplodeFrames: []
-  width: 50
-  lengthInRoadSegs: 50
+  width: 40
+  lengthInRoadSegs: 30
   sparkOffsetFront: 0
   sparkOffsetBack: 0
   sparkOffsetLeft: 0
   sparkOffsetRight: 0
+  isSensorDetectable: 0
   Behavior: 0

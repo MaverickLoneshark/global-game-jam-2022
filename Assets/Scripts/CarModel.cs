@@ -12,6 +12,7 @@ public class CarModel : ScriptableObject
     public float width;
     public float lengthInRoadSegs;
     public float sparkOffsetFront, sparkOffsetBack, sparkOffsetLeft, sparkOffsetRight;
+    public bool isSensorDetectable;
     
     [HideInInspector]
     public enum BehaviorType { Simple, LaneChanger, Attacker }

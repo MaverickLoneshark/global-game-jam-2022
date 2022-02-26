@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 [System.Serializable]
 public class NPCar
@@ -16,6 +17,8 @@ public class NPCar
     public float curForwardSpeed, curLaneChangeSpeed, curPosX, curPosZ;
     [HideInInspector]
     public Transform trafficCar;
+    [HideInInspector]
+    public RawImage blip;
     [HideInInspector]
     public SpriteRenderer carSprite;
     [HideInInspector]

@@ -85,7 +85,7 @@ public class RoadControl : MonoBehaviour
 
     [SerializeField]
     private float topSpeed, autopilotSpeed, maxAcceleration, deceleration, centripetal, 
-                    maxTurning, turnIncrease, hardTurnIncrease, lowTurnZeroThreshold, slipThreshold, 
+                    maxTurning, turnIncrease, hardTurnIncrease, lowTurnZeroThreshold, turnDriftToCenterFactor, slipThreshold, 
                     maxArmor;
     private float curPlayerSpeed, curPlayerAcceleration, curPlayerTurning, curPlayerDrift, curPlayerPosZ, playerZoffset, curPlayerPosX, playerInitialY, 
                     curArmor;
@@ -172,11 +172,6 @@ public class RoadControl : MonoBehaviour
                         armor, armorFrame, armorBarCutter;
     [SerializeField]
     private SpriteRenderer sensorOverlay, sensorScanline;
-    public List<RawImage> warningRoadLines;
-    private List<RawImage> warningRoadBlips = new List<RawImage>();
-
-    [SerializeField]
-    private Sprite warningRoadLineSprite, warningRoadLineAlternateSprite, warningRoadCarBlipSprite, warningRoadBombBlipSprite;
 
     [SerializeField]
     private Text messageText;
@@ -208,7 +203,34 @@ public class RoadControl : MonoBehaviour
     [SerializeField]
     private float sensorScanLineLowestHeight, sensorScanLineDisplacement;
     private float sensorScanLineInitialHeight;
-    private bool sensorOverlayIsActive, sensorOverlayIsLoading, sensorOverlayIsTotallyLoaded, sensorOverlayIsUnloading;
+    private bool sensorOverlayWasJustActivated, sensorOverlayIsActive, sensorOverlayIsLoading, sensorOverlayIsTotallyLoaded, sensorOverlayIsUnloading;
+    [SerializeField]
+    private float sensorDetectableDepthZ, sensorUndetectableDepthZ;     // Depth (z) values for cars and billboards that are detectable and not
+
+    [SerializeField]
+    private Transform warningRoadLinesParent;
+    public List<RawImage> warningRoadLines;
+    //private List<RawImage> warningRoadBlips = new List<RawImage>();
+
+    [SerializeField]
+    private Sprite warningRoadLineSprite, warningRoadLineAlternateSprite;
+    [SerializeField]
+    private Texture warningRoadCarBlipSprite, warningRoadBombBlipSprite;
+    public List<Texture> centerConsoleCoverFrames;
+
+    [SerializeField]
+    private float sensorMaxPower, sensorDrainRate, sensorRechargeRate;
+    private float curSensorPower;
+    [SerializeField, Range(0.0f, 100.0f)]
+    private float sensorLowPowerPercentageOfMax;
+    private int curCenterConsoleFrameIndex, curWarningRoadLineIndex;
+    private float warningRoadLinesInitialX, warningRoadLineBaseWidth, roadLineToWarningRoadLineConversion;
+    public List<RawImage> sensorBars;
+    [SerializeField]
+    public Color sensorBarChargingColor, sensorBarFullyChargedColor, sensorBarLowPowerColor;
+    [SerializeField]
+    private float bombBlipProjectionFlashTime, bombBlipProjectionRoadOffsetY, blipSizeIncreaseFactor;
+    private int bombBlipBaseWidth, bombBlipBaseHeight;
 
     // Start is called before the first frame update
     void Start()
@@ -260,6 +282,7 @@ public class RoadControl : MonoBehaviour
         isFinishedSlideSmoking = false;
         collisionSpeedEffect = Vector3.zero;
 
+        sensorOverlayWasJustActivated = false;
         sensorOverlayIsActive = false;
         sensorOverlayIsLoading = false;
         sensorOverlayIsTotallyLoaded = false;
@@ -267,6 +290,15 @@ public class RoadControl : MonoBehaviour
         sensorScanLineInitialHeight = sensorScanline.transform.position.y;
         SetPlayerCarSprites();
         SetEffectSprites();
+
+        curSensorPower = sensorMaxPower;
+
+        curWarningRoadLineIndex = 0;
+        warningRoadLinesInitialX = warningRoadLines[0].rectTransform.anchoredPosition.x;
+        warningRoadLineBaseWidth = warningRoadLines[0].rectTransform.rect.width;
+        roadLineToWarningRoadLineConversion = ((float)warningRoadLines.Count / (float)numScreenLines);
+        bombBlipBaseWidth = warningRoadBombBlipSprite.width * (int)blipSizeIncreaseFactor;
+        bombBlipBaseHeight = warningRoadBombBlipSprite.height * (int)blipSizeIncreaseFactor;
 
         readyMessageShown = false;
         goMessageShown = false;
@@ -620,6 +652,17 @@ public class RoadControl : MonoBehaviour
                     }
                 }
 
+                if ((Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion) == curWarningRoadLineIndex) && 
+                        (curWarningRoadLineIndex < warningRoadLines.Count - 1)) {
+
+                    Vector2 lineBasePos = warningRoadLines[curWarningRoadLineIndex].rectTransform.anchoredPosition;
+                    warningRoadLines[curWarningRoadLineIndex].rectTransform.anchoredPosition = 
+                                                    new Vector2(warningRoadLinesInitialX + x * roadLineToWarningRoadLineConversion, lineBasePos.y);
+                    warningRoadLines[curWarningRoadLineIndex].rectTransform.sizeDelta = 
+                                                    new Vector2(warningRoadLineBaseWidth * nearEdgeWidthScale, 1.0f);
+                    curWarningRoadLineIndex++;
+                }
+
                 if (segNumDrawn < segIndexSkipSegThreshold) {
                     if (visibleBillboards.Count > 0) {
                         foreach (BillboardSprite bb in visibleBillboards) {
@@ -666,6 +709,27 @@ public class RoadControl : MonoBehaviour
                                 bd.droidSprite.sprite = droidEmptyHanded;
                                 Bomb bmb = new Bomb();
                                 GameObject obj = new GameObject();
+
+                                GameObject imgObj = new GameObject();
+                                RawImage img = imgObj.AddComponent<RawImage>();
+                                imgObj.transform.SetParent(warningRoadLinesParent);
+                                bmb.blip = img;
+                                bmb.blip.texture = warningRoadBombBlipSprite;
+                                bmb.blip.rectTransform.anchoredPosition = warningRoadLines[0].rectTransform.anchoredPosition;
+                                bmb.blip.rectTransform.sizeDelta = Vector2.zero;
+                                bmb.blip.enabled = true;
+
+                                GameObject imgProjObj = new GameObject();
+                                RawImage imgProj = imgProjObj.AddComponent<RawImage>();
+                                imgProjObj.transform.SetParent(warningRoadLinesParent);
+                                bmb.blipProjection = imgProj;
+                                bmb.blipProjection.texture = warningRoadBombBlipSprite;
+                                bmb.blipProjection.rectTransform.anchoredPosition = warningRoadLines[0].rectTransform.anchoredPosition +
+                                                                                            new Vector2(0.0f, bombBlipProjectionRoadOffsetY);
+                                bmb.blipProjection.rectTransform.sizeDelta = Vector2.zero;
+                                bmb.blipProjection.enabled = true;
+                                bmb.blipProjectionFlashRefTime = Time.time;
+
                                 obj.AddComponent<SpriteRenderer>().enabled = false;
                                 bmb.segmentIndex = bd.segmentIndex;
                                 bmb.singleBomb = obj.transform;
@@ -714,6 +778,24 @@ public class RoadControl : MonoBehaviour
                                                                             nearEdgeHeight + (bmb.bombSprite.sprite.rect.height + bmb.explosionHeightOffset)* nearEdgeWidthScale / 2, -1.5f);
                                 bmb.bombSprite.enabled = true;
 
+                                bmb.blip.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
+                                int height = Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion);
+                                if (height < warningRoadLines.Count && height > 0) {
+                                    float blipY =
+                                        warningRoadLines[height].rectTransform.anchoredPosition.y;
+                                    bmb.blip.rectTransform.anchoredPosition = 
+                                        new Vector2(warningRoadLinesInitialX + (bmb.offsetX * nearEdgeWidthScale + x) * roadLineToWarningRoadLineConversion,
+                                                                                            blipY);
+                                }
+                                bmb.blipProjection.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
+                                bmb.blipProjection.rectTransform.anchoredPosition = warningRoadLines[0].rectTransform.anchoredPosition +
+                                    new Vector2(bmb.offsetX * roadLineToWarningRoadLineConversion, bombBlipProjectionRoadOffsetY);
+
+                                if (Time.time - bmb.blipProjectionFlashRefTime > bombBlipProjectionFlashTime) {
+                                    bmb.blipProjection.enabled = !bmb.blipProjection.enabled;
+                                    bmb.blipProjectionFlashRefTime = Time.time;
+                                }
+
                                 if (!isInvulnerable && canDrive) {
                                     if (i == curSegmentIndex + 5 && Mathf.Abs(bmb.singleBomb.position.x - playerCar.position.x) < 30) {
 
@@ -753,6 +835,15 @@ public class RoadControl : MonoBehaviour
                                     obj.AddComponent<SpriteRenderer>();
                                     car.carSprite = obj.GetComponent<SpriteRenderer>();
                                     car.carSprite.enabled = true;
+
+                                    GameObject imgObj = new GameObject();
+                                    RawImage img = imgObj.AddComponent<RawImage>();
+                                    imgObj.transform.SetParent(warningRoadLinesParent);
+                                    car.blip = img;
+                                    car.blip.texture = warningRoadCarBlipSprite;
+                                    car.blip.rectTransform.anchoredPosition = warningRoadLines[0].rectTransform.anchoredPosition;
+                                    car.blip.rectTransform.sizeDelta = Vector2.zero;
+
                                     car.isVisible = true;
 
                                     SetOtherCarSprites(car);
@@ -790,11 +881,24 @@ public class RoadControl : MonoBehaviour
                                     //else { car.carSprite.sprite = car.model.straightOverhead; }
 
                                     if (car.carSprite.sprite != null) {
+                                        float depthZ;
+                                        if (sensorOverlayIsActive && !car.model.isSensorDetectable) { depthZ = sensorUndetectableDepthZ; }
+                                        else                                                        { depthZ = sensorDetectableDepthZ; }
+
                                         car.trafficCar.localScale = new Vector3(nearEdgeWidthScale * 2, nearEdgeWidthScale * 2, 1);
                                         car.trafficCar.position = new Vector3(x + (car.curPosX) * nearEdgeWidthScale,
-                                                                                nearEdgeHeight + car.carSprite.sprite.rect.height * nearEdgeWidthScale / 2, -1.5f);
+                                                                                nearEdgeHeight + car.carSprite.sprite.rect.height * nearEdgeWidthScale / 2, depthZ);
                                     }
 
+                                    car.blip.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
+                                    int height = Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion);
+                                    if (height < warningRoadLines.Count && height >= 0) {
+                                        float blipY = warningRoadLines[height].rectTransform.anchoredPosition.y;
+                                        car.blip.rectTransform.anchoredPosition = 
+                                            new Vector2(warningRoadLinesInitialX + (car.curPosX * nearEdgeWidthScale + x) * roadLineToWarningRoadLineConversion,
+                                                            blipY);
+                                    }
+                                    
                                     // Check for collision with player car
                                     if (!isInvulnerable && canDrive) {
                                         if (i < (curSegmentIndex + car.model.lengthInRoadSegs / 2) && i > (curSegmentIndex - car.model.lengthInRoadSegs / 2)) {
@@ -912,6 +1016,7 @@ public class RoadControl : MonoBehaviour
 
                                 if (car.trafficCar != null) {
                                     Destroy(car.trafficCar.gameObject);
+                                    Destroy(car.blip);
 
                                     car.trafficCar = null;
                                     car.carSprite = null;
@@ -932,6 +1037,12 @@ public class RoadControl : MonoBehaviour
         for (int i = highestScreenLineDrawn + 1; i < roadScreenLines.Count - 1; i++) {
             roadScreenLines[i].localScale = new Vector3(0.0f, 1.0f, 1.0f);
         }
+
+        for (int i = curWarningRoadLineIndex; i < warningRoadLines.Count; i++) {
+            warningRoadLines[i].rectTransform.sizeDelta = new Vector2(0.0f, 1.0f);
+        }
+
+        curWarningRoadLineIndex = 0;
 
         //foreach (BillboardSprite bb in visibleBillboards) {
         //    if (bb.spriteTransform.position.y < highestScreenLineDrawn) {
@@ -1105,6 +1216,8 @@ public class RoadControl : MonoBehaviour
             foreach (Bomb bmb in activeBombPool) {
                 if (bmb.segmentIndex < curSegmentIndex) {
                     Destroy(bmb.singleBomb.gameObject);
+                    Destroy(bmb.blip.gameObject);
+                    Destroy(bmb.blipProjection.gameObject);
                     tempBombs.Add(bmb);
                 }
             }
@@ -1137,7 +1250,7 @@ public class RoadControl : MonoBehaviour
     }
 
     private void SetPlayerCarSprites() {
-        if (sensorOverlayIsActive) {
+        if (sensorOverlayWasJustActivated) {
             curPlayerCarStraight = playerCarStraightRed;
             curPlayerCarSlightLeft = playerCarSlightLeftRed;
             curPlayerCarLeft = playerCarLeftRed;
@@ -1174,7 +1287,7 @@ public class RoadControl : MonoBehaviour
     }
 
     private void SetOtherCarSprites (NPCar otherCar) {
-        if (sensorOverlayIsActive) {
+        if (sensorOverlayWasJustActivated) {
             otherCar.curStraightOverhead = otherCar.model.redStraightOverhead;
             otherCar.curSlightLeft = otherCar.model.redSlightLeft;
             otherCar.curLeft = otherCar.model.redLeft;
@@ -1213,7 +1326,7 @@ public class RoadControl : MonoBehaviour
     }
 
     private void SetEffectSprites() {
-        if (sensorOverlayIsActive) {
+        if (sensorOverlayWasJustActivated) {
             curSparkFrontFrames = sparkFrontFramesRed;
             curSparkBackFrames = sparkBackFramesRed;
             curSparkLeftFrames = sparkLeftFramesRed;
@@ -1401,21 +1514,32 @@ public class RoadControl : MonoBehaviour
                     curSensorOverlayFrameIndex++;
                     sensorOverlay.sprite = sensorOverlayLoadFrames[curSensorOverlayFrameIndex];
                 }
-                else {
+
+                if (curCenterConsoleFrameIndex < centerConsoleCoverFrames.Count - 1) {
+                    curCenterConsoleFrameIndex++;
+                    centerConsoleCover.texture = centerConsoleCoverFrames[curCenterConsoleFrameIndex];
+                }
+
+                if ((curSensorOverlayFrameIndex >= sensorOverlayLoadFrames.Count - 1) && (curCenterConsoleFrameIndex >= centerConsoleCoverFrames.Count - 1)) {
                     sensorOverlayIsLoading = false;
                     sensorOverlayIsTotallyLoaded = true;
+                    centerConsoleCover.enabled = false;
                     curSensorOverlayFrameIndex = 0;
                     sensorScanline.enabled = true;
+
+                    if (warningRoadLines.Count > 0) {
+                        foreach (RawImage img in warningRoadLines) { img.enabled = true; }
+                    }
                 }
             }
             else if (sensorOverlayIsTotallyLoaded) {
                 if (sensorScanline.transform.position.y > sensorScanLineLowestHeight) {
                     sensorScanline.transform.position = sensorScanline.transform.position +
-                                                                        new Vector3(0, sensorScanLineDisplacement * Time.deltaTime, 
-                                                                        sensorScanline.transform.position.z);
+                                                                        new Vector3(0, sensorScanLineDisplacement * Time.deltaTime, 0);
                 }
                 else {
-                    sensorScanline.transform.position = new Vector2(sensorScanline.transform.position.x, sensorScanLineInitialHeight);
+                    sensorScanline.transform.position = new Vector3(sensorScanline.transform.position.x, sensorScanLineInitialHeight, 
+                                                                        sensorScanline.transform.position.z);
                 }
             }
             else if (sensorOverlayIsUnloading) {
@@ -1423,13 +1547,51 @@ public class RoadControl : MonoBehaviour
                     curSensorOverlayFrameIndex++;
                     sensorOverlay.sprite = sensorOverlayUnloadFrames[curSensorOverlayFrameIndex];
                 }
-                else {
+
+                if (curCenterConsoleFrameIndex > 0) {
+                    curCenterConsoleFrameIndex--;
+                    centerConsoleCover.texture = centerConsoleCoverFrames[curCenterConsoleFrameIndex];
+                }
+
+                if ((curSensorOverlayFrameIndex >= sensorOverlayUnloadFrames.Count - 1) && (curCenterConsoleFrameIndex <= 0)) {
                     sensorOverlayIsUnloading = false;
+                    sensorOverlayIsActive = false;
                     sensorOverlay.enabled = false;
+
+                    if (warningRoadLines.Count > 0) {
+                        foreach (RawImage img in warningRoadLines) { img.enabled = false; }
+                    }
                 }
             }
 
             sensorOverlayFrameRefTime = Time.time;
+        }
+    }
+
+    private void UpdateConsoleSensor() {
+        if (sensorOverlayIsActive && sensorOverlayIsTotallyLoaded && curSensorPower > 0) {
+            curSensorPower -= sensorDrainRate * Time.deltaTime;
+        }
+        else {
+            if (curSensorPower < sensorMaxPower) {
+                curSensorPower += sensorRechargeRate * Time.deltaTime;
+            }
+        }
+
+        if (sensorBars.Count > 0  && !sensorOverlayIsActive) {
+            float powerPerBar = sensorMaxPower / sensorBars.Count;
+            int numOfBarsToShow = Mathf.FloorToInt(curSensorPower / powerPerBar);
+            for (int i = 0; i < sensorBars.Count; i++) {
+                if (i < numOfBarsToShow)    { sensorBars[i].enabled = true; }
+                else                        { sensorBars[i].enabled = false; }
+            }
+            foreach (RawImage img in sensorBars) {
+                if (((curSensorPower / sensorMaxPower) * 100.0f) < sensorLowPowerPercentageOfMax) { img.color = sensorBarLowPowerColor; }
+                else if ((((curSensorPower / sensorMaxPower) * 100.0f) >= sensorLowPowerPercentageOfMax) && (curSensorPower < sensorMaxPower)) {
+                    img.color = sensorBarChargingColor;
+                }
+                else if (curSensorPower >= sensorMaxPower) { img.color = sensorBarFullyChargedColor; }
+            }
         }
     }
 
@@ -1496,10 +1658,10 @@ public class RoadControl : MonoBehaviour
             else {
                 if (Mathf.Abs(curPlayerTurning) > lowTurnZeroThreshold) {
                     if (curPlayerTurning > 0) {
-                        curPlayerTurning -= hardTurnIncrease * Time.deltaTime;
+                        curPlayerTurning -= turnDriftToCenterFactor * Time.deltaTime;
                     }
                     else {
-                        curPlayerTurning += hardTurnIncrease * Time.deltaTime;
+                        curPlayerTurning += turnDriftToCenterFactor * Time.deltaTime;
                     }
                 }
                 else {
@@ -1507,66 +1669,66 @@ public class RoadControl : MonoBehaviour
                 }
             }
 
-            if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.special]) {
+            //if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.special]) {
 
-                if (!sensorOverlayIsActive) {
+            //    if (!sensorOverlayIsActive) {
 
-                    sensorOverlayIsActive = true;
+            //        sensorOverlayIsActive = true;
 
-                    SetPlayerCarSprites();
-                    if (carsOnRoad.Count > 0) {
-                        foreach (NPCar car in carsOnRoad) {
-                            if (car.isVisible) { SetOtherCarSprites(car); }
-                        }
-                    }
+            //        SetPlayerCarSprites();
+            //        if (carsOnRoad.Count > 0) {
+            //            foreach (NPCar car in carsOnRoad) {
+            //                if (car.isVisible) { SetOtherCarSprites(car); }
+            //            }
+            //        }
 
-                    SetEffectSprites();
+            //        SetEffectSprites();
 
-                    sensorOverlayIsLoading = true;
-                    sensorOverlayFrameRefTime = Time.time;
-                    curSensorOverlayFrameIndex = 0;
-                    sensorOverlay.sprite = sensorOverlayLoadFrames[curSensorOverlayFrameIndex];
-                    sensorOverlay.enabled = true;
-                }
+            //        sensorOverlayIsLoading = true;
+            //        sensorOverlayFrameRefTime = Time.time;
+            //        curSensorOverlayFrameIndex = 0;
+            //        sensorOverlay.sprite = sensorOverlayLoadFrames[curSensorOverlayFrameIndex];
+            //        sensorOverlay.enabled = true;
+            //    }
 
-                UpdateSensorModeVisuals();
+            //    UpdateSensorModeVisuals();
 
-                if (activeBombPool.Count > 0) {
-                    foreach (Bomb bmb in activeBombPool) {
-                        bmb.bombSprite.sprite = bombVisible;
-                    }
-                }
-            }
-            else {
+            //    if (activeBombPool.Count > 0) {
+            //        foreach (Bomb bmb in activeBombPool) {
+            //            bmb.bombSprite.sprite = bombVisible;
+            //        }
+            //    }
+            //}
+            //else {
 
-                if (sensorOverlayIsActive) {
+            //    if (sensorOverlayIsActive) {
 
-                    sensorOverlayIsActive = false;
+            //        sensorOverlayIsActive = false;
 
-                    SetPlayerCarSprites();
-                    if (carsOnRoad.Count > 0) {
-                        foreach (NPCar car in carsOnRoad) {
-                            if (car.isVisible) { SetOtherCarSprites(car); }
-                        }
-                    }
+            //        SetPlayerCarSprites();
+            //        if (carsOnRoad.Count > 0) {
+            //            foreach (NPCar car in carsOnRoad) {
+            //                if (car.isVisible) { SetOtherCarSprites(car); }
+            //            }
+            //        }
 
-                    SetEffectSprites();
+            //        SetEffectSprites();
 
-                    sensorScanline.enabled = false;
-                    sensorOverlayIsTotallyLoaded = false;
-                    sensorOverlayIsUnloading = true;
-                    sensorOverlayFrameRefTime = Time.time;
-                    curSensorOverlayFrameIndex = 0;
-                }
+            //        sensorScanline.enabled = false;
+            //        sensorOverlayIsTotallyLoaded = false;
+            //        sensorOverlayIsUnloading = true;
+            //        sensorOverlayFrameRefTime = Time.time;
+            //        curSensorOverlayFrameIndex = 0;
+            //    }
 
-                if (sensorOverlayIsUnloading) { UpdateSensorModeVisuals(); }
+            //    if (sensorOverlayIsUnloading) { UpdateSensorModeVisuals(); }
 
-                if (activeBombPool.Count > 0) {
-                    foreach (Bomb bmb in activeBombPool) {
-                        bmb.bombSprite.sprite = bombCamo;
-                    }
-                }
-            }
+            //    if (activeBombPool.Count > 0) {
+            //        foreach (Bomb bmb in activeBombPool) {
+            //            bmb.bombSprite.sprite = bombCamo;
+            //        }
+            //    }
+            //}
         }
         else if (isOnAutopilot) {
             curPlayerSpeed = autopilotSpeed;
@@ -1576,23 +1738,114 @@ public class RoadControl : MonoBehaviour
             else { curPlayerSpeed = 0.0f; }
         }
 
+        UpdateConsoleSensor();
+
+        if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.special]) {
+
+            if (!sensorOverlayWasJustActivated && (((curSensorPower / sensorMaxPower) * 100.0f) >= sensorLowPowerPercentageOfMax)) {
+
+                sensorOverlayWasJustActivated = true;
+
+                SetPlayerCarSprites();
+                if (carsOnRoad.Count > 0) {
+                    foreach (NPCar car in carsOnRoad) {
+                        if (car.isVisible) { SetOtherCarSprites(car); }
+                    }
+                }
+
+                SetEffectSprites();
+
+                sensorOverlayIsActive = true;
+                sensorOverlayIsLoading = true;
+                sensorOverlayFrameRefTime = Time.time;
+                curSensorOverlayFrameIndex = 0;
+                curCenterConsoleFrameIndex = 0;
+                sensorOverlay.sprite = sensorOverlayLoadFrames[curSensorOverlayFrameIndex];
+                centerConsoleCover.texture = centerConsoleCoverFrames[curCenterConsoleFrameIndex];
+                sensorOverlay.enabled = true;
+
+                foreach (RawImage img in sensorBars) { img.enabled = false; }
+            }
+
+            UpdateSensorModeVisuals();
+
+            if (curSensorPower <= 0) {
+                sensorOverlayWasJustActivated = false;
+
+                SetPlayerCarSprites();
+                if (carsOnRoad.Count > 0) {
+                    foreach (NPCar car in carsOnRoad) {
+                        if (car.isVisible) { SetOtherCarSprites(car); }
+                    }
+                }
+
+                SetEffectSprites();
+
+                sensorScanline.enabled = false;
+                sensorOverlayIsTotallyLoaded = false;
+                sensorOverlayIsUnloading = true;
+                sensorOverlayFrameRefTime = Time.time;
+                curSensorOverlayFrameIndex = 0;
+                curCenterConsoleFrameIndex = centerConsoleCoverFrames.Count - 1;
+                centerConsoleCover.enabled = true;
+            }
+
+            if (activeBombPool.Count > 0) {
+                foreach (Bomb bmb in activeBombPool) {
+                    bmb.bombSprite.sprite = bombVisible;
+                }
+            }
+        }
+        else {
+
+            if (sensorOverlayWasJustActivated) {
+
+                sensorOverlayWasJustActivated = false;
+
+                SetPlayerCarSprites();
+                if (carsOnRoad.Count > 0) {
+                    foreach (NPCar car in carsOnRoad) {
+                        if (car.isVisible) { SetOtherCarSprites(car); }
+                    }
+                }
+
+                SetEffectSprites();
+
+                sensorScanline.enabled = false;
+                sensorOverlayIsTotallyLoaded = false;
+                sensorOverlayIsUnloading = true;
+                sensorOverlayFrameRefTime = Time.time;
+                curSensorOverlayFrameIndex = 0;
+                curCenterConsoleFrameIndex = centerConsoleCoverFrames.Count - 1;
+                centerConsoleCover.enabled = true;
+            }
+
+            if (sensorOverlayIsUnloading) { UpdateSensorModeVisuals(); }
+
+            if (activeBombPool.Count > 0) {
+                foreach (Bomb bmb in activeBombPool) {
+                    bmb.bombSprite.sprite = bombCamo;
+                }
+            }
+        }
+
         if (canDrive) {
             if (curPlayerTurning <= (-maxTurning)) {
                 playerCarSprite.sprite = curPlayerCarHardLeft;
             }
-            else if ((curPlayerTurning > (-maxTurning)) && (curPlayerTurning < (0.7f * -maxTurning))) {
+            else if ((curPlayerTurning > (-maxTurning)) && (curPlayerTurning < (hardTurnFrameThreshold * -maxTurning))) {
                 playerCarSprite.sprite = curPlayerCarLeft;
                 isFinishedSlideSmoking = false;
-            } else if ((curPlayerTurning >= (0.7f * -maxTurning)) && (curPlayerTurning < (0.3f * -maxTurning))) {
+            } else if ((curPlayerTurning >= (hardTurnFrameThreshold * -maxTurning)) && (curPlayerTurning < (turnFrameThreshold * -maxTurning))) {
                 playerCarSprite.sprite = curPlayerCarSlightLeft;
             }
-            else if ((curPlayerTurning >= (0.3f * -maxTurning)) && (curPlayerTurning <= (0.3f * maxTurning))) {
+            else if ((curPlayerTurning >= (turnFrameThreshold * -maxTurning)) && (curPlayerTurning <= (turnFrameThreshold * maxTurning))) {
                 playerCarSprite.sprite = curPlayerCarStraight;
             }
-            else if ((curPlayerTurning > (0.3f * maxTurning)) && (curPlayerTurning < (0.7f * maxTurning))) {
+            else if ((curPlayerTurning > (turnFrameThreshold * maxTurning)) && (curPlayerTurning < (hardTurnFrameThreshold * maxTurning))) {
                 playerCarSprite.sprite = curPlayerCarSlightRight;
             }
-            else if ((curPlayerTurning >= (0.7f * maxTurning)) && (curPlayerTurning < (maxTurning))) {
+            else if ((curPlayerTurning >= (hardTurnFrameThreshold * maxTurning)) && (curPlayerTurning < (maxTurning))) {
                 playerCarSprite.sprite = curPlayerCarRight;
                 isFinishedSlideSmoking = false;
             }
@@ -1704,6 +1957,7 @@ public class RoadControl : MonoBehaviour
             UpdateArmorValue(0.0f);
 
             centerConsole.enabled = true;
+            centerConsoleCover.enabled = true;
             speedometerNeedle.enabled = true;
 
             progressCar.enabled = true;
@@ -1720,12 +1974,16 @@ public class RoadControl : MonoBehaviour
             centerConsoleCover.enabled = false;
             speedometerNeedle.enabled = false;
 
-            if (warningRoadBlips.Count > 0) {
-                foreach (RawImage img in warningRoadBlips) { img.enabled = false; }
-            }
+            //if (warningRoadBlips.Count > 0) {
+            //    foreach (RawImage img in warningRoadBlips) { img.enabled = false; }
+            //}
 
             if (warningRoadLines.Count > 0) {
                 foreach (RawImage img in warningRoadLines) { img.enabled = false; }
+            }
+
+            if (sensorBars.Count > 0) {
+                foreach (RawImage img in sensorBars) { img.enabled = false; }
             }
 
             progressCar.enabled = false;
