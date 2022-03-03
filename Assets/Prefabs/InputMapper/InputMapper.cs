@@ -222,10 +222,6 @@ Debug.Log(debug_text);
 				if (!mappingMenu.activeSelf && UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex > 1) {
 					TogglePauseMenu();
 					holding_start = true;
-
-					if (!pauseMenu.activeSelf) {
-						Time.timeScale = 1.0f;
-					}
 				}
 			}
 		}
@@ -237,6 +233,10 @@ Debug.Log(debug_text);
 	public void TogglePauseMenu() {
 		pauseMenu.SetActive(!pauseMenu.activeSelf);
 		specialMenu.SetActive(pauseMenu.activeSelf);
+
+		if (!pauseMenu.activeSelf) {
+			Time.timeScale = 1.0f;
+		}
 	}
 
 	public void HoldStart() {
