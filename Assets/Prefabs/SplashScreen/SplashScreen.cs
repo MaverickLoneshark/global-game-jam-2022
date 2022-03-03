@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Video;
@@ -17,6 +18,8 @@ public class SplashScreen : MonoBehaviour {
 	GameObject audioCredits;
 	GameObject producerDirectorCredits;
 
+	private string videoPath = Path.Combine(Application.streamingAssetsPath, "Video", Uri.EscapeDataString("GGJ2022 Intro Video.mp4"));
+
 	void Awake() {
 		if (!videoPlayer) {
 			videoPlayer = transform.Find("VideoPlayer").GetComponent<VideoPlayer>();
@@ -26,13 +29,10 @@ public class SplashScreen : MonoBehaviour {
 			videoPlayer.targetCamera = Camera.main;
 		}
 
-		if (!File.Exists(videoPlayer.url)) {
-			videoPlayer.url = Path.Combine(Application.streamingAssetsPath, "Video", "GGJ2022 Intro Video.mp4");
-		}
-
-		videoPlayer.Prepare();
+		videoPlayer.errorReceived += ResolveVideoError;
 		videoPlayer.prepareCompleted += BeginVideo;
 		videoPlayer.loopPointReached += (context) => { UnityEngine.SceneManagement.SceneManager.LoadScene(1); };
+		videoPlayer.Prepare();
 
 		credits = transform.Find("Credits").gameObject;
 		programmingCredits = credits.transform.Find("ProgrammingCredits").gameObject;
@@ -83,5 +83,21 @@ public class SplashScreen : MonoBehaviour {
 	void BeginVideo(VideoPlayer videoPlayer) {
 		audioPlayer.PlayBGM(AudioPlayer.BGMTracks.blood_sores);
 		videoPlayer.Play();
+	}
+
+	void ResolveVideoError(VideoPlayer videoPlayer, string errorMessage) {
+		if (videoPlayer.url != videoPath) {
+			Debug.LogWarning(errorMessage +
+				"\nAttempting to load " + videoPath);
+
+			videoPlayer.url = videoPath;
+			videoPlayer.Prepare();
+		}
+		else {
+			Debug.LogError(errorMessage +
+				"\nSkipping to title screen.");
+
+			UnityEngine.SceneManagement.SceneManager.LoadScene(1);
+		}
 	}
 }
