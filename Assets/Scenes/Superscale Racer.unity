@@ -2290,8 +2290,20 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 56b9846cab6e5a94c97463e691d91fe5, type: 3}
   - {fileID: 21300000, guid: 47f10b68d64ae7b4c9375a8522090ac2, type: 3}
   playerCarExplodeFrames: []
-  playerCarRollLeftFrames: []
-  playerCarRollRightFrames: []
+  playerCarRollLeftFrames:
+  - {fileID: 21300000, guid: a15fec5287c3b5b46ad0b776db4e35d4, type: 3}
+  - {fileID: 21300000, guid: a15fec5287c3b5b46ad0b776db4e35d4, type: 3}
+  - {fileID: 21300000, guid: 9a2c33e7b2c2d7347a6f89cf9b42751a, type: 3}
+  - {fileID: 21300000, guid: 9a2c33e7b2c2d7347a6f89cf9b42751a, type: 3}
+  - {fileID: 21300000, guid: a15fec5287c3b5b46ad0b776db4e35d4, type: 3}
+  - {fileID: 21300000, guid: a15fec5287c3b5b46ad0b776db4e35d4, type: 3}
+  playerCarRollRightFrames:
+  - {fileID: 21300000, guid: 47f10b68d64ae7b4c9375a8522090ac2, type: 3}
+  - {fileID: 21300000, guid: 47f10b68d64ae7b4c9375a8522090ac2, type: 3}
+  - {fileID: 21300000, guid: 64dd84559dcafa04eacafed3c77ce2ec, type: 3}
+  - {fileID: 21300000, guid: 64dd84559dcafa04eacafed3c77ce2ec, type: 3}
+  - {fileID: 21300000, guid: 47f10b68d64ae7b4c9375a8522090ac2, type: 3}
+  - {fileID: 21300000, guid: 47f10b68d64ae7b4c9375a8522090ac2, type: 3}
   redPlayerCarSpinoutLeftFrames:
   - {fileID: 21300000, guid: 49e94718818963a478ee2ee20b5610cd, type: 3}
   - {fileID: 21300000, guid: cdb31a9441f88774999cd3a5560b3c3b, type: 3}
@@ -2321,8 +2333,20 @@ MonoBehaviour:
   - {fileID: 21300000, guid: cf25eda2a2afdc748aca8f6cf60eeb5f, type: 3}
   - {fileID: 21300000, guid: cf25eda2a2afdc748aca8f6cf60eeb5f, type: 3}
   redPlayerCarExplodeFrames: []
-  redPlayerCarRollLeftFrames: []
-  redPlayerCarRollRightFrames: []
+  redPlayerCarRollLeftFrames:
+  - {fileID: 21300000, guid: 26b641bf95583e14aacd32459c7c3574, type: 3}
+  - {fileID: 21300000, guid: 26b641bf95583e14aacd32459c7c3574, type: 3}
+  - {fileID: 21300000, guid: 5559b1f3b832be442a968a7b22febcef, type: 3}
+  - {fileID: 21300000, guid: 5559b1f3b832be442a968a7b22febcef, type: 3}
+  - {fileID: 21300000, guid: 26b641bf95583e14aacd32459c7c3574, type: 3}
+  - {fileID: 21300000, guid: 26b641bf95583e14aacd32459c7c3574, type: 3}
+  redPlayerCarRollRightFrames:
+  - {fileID: 21300000, guid: cf25eda2a2afdc748aca8f6cf60eeb5f, type: 3}
+  - {fileID: 21300000, guid: cf25eda2a2afdc748aca8f6cf60eeb5f, type: 3}
+  - {fileID: 21300000, guid: a98ffc88a68188e478f58abc3549ecc9, type: 3}
+  - {fileID: 21300000, guid: a98ffc88a68188e478f58abc3549ecc9, type: 3}
+  - {fileID: 21300000, guid: cf25eda2a2afdc748aca8f6cf60eeb5f, type: 3}
+  - {fileID: 21300000, guid: cf25eda2a2afdc748aca8f6cf60eeb5f, type: 3}
   playerCarAnimationFrameTime: 0.05
   decayFrameTimeFactor: 10
   isDecayLinear: 0
@@ -2342,6 +2366,7 @@ MonoBehaviour:
   camHeight: 120
   roadLength: 20000
   roadWidth: 2000
+  laneWidth: 200
   screenHalfWidth: 160
   roadSegmentLength: 5
   roadStartZ: 100
@@ -2418,18 +2443,23 @@ MonoBehaviour:
     numExitSegments: 0
     curveIntensity: 0
     elevationShift: 0
+  mass: 300
+  playerCarWidth: 30
+  playerCarLengthInSegs: 30
   topSpeed: 2200
   autopilotSpeed: 1500
   maxAcceleration: 250
   deceleration: 350
-  centripetal: 700
-  maxTurning: 1.6
-  turnIncrease: 2.2
-  hardTurnIncrease: 2.8
+  centripetal: 500
+  maxTurning: 3
+  turnIncrease: 2.5
+  hardTurnIncrease: 3.5
   lowTurnZeroThreshold: 0.01
-  turnDriftToCenterFactor: 4
+  turnDriftToCenterFactor: 10
   slipThreshold: 0.2
-  maxArmor: 0
+  maxArmor: 100
+  roadGrip: 100
+  elasticity: 0
   bombVisible: {fileID: 21300000, guid: dd9506d0d088ec044af21401d1243233, type: 3}
   bombCamo: {fileID: 21300000, guid: 0eca701177cd1344e8d0a1042429462c, type: 3}
   droidHolding: {fileID: 21300000, guid: 0e42fb088d161484a828234c0551c001, type: 3}
@@ -2460,7 +2490,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f1823409e4777f844aba244cb413c411, type: 2}
   - {fileID: 11400000, guid: dbc8ea9e4f5fe4347813835548523f1b, type: 2}
   numEnemyModels: 0
-  numInnocentModels: 150
+  numInnocentModels: 100
   enemySpeedMin: 0
   enemySpeedMax: 0
   innocentSpeedMin: 1300
@@ -2598,7 +2628,11 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 0ea2016b221fc3d44ab58246e01ee119, type: 3}
   - {fileID: 21300000, guid: e20e55891d589cf47bf8b75daea26975, type: 3}
   - {fileID: 21300000, guid: 209650543539ca04ca272bfac78946cb, type: 3}
+  - {fileID: 21300000, guid: 209650543539ca04ca272bfac78946cb, type: 3}
   - {fileID: 21300000, guid: 8249355c96b2d144f80abf830413d0cf, type: 3}
+  - {fileID: 21300000, guid: 8249355c96b2d144f80abf830413d0cf, type: 3}
+  - {fileID: 21300000, guid: 8249355c96b2d144f80abf830413d0cf, type: 3}
+  - {fileID: 21300000, guid: d9b5bcd8b66af814aa01404cd4543001, type: 3}
   - {fileID: 21300000, guid: d9b5bcd8b66af814aa01404cd4543001, type: 3}
   smokeFrontFramesRed:
   - {fileID: 21300000, guid: 19ac95b91ad7045409f9c4b9ba9087fa, type: 3}
@@ -2644,10 +2678,14 @@ MonoBehaviour:
   - {fileID: 21300000, guid: d158564a942916048bac02a3df2adff1, type: 3}
   - {fileID: 21300000, guid: 174d25dc25987bb46b9daf7f00547634, type: 3}
   - {fileID: 21300000, guid: fe3230ba378c24e439d2f0afeb978b19, type: 3}
+  - {fileID: 21300000, guid: fe3230ba378c24e439d2f0afeb978b19, type: 3}
+  - {fileID: 21300000, guid: d688123b824279f44a7e93e7af2aefca, type: 3}
+  - {fileID: 21300000, guid: d688123b824279f44a7e93e7af2aefca, type: 3}
   - {fileID: 21300000, guid: d688123b824279f44a7e93e7af2aefca, type: 3}
   - {fileID: 21300000, guid: 384c77f05eba7f947a696351e687872b, type: 3}
-  maxBombIntensity: 1000
-  bombExplosionFrameTime: 0.2
+  - {fileID: 21300000, guid: 384c77f05eba7f947a696351e687872b, type: 3}
+  maxBombIntensity: 200
+  bombExplosionFrameTime: 0.05
   smokeFrameTime: 0.05
   sparkFrameTime: 0.05
   restartSmokeStartFrameIndex: 1
@@ -2679,9 +2717,9 @@ MonoBehaviour:
   spinoutTime: 1.3
   invulnTime: 2
   invulnFlashIntervalTime: 0.05
-  impactThresholdForSpinout: 500
+  impactThresholdForSpinout: 700
   ricochetSpeedMultiplier: 0
-  ricochetDecayFactor: 0.97
+  ricochetDecayFactor: 0.3
   ricochetEndThreshold: 0.01
   speedometerRotationFactor: -0.08
   messageDelay: 0.25
@@ -2738,7 +2776,7 @@ MonoBehaviour:
   - {fileID: 2800000, guid: f9d75237764ed2b44a67d1b218d011f6, type: 3}
   - {fileID: 2800000, guid: f9d75237764ed2b44a67d1b218d011f6, type: 3}
   sensorMaxPower: 100
-  sensorDrainRate: 20
+  sensorDrainRate: 5
   sensorRechargeRate: 10
   sensorLowPowerPercentageOfMax: 30
   sensorBars:
