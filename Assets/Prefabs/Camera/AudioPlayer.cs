@@ -48,7 +48,6 @@ public class AudioPlayer : MonoBehaviour {
 			}
 
 			audioSources[0].loop = true;
-			PlayBGM(current_bgm);
 		}
 	}
 

@@ -788,6 +788,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: MainMenuPanel
       objectReference: {fileID: 0}
+    - target: {fileID: 6333595223927172599, guid: 53b6e975bb952eb42a3738d4aadba946, type: 3}
+      propertyPath: m_Type
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6333595223927172599, guid: 53b6e975bb952eb42a3738d4aadba946, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 2e62c347ed5035c40b65bd0d62e1c1b3, type: 3}
+    - target: {fileID: 6333595223927172599, guid: 53b6e975bb952eb42a3738d4aadba946, type: 3}
+      propertyPath: m_Color.a
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6333595225192167749, guid: 53b6e975bb952eb42a3738d4aadba946, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 53b6e975bb952eb42a3738d4aadba946, type: 3}
 --- !u!1001 &8622382670079668813

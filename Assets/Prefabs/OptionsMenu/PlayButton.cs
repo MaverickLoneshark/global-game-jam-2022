@@ -4,23 +4,17 @@ using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayButton : MonoBehaviour {
-	[SerializeField]
-	private GameObject targetMenuObject;
-
 	private Button button;
+	private InputMapper inputMapper;
 
 	private void Awake() {
 		button = GetComponent<Button>();
 		button.onClick.AddListener(OnClick);
-
-		if (!targetMenuObject) {
-			targetMenuObject = transform.parent.gameObject;
-		}
 	}
 
 	// Start is called before the first frame update
 	void Start() {
-		//
+		inputMapper = InputMapper.inputMapper;
 	}
 
 	// Update is called once per frame
@@ -33,7 +27,6 @@ public class PlayButton : MonoBehaviour {
 	}
 
 	void OnClick() {
-		Time.timeScale = 1.0f;
-		targetMenuObject.SetActive(false);
+		inputMapper.TogglePauseMenu();
 	}
 }
