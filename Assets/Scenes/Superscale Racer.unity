@@ -3714,6 +3714,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 810702870348046747, guid: 784bc99a04e655747802b422aab10777, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5923132856039088664, guid: 784bc99a04e655747802b422aab10777, type: 3}
       propertyPath: m_Name
       value: InputMapper

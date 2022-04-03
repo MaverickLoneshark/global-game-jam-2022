@@ -162,6 +162,9 @@ public class RoadControl : MonoBehaviour
     [SerializeField]
     private float playerSparkFrontOffset, playerSparkBackOffset, playerSparkLeftOffset, playerSparkRightOffset;
 
+    //InputMapper reference
+    private InputMapper inputMapper;
+
     // Menu
     [SerializeField]
     private RawImage menuBgd;
@@ -236,6 +239,7 @@ public class RoadControl : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        inputMapper = InputMapper.inputMapper;
         playerCarSprite = playerCar.GetComponent<SpriteRenderer>();
         playerCarEffectSprite = playerCarEffect.GetComponent<SpriteRenderer>();
 
@@ -527,10 +531,10 @@ public class RoadControl : MonoBehaviour
                 }
                 else {
                     if (Time.time - messageDelayRefTime > messageDelay) {
-
                         ShowHUD(false);
                         menuBgd.enabled = true;
                         GameMode = GameState.InMenu;
+                        inputMapper.TogglePauseMenu();
                     }
                 }
             break;
@@ -1657,7 +1661,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
         speedometerNeedle.rectTransform.rotation = Quaternion.Euler(0, 0, (curPlayerSpeed * speedometerRotationFactor) + 90f);
 
         if (canDrive) {
-            if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.up]) {
+            if (inputMapper[(int)InputMapper.CONTROLS.up]) {
                 curPlayerAcceleration = maxAcceleration;
 
                 if (curPlayerSpeed < topSpeed) {
@@ -1678,8 +1682,8 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                 }
             }
 
-            if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.left]) {
-                if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action]) {
+            if (inputMapper[(int)InputMapper.CONTROLS.left]) {
+                if (inputMapper[(int)InputMapper.CONTROLS.action]) {
                     playerCarSprite.sprite = curPlayerCarHardLeft;
 
                     if (curPlayerTurning > -maxTurning * 1.3f) {
@@ -1693,8 +1697,8 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                     }
                 }
             }
-            else if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.right]) {
-                if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.action]) {
+            else if (inputMapper[(int)InputMapper.CONTROLS.right]) {
+                if (inputMapper[(int)InputMapper.CONTROLS.action]) {
                     playerCarSprite.sprite = playerCarHardRight;
 
                     if (curPlayerTurning < maxTurning * 1.3f) {
@@ -1722,7 +1726,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                 }
             }
 
-            //if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.special]) {
+            //if (inputMapper[(int)InputMapper.CONTROLS.special]) {
 
             //    if (!sensorOverlayIsActive) {
 
@@ -1793,7 +1797,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
 
         UpdateConsoleSensor();
 
-        if (InputMapper.inputMapper[(int)InputMapper.CONTROLS.special]) {
+        if (inputMapper[(int)InputMapper.CONTROLS.special]) {
             if (!sensorOverlayWasJustActivated && (((curSensorPower / sensorMaxPower) * 100.0f) >= sensorLowPowerPercentageOfMax)) {
                 sensorOverlayWasJustActivated = true;
 
