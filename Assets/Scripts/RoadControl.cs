@@ -549,7 +549,7 @@ public class RoadControl : MonoBehaviour
         roadScreenSprites.Add(refRoadStrip.GetComponent<SpriteRenderer>());
 
         for (int i = 1; i < numScreenLines; i++) {
-            GameObject newStrip = new GameObject();
+            GameObject newStrip = new GameObject("Road Strip");
             newStrip.transform.position = refRoadStrip.transform.position + new Vector3(0, screenLineHeight * i, 0);
             newStrip.AddComponent<SpriteRenderer>();
             roadScreenLines.Add(newStrip.transform);
@@ -919,7 +919,7 @@ Debug.Log(roadSegments.Count);
                                             }
 
                                             Spark newSpark = new Spark();
-                                            GameObject obj = new GameObject();
+                                            GameObject obj = new GameObject("Spark Renderer");
                                             newSpark.sparkInstance = obj.transform;
                                             newSpark.sparkSprite = obj.AddComponent<SpriteRenderer>();
                                             newSpark.curSparkFrameIndex = 0;
@@ -1118,7 +1118,7 @@ Debug.Log(bb.spriteTransform);
     private void LoadOpeningEnemies() {
         foreach (BombDroid bd in droids) {
             if (bd.segmentIndex <= curSegmentIndex + numSegsToDraw) {
-                GameObject obj = new GameObject();
+                GameObject obj = new GameObject("Bomb Droid Renderer");
                 obj.AddComponent<SpriteRenderer>();
                 bd.droid = obj.transform;
                 bd.droidSprite = obj.GetComponent<SpriteRenderer>();
@@ -1193,7 +1193,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
     private void UpdateEnemies() {
         for (int i = 0; i < droids.Count; i++) {
             if (droids[i].segmentIndex == curSegmentIndex + numSegsToDraw) {
-                GameObject obj = new GameObject();
+                GameObject obj = new GameObject("Droid Renderer");
                 obj.AddComponent<SpriteRenderer>();
                 droids[i].droid = obj.transform;
                 droids[i].droidSprite = obj.GetComponent<SpriteRenderer>();

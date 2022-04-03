@@ -186,7 +186,7 @@ Debug.Log("Switch back to: " + BehaviorMode);
 
         roadSegLength = FindObjectOfType<RoadControl>().GetRoadSegmentLength();
 
-        GameObject imgObj = new GameObject();
+        GameObject imgObj = new GameObject("Blip Image");
         RawImage img = imgObj.AddComponent<RawImage>();
         imgObj.transform.SetParent(blipParent);
         blip = img;
