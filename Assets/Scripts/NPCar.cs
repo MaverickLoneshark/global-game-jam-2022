@@ -7,7 +7,6 @@ using UnityEngine.UI;
 public class NPCar : MonoBehaviour
 {
     private CarModel model;
-
     private bool isVisible;
 
     private int curSegIndex;
@@ -57,22 +56,21 @@ public class NPCar : MonoBehaviour
     void Awake() {
         
     }
-    void Update() {
 
+    void Update() {
         if (curAnimationView != null) { SetSpriteView(); }
 
         curSegIndex = (int)(curPosZ / roadSegLength);
-
         carSprite.sprite = curAnimationFrames[curFrameIndex];
 
         switch (BehaviorMode) {
             case BehaviorState.StayingInLane:
-
                 curAnimationView = model.standardDriving;
 
                 if (curSpeedZ < model.topSpeed) {
                     curSpeedZ += model.acceleration * Time.deltaTime;
                 }
+
                 curPosZ += curSpeedZ * roadSegLength * Time.deltaTime;
 
                 if ((curPosZ - playerPosZ < model.attackRangeZ) && (curPosZ > playerPosZ)) {
@@ -82,15 +80,15 @@ public class NPCar : MonoBehaviour
                     ChangeCurrentLane();
                     BehaviorMode = BehaviorState.ChangingLanes;
                 }
+            break;
 
-                break;
             case BehaviorState.ChangingLanes:
-
                 curAnimationView = model.standardDriving;
 
                 if (curSpeedZ < model.topSpeed) {
                     curSpeedZ += model.acceleration * Time.deltaTime;
                 }
+
                 curPosZ += curSpeedZ * roadSegLength * Time.deltaTime;
 
                 if (Mathf.Abs(curPosX - lanePositions[curLaneNum]) < 1) {
@@ -107,10 +105,9 @@ public class NPCar : MonoBehaviour
 
                     prevPosX = curPosX;
                 }
-
-                break;
+            break;
+            
             case BehaviorState.Crashing:
-
                 //curSpeedX = Mathf.Lerp(curSpeedX, collisionEndVelocityX, 0.01f * Time.deltaTime);
                 curSpeedX = 0;
                 curSpeedZ = Mathf.Lerp(curSpeedZ, collisionEndVelocityZ, 0.01f * Time.deltaTime);
@@ -133,24 +130,26 @@ public class NPCar : MonoBehaviour
                         else {
                             curSpeedX = 0;
                             curSpeedZ = collisionEndVelocityZ;
-                            Debug.Log("velocity exiting crash = " + collisionEndVelocityZ);
+Debug.Log("velocity exiting crash = " + collisionEndVelocityZ);
                             curFrameIndex = 0;
                             laneChangeRefTime = Time.time;
                             BehaviorMode = prevBehaveState;
-                            Debug.Log("Switch back to: " + BehaviorMode);
+Debug.Log("Switch back to: " + BehaviorMode);
                         }
                     }
                 }
+            break;
 
-                break;
             case BehaviorState.Pursuing:
-                break;
-            case BehaviorState.Attacking:
-                break;
-            case BehaviorState.Exploding:
-                break;
-            case BehaviorState.Wrecked:
+            break;
 
+            case BehaviorState.Attacking:
+            break;
+
+            case BehaviorState.Exploding:
+            break;
+
+            case BehaviorState.Wrecked:
                 //curSpeedX = Mathf.Lerp(curSpeedX, collisionEndVelocityX, model.acceleration * Time.deltaTime);
                 //curSpeedZ = Mathf.Lerp(curSpeedZ, collisionEndVelocityZ, model.acceleration * Time.deltaTime);
 
@@ -162,7 +161,7 @@ public class NPCar : MonoBehaviour
 
                 SetVisibility(false);
 
-                break;
+            break;
         }
     }
 
@@ -219,11 +218,11 @@ public class NPCar : MonoBehaviour
     }
 
     public void ChangeCurrentLane() {
-
         switch(curLaneNum) {
             case 0:
                 curLaneNum = 1;
-                break;
+            break;
+
             case 1:
                 int rand = Random.Range(0, 2);
                 if (rand == 0)  {
@@ -232,10 +231,11 @@ public class NPCar : MonoBehaviour
                 else {
                     curLaneNum = 2;
                 }
-                break;
+            break;
+
             case 2:
                 curLaneNum = 1;
-                break;
+            break;
         }
     }
 
@@ -248,11 +248,17 @@ public class NPCar : MonoBehaviour
         Vector2 otherCarMomentum = otherVelocity * otherMass;
 
         // It's important to calculate the effect on the armor first, so that in the case of it being reduced to zero, the collision triggers an explosion
-        if (otherCarMomentum.magnitude > model.impactExplosionThreshold)    { curArmor -= model.explosionDamage; }
-        else if (otherCarMomentum.magnitude > model.impactSpinoutThreshold) { curArmor -= model.spinoutDamage; }
-        else                                                                { curArmor -= model.crashDamage; }
+        if (otherCarMomentum.magnitude > model.impactExplosionThreshold) {
+            curArmor -= model.explosionDamage;
+        }
+        else if (otherCarMomentum.magnitude > model.impactSpinoutThreshold) {
+            curArmor -= model.spinoutDamage;
+        }
+        else {
+            curArmor -= model.crashDamage;
+        }
 
-        Debug.Log("CRAAAASH!  Other car's momentum = " + otherCarMomentum + ", current armor rating = " + curArmor);
+Debug.Log("CRAAAASH!  Other car's momentum = " + otherCarMomentum + ", current armor rating = " + curArmor);
 
         // Final velocities determined using Conservation of Momentum and the relationship of initial and final velocities in a perfectly elastic collision:
         // m1v1i + m2v2i = m1v1f + m2v2f
@@ -262,12 +268,11 @@ public class NPCar : MonoBehaviour
         // v2f = v1i - v2i + v1f
         // 
         // Note that the collisions are not treated as being elastic, but we're applying the "elasticity" and "road grip" factors afteward, for simplicity
-        Vector2 thisCarFinalVelocity = new Vector2(((model.mass * curSpeedX + otherMass * (2 * otherVelocity.x - curSpeedX)) / (model.mass + otherMass)) *
-                                                        impactSpeedEnhanceFactorX,
-                                                        (model.mass * curSpeedZ + otherMass * (2 * otherVelocity.y - curSpeedZ)) / (model.mass + otherMass)) *
-                                                        impactSpeedEnhanceFactorZ;
-        Vector2 otherCarFinalVelocity = new Vector2(curSpeedX - otherVelocity.x + thisCarFinalVelocity.x,
-                                                    curSpeedZ - otherVelocity.y + thisCarFinalVelocity.y);
+        Vector2 thisCarFinalVelocity =
+            new Vector2(((model.mass * curSpeedX + otherMass * (2 * otherVelocity.x - curSpeedX)) / (model.mass + otherMass)) * impactSpeedEnhanceFactorX,
+            (model.mass * curSpeedZ + otherMass * (2 * otherVelocity.y - curSpeedZ)) / (model.mass + otherMass)) * impactSpeedEnhanceFactorZ;
+        Vector2 otherCarFinalVelocity =
+            new Vector2(curSpeedX - otherVelocity.x + thisCarFinalVelocity.x, curSpeedZ - otherVelocity.y + thisCarFinalVelocity.y);
 
         if (useRoadGrip) {
             thisCarFinalVelocity = thisCarFinalVelocity * model.roadGripPercentageRelativeToPlayerCar / 100.0f;
@@ -283,6 +288,7 @@ public class NPCar : MonoBehaviour
             if (model.explodeFrameStartIndices.Count > 1) {
                 int indexIndex = Random.Range(0, model.explodeFrameStartIndices.Count);
                 curFrameIndex = model.explodeFrameStartIndices[indexIndex];
+
                 if (indexIndex < model.explodeFrameStartIndices.Count - 1) {
                     curExplodeFramesLastIndex = model.explodeFrameStartIndices[indexIndex + 1];
                 }
@@ -291,23 +297,34 @@ public class NPCar : MonoBehaviour
                 }
             }
 
-            if (impactPoint.x <= curPosX)   { curAnimationView = model.explodeFramesLeft; }
-            else                            { curAnimationView = model.explodeFramesRight; }
-
+            if (impactPoint.x <= curPosX) {
+                curAnimationView = model.explodeFramesLeft;
+            }
+            else {
+                curAnimationView = model.explodeFramesRight;
+            }
         }
         else if (otherCarMomentum.magnitude > model.impactSpinoutThreshold) {
             collisionEndVelocityX = curSpeedX * model.percentCurrentSpeedAfterSpinout / 100.0f;
             collisionEndVelocityZ = curSpeedZ * model.percentCurrentSpeedAfterSpinout / 100.0f;
 
-            if (impactPoint.x <= curPosX)   { curAnimationView = model.spinFramesLeft; }
-            else                            { curAnimationView = model.spinFramesRight; }
+            if (impactPoint.x <= curPosX) {
+                curAnimationView = model.spinFramesLeft;
+            }
+            else {
+                curAnimationView = model.spinFramesRight;
+            }
         }
         else {
             collisionEndVelocityX = curSpeedX * model.percentCurrentSpeedAfterCrash / 100.0f;
             collisionEndVelocityZ = curSpeedZ * model.percentCurrentSpeedAfterCrash / 100.0f;
 
-            if (impactPoint.x <= curPosX)   { curAnimationView = model.crashFramesLeft; }
-            else                            { curAnimationView = model.crashFramesRight; }
+            if (impactPoint.x <= curPosX) {
+                curAnimationView = model.crashFramesLeft;
+            }
+            else {
+                curAnimationView = model.crashFramesRight;
+            }
         }
 
         curSpeedX = thisCarFinalVelocity.x;
@@ -324,39 +341,59 @@ public class NPCar : MonoBehaviour
     private void SetSpriteView() {
         switch (CurrentViewAngle) {
             case ViewAngle.Left:
-                if (useRedVariants) { curAnimationFrames = curAnimationView.redLeft; }
-                else                { curAnimationFrames = curAnimationView.left; }
-                break;
+                if (useRedVariants) {
+                    curAnimationFrames = curAnimationView.redLeft;
+                }
+                else {
+                    curAnimationFrames = curAnimationView.left;
+                }
+            break;
+
             case ViewAngle.BackLeft:
-                if (useRedVariants) { curAnimationFrames = curAnimationView.redBackLeft; }
-                else                { curAnimationFrames = curAnimationView.backLeft; }
-                break;
+                if (useRedVariants) {
+                    curAnimationFrames = curAnimationView.redBackLeft;
+                }
+                else {
+                    curAnimationFrames = curAnimationView.backLeft;
+                }
+            break;
+
             case ViewAngle.Back:
-                if (useRedVariants) { curAnimationFrames = curAnimationView.redBack; }
-                else                { curAnimationFrames = curAnimationView.back; }
-                break;
+                if (useRedVariants) {
+                    curAnimationFrames = curAnimationView.redBack;
+                }
+                else {
+                    curAnimationFrames = curAnimationView.back;
+                }
+            break;
+
             case ViewAngle.BackRight:
-                if (useRedVariants) { curAnimationFrames = curAnimationView.redBackRight; }
-                else                { curAnimationFrames = curAnimationView.backRight; }
-                break;
+                if (useRedVariants) {
+                    curAnimationFrames = curAnimationView.redBackRight;
+                }
+                else {
+                    curAnimationFrames = curAnimationView.backRight;
+                }
+            break;
+
             case ViewAngle.Right:
-                if (useRedVariants) { curAnimationFrames = curAnimationView.redRight; }
-                else                { curAnimationFrames = curAnimationView.right; }
-                break;
+                if (useRedVariants) {
+                    curAnimationFrames = curAnimationView.redRight;
+                }
+                else {
+                    curAnimationFrames = curAnimationView.right;
+                }
+            break;
         }
     }
 
     public void SetVisibility(bool yOrN) {
-        if (yOrN) {
-            isVisible = true;
-            carSprite.enabled = true;
-        }
-        else {
-            isVisible = false;
-            carSprite.enabled = false;
-        }
+        isVisible = yOrN;
+        carSprite.enabled = yOrN;
 
-        if (blip != null) { blip.enabled = carSprite.enabled; }
+        if (blip != null) {
+            blip.enabled = carSprite.enabled;
+        }
     }
 
     // Overload checking for sensor status
@@ -402,27 +439,50 @@ public class NPCar : MonoBehaviour
         }
         
         if (blip != null) {
-            if (!sensorIsOn)    { blip.enabled = false; }
-            else                { blip.enabled = carSprite.enabled; }
+            if (!sensorIsOn) {
+                blip.enabled = false;
+            }
+            else {
+                blip.enabled = carSprite.enabled;
+            }
         }
     }
 
     public void SetViewAngle(float roadCurve, float camPosX, float curPlayerPosZ) {
         float rotationFactor = roadCurve + (camPosX - curPosX) / (Mathf.Abs(curPosZ - curPlayerPosZ) + 10f) + curSpeedX * laneChangeTurnViewFactor;
+        
         if (Mathf.Abs(rotationFactor) < enemySlightTurnRotationThreshold) {
             CurrentViewAngle = ViewAngle.Back;
         }
         else if (Mathf.Abs(rotationFactor) >= enemySlightTurnRotationThreshold && Mathf.Abs(rotationFactor) < enemyTurnRotationThreshold) {
-            if (rotationFactor > 0) { CurrentViewAngle = ViewAngle.BackRight; }    //{ car.carSprite.sprite = car.curSlightRight; }
-            else                    { CurrentViewAngle = ViewAngle.BackLeft; }     //{ car.carSprite.sprite = car.curSlightLeft; }
+            if (rotationFactor > 0) {
+                CurrentViewAngle = ViewAngle.BackRight;
+                //car.carSprite.sprite = car.curSlightRight;
+            }
+            else {
+                CurrentViewAngle = ViewAngle.BackLeft;
+                //car.carSprite.sprite = car.curSlightLeft;
+            }
         }
         else if (Mathf.Abs(rotationFactor) > +enemyTurnRotationThreshold && Mathf.Abs(rotationFactor) < enemyHardTurnRotationThreshold) {
-            if (rotationFactor > 0) { CurrentViewAngle = ViewAngle.Right; }        //{ car.carSprite.sprite = car.curRight; }
-            else                    { CurrentViewAngle = ViewAngle.Left; }         //{ car.carSprite.sprite = car.curLeft; }
+            if (rotationFactor > 0) {
+                CurrentViewAngle = ViewAngle.Right;
+                //car.carSprite.sprite = car.curRight;
+            }
+            else {
+                CurrentViewAngle = ViewAngle.Left;
+                //car.carSprite.sprite = car.curLeft;
+            }
         }
         else if (Mathf.Abs(rotationFactor) >= enemyHardTurnRotationThreshold) {
-            if (rotationFactor > 0) { CurrentViewAngle = ViewAngle.Right; }        //{ car.carSprite.sprite = car.curHardRight; }
-            else                    { CurrentViewAngle = ViewAngle.Left; }         //{ car.carSprite.sprite = car.curHardLeft; }
+            if (rotationFactor > 0) {
+                CurrentViewAngle = ViewAngle.Right;
+                //car.carSprite.sprite = car.curHardRight;
+            }
+            else {
+                CurrentViewAngle = ViewAngle.Left;
+                //car.carSprite.sprite = car.curHardLeft;
+            }
         }
     }
 

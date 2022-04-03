@@ -39,16 +39,16 @@ public class InputMapper : MonoBehaviour {
 	private InputAction execute_action = new InputAction(name: CONTROLS.execute.ToString(), binding: "<Keyboard>/z");
 
 	[SerializeField][Header("1: Action Action")]
-	private InputAction action_action = new InputAction(name: CONTROLS.action.ToString(), binding: "<Keyboard>/x");
+	private InputAction action_action = new InputAction(name: CONTROLS.action.ToString(), binding: "<Keyboard>/space");
 
 	[SerializeField][Header("2: Cancel Action")]
-	private InputAction cancel_action = new InputAction(name: CONTROLS.cancel.ToString(), binding: "<Keyboard>/space");
+	private InputAction cancel_action = new InputAction(name: CONTROLS.cancel.ToString(), binding: "<Keyboard>/c");
 
 	[SerializeField][Header("3: Special Action")]
-	private InputAction special_action = new InputAction(name: CONTROLS.special.ToString(), binding: "<Keyboard>/c");
+	private InputAction special_action = new InputAction(name: CONTROLS.special.ToString(), binding: "<Keyboard>/ctrl");
 
 	[SerializeField][Header("4: Alternative Action")]
-	private InputAction alternative_action = new InputAction(name: CONTROLS.alternative.ToString(), binding: "<Keyboard>/ctrl");
+	private InputAction alternative_action = new InputAction(name: CONTROLS.alternative.ToString(), binding: "<Keyboard>/x");
 
 	[SerializeField][Header("5: Extra Action")]
 	private InputAction extra_action = new InputAction(name: CONTROLS.extra.ToString(), binding: "<Keyboard>/shift");
