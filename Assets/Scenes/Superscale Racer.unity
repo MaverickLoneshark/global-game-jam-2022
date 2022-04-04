@@ -2460,6 +2460,7 @@ MonoBehaviour:
   maxArmor: 100
   roadGrip: 100
   elasticity: 0
+  bombPrefab: {fileID: 7786502757124791849, guid: 19e626034d2f3e54db5c0478fb46e41f, type: 3}
   bombVisible: {fileID: 21300000, guid: dd9506d0d088ec044af21401d1243233, type: 3}
   bombCamo: {fileID: 21300000, guid: 0eca701177cd1344e8d0a1042429462c, type: 3}
   droidHolding: {fileID: 21300000, guid: 0e42fb088d161484a828234c0551c001, type: 3}

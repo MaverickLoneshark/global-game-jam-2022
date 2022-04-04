@@ -100,6 +100,9 @@ public class RoadControl : MonoBehaviour
 
     // ENEMIES
     [SerializeField]
+    private GameObject bombPrefab;
+
+    [SerializeField]
     private Sprite bombVisible, bombCamo, droidHolding, droidEmptyHanded;
     [SerializeField]
     private float droidHeight, delayBeforeDropping, bombDropSpeed, bombSizeCorrectionFactor;
@@ -710,6 +713,8 @@ Debug.Log(roadSegments.Count);
                     }
 
                     if (visibleDroids.Count > 0) {
+                        GameObject bombObject;
+
                         foreach (BombDroid bd in visibleDroids) {
                             if (bd.segmentIndex == i) {
                                 float roadWidthOffset;
@@ -733,39 +738,14 @@ Debug.Log(roadSegments.Count);
                             if ((bd.segmentIndex < curSegmentIndex + 200) && bd.droidSprite.sprite == droidHolding) {
 //TODO: make prefab for bomb + image objects
                                 bd.droidSprite.sprite = droidEmptyHanded;
-                                Bomb bmb = new Bomb();
-                                GameObject obj = new GameObject("Bomb Sprite Renderer");
+                                bombObject = GameObject.Instantiate(bombPrefab);
+                                Bomb bmb = bombObject.GetComponent<Bomb>();
 
-                                GameObject imgObj = new GameObject("Bomb Image");
-                                RawImage img = imgObj.AddComponent<RawImage>();
-                                imgObj.transform.SetParent(warningRoadLinesParent);
-                                bmb.blip = img;
-                                bmb.blip.texture = warningRoadBombBlipSprite;
-                                bmb.blip.rectTransform.anchoredPosition = warningRoadLines[0].rectTransform.anchoredPosition;
-                                bmb.blip.rectTransform.sizeDelta = Vector2.zero;
-                                bmb.blip.enabled = true;
-
-                                GameObject imgProjObj = new GameObject("Bomb Image Projection");
-                                RawImage imgProj = imgProjObj.AddComponent<RawImage>();
-                                imgProjObj.transform.SetParent(warningRoadLinesParent);
-                                bmb.blipProjection = imgProj;
-                                bmb.blipProjection.texture = warningRoadBombBlipSprite;
-                                bmb.blipProjection.rectTransform.anchoredPosition =
-                                    warningRoadLines[0].rectTransform.anchoredPosition + new Vector2(0.0f, bombBlipProjectionRoadOffsetY);
-                                bmb.blipProjection.rectTransform.sizeDelta = Vector2.zero;
-                                bmb.blipProjection.enabled = true;
-                                bmb.blipProjectionFlashRefTime = Time.time;
-
-                                obj.AddComponent<SpriteRenderer>().enabled = false;
-                                bmb.segmentIndex = bd.segmentIndex;
-                                bmb.singleBomb = obj.transform;
-                                bmb.offsetX = bd.offsetX;
-                                bmb.isExploding = false;
-                                bmb.explosionHeightOffset = 50f;
-                                bmb.bombSprite = obj.GetComponent<SpriteRenderer>();
-                                bmb.bombSprite.sprite = bombCamo;
-                                bmb.bombSprite.enabled = true;
-                                bmb.explosionFrameIndex = 0;
+                                bmb.InitializeBlip(warningRoadLinesParent, warningRoadBombBlipSprite,
+                                    warningRoadLines[0].rectTransform.anchoredPosition);
+                                bmb.InitializeBlipProjection(warningRoadBombBlipSprite,
+                                    warningRoadLines[0].rectTransform.anchoredPosition + Vector2.up * bombBlipProjectionRoadOffsetY);
+                                bmb.InitializeBomb(bd.segmentIndex, bd.offsetX, bombCamo);
 
                                 activeBombPool.Add(bmb);
                             }
@@ -802,8 +782,8 @@ Debug.Log(roadSegments.Count);
 
                                 float sizeCorrection = nearEdgeWidthScale * bombSizeCorrectionFactor; //* billboardSizeCorrectionFactor;
 
-                                bmb.singleBomb.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
-                                bmb.singleBomb.position = new Vector3(x + (bmb.offsetX) * nearEdgeWidthScale,
+                                bmb.transform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                                bmb.transform.position = new Vector3(x + (bmb.offsetX) * nearEdgeWidthScale,
                                     nearEdgeHeight + (bmb.bombSprite.sprite.rect.height + bmb.explosionHeightOffset) * nearEdgeWidthScale * 0.5f,
                                     -1.5f);
 
@@ -832,15 +812,15 @@ Debug.Log(roadSegments.Count);
                                 }
 
                                 if (!isInvulnerable && canDrive) {
-                                    if (i == curSegmentIndex + 5 && Mathf.Abs(bmb.singleBomb.position.x - playerCar.position.x) < 30) {
-                                        if (bmb.singleBomb.position.x >= playerCar.position.x) {
+                                    if (i == curSegmentIndex + 5 && Mathf.Abs(bmb.transform.position.x - playerCar.position.x) < 30) {
+                                        if (bmb.transform.position.x >= playerCar.position.x) {
                                             collisionSpeedEffect =
-                                                new Vector3(maxBombIntensity / (Mathf.Max(playerCar.position.x - bmb.singleBomb.position.x, -1)),
+                                                new Vector3(maxBombIntensity / (Mathf.Max(playerCar.position.x - bmb.transform.position.x, -1)),
                                                 -curPlayerSpeed * 0.5f);
                                             playerIsRollingLeft = true;
                                         }
                                         else {
-                                            collisionSpeedEffect = new Vector3(maxBombIntensity / (Mathf.Min(playerCar.position.x - bmb.singleBomb.position.x, 1)),
+                                            collisionSpeedEffect = new Vector3(maxBombIntensity / (Mathf.Min(playerCar.position.x - bmb.transform.position.x, 1)),
                                                 -curPlayerSpeed * 0.5f);
                                             playerIsRollingRight = true;
                                         }
@@ -1218,9 +1198,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
         if (activeBombPool.Count > 0) {
             for (int i = 0; i < activeBombPool.Count; i++) {
                 if (activeBombPool[i].segmentIndex < curSegmentIndex) {
-                    Destroy(activeBombPool[i].singleBomb.gameObject);
-                    Destroy(activeBombPool[i].blip.gameObject);
-                    Destroy(activeBombPool[i].blipProjection.gameObject);
+                    Destroy(activeBombPool[i]);
                     activeBombPool.RemoveAt(i);
                     i--;
                 }
