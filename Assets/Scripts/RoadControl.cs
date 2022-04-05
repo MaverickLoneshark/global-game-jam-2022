@@ -126,8 +126,8 @@ public class RoadControl : MonoBehaviour
     // BILLBOARDS and OTHER SPRITES
     public List<BillboardSprite> billboardData;
 
-    private List<BillboardSprite> billboardDataExpanded = new List<BillboardSprite>();
-    private List<BillboardSprite> visibleBillboards = new List<BillboardSprite>();
+    private List<Billboard> billboardDataExpanded = new List<Billboard>();
+    private List<Billboard> visibleBillboards = new List<Billboard>();
 
     [SerializeField]
     private float billboardSizeCorrectionFactor, spriteBgdZ;
@@ -246,14 +246,13 @@ public class RoadControl : MonoBehaviour
         playerCarSprite = playerCar.GetComponent<SpriteRenderer>();
         playerCarEffectSprite = playerCarEffect.GetComponent<SpriteRenderer>();
 
-        BillboardSprite bbTemp;
+        Billboard bbTemp;
 
         foreach (BillboardSprite bb in billboardData) {
             if (bb.howManyRows > 1 || bb.howManyCols > 1) {
                 for (int i = 0; i < bb.howManyRows; i++) {
                     for (int j = 0; j < bb.howManyCols; j++) {
-                        bbTemp = new BillboardSprite();
-                        bbTemp.spriteType = bb.spriteType;
+                        bbTemp = GameObject.Instantiate(bb.billboardPrefab).GetComponent<Billboard>();
                         bbTemp.segmentIndex = bb.segmentIndex + (i * bb.rowSpacingInSegs);
 
                         if (bb.offsetX >= 0) {
@@ -268,7 +267,7 @@ public class RoadControl : MonoBehaviour
                 }
             }
             else {
-                billboardDataExpanded.Add(bb);
+                billboardDataExpanded.Add(GameObject.Instantiate(bb.billboardPrefab).GetComponent<Billboard>());
             }
         }
 
@@ -682,7 +681,7 @@ Debug.Log(roadSegments.Count);
 
                 if (segNumDrawn < segIndexSkipSegThreshold) {
                     if (visibleBillboards.Count > 0) {
-                        foreach (BillboardSprite bb in visibleBillboards) {
+                        foreach (Billboard bb in visibleBillboards) {
                             if (bb.segmentIndex == i) {
                                 float roadWidthOffset;
                                 
@@ -696,7 +695,7 @@ Debug.Log(roadSegments.Count);
                                 float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
 
                                 float spriteZ;
-                                float spriteElevation = nearEdgeHeight + bb.spriteType.rect.height * nearEdgeWidthScale * 0.5f;
+                                float spriteElevation = nearEdgeHeight + bb.sprite.rect.height * nearEdgeWidthScale * 0.5f;
 
                                 if (nearEdgeHeight < absHighestScreenLineDrawn && roadSegIndexOfHighestScreenLine < i) {
                                     spriteZ = spriteBgdZ;
@@ -705,9 +704,9 @@ Debug.Log(roadSegments.Count);
                                     spriteZ = -1f;
                                 }
 
-                                bb.spriteTransform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
-                                bb.spriteTransform.position = new Vector3(x + (bb.offsetX) * nearEdgeWidthScale, spriteElevation, spriteZ);
-                                bb.spriteRend.enabled = true;
+                                bb.transform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                                bb.transform.position = new Vector3(x + (bb.offsetX) * nearEdgeWidthScale, spriteElevation, spriteZ);
+                                bb.EnableSprite();
                             }
                         }
                     }
@@ -1055,17 +1054,10 @@ Debug.Log(roadSegments.Count);
 
     // This method is used when first loading the road to see if there are any sprites in the immediate vicinity (not just at the visibility edge)
     private void LoadOpeningBillboards() {
-        foreach (BillboardSprite bb in billboardDataExpanded) {
+        foreach (Billboard bb in billboardDataExpanded) {
             if (bb.segmentIndex <= curSegmentIndex + numSegsToDraw) {
-                GameObject obj = new GameObject("Billboard Sprite Renderer");
-                obj.AddComponent<SpriteRenderer>();
-                bb.spriteTransform = obj.transform;
-                bb.spriteRend = obj.GetComponent<SpriteRenderer>();
-                bb.spriteRend.enabled = false;
-                bb.spriteRend.sprite = bb.spriteType;
-
                 visibleBillboards.Add(bb);
-Debug.Log(bb.spriteTransform);
+Debug.Log(bb.transform);
             }
         }
     }
@@ -1073,13 +1065,6 @@ Debug.Log(bb.spriteTransform);
     private void UpdateBillboards() {
         for (int i = 0; i < billboardDataExpanded.Count; i++) {
             if (billboardDataExpanded[i].segmentIndex == curSegmentIndex + numSegsToDraw) {
-                GameObject obj = new GameObject("BillBoard Expanded Renderer");
-                obj.AddComponent<SpriteRenderer>();
-                billboardDataExpanded[i].spriteTransform = obj.transform;
-                billboardDataExpanded[i].spriteRend = obj.GetComponent<SpriteRenderer>();
-                billboardDataExpanded[i].spriteRend.enabled = false;
-                billboardDataExpanded[i].spriteRend.sprite = billboardDataExpanded[i].spriteType;
-
                 visibleBillboards.Add(billboardDataExpanded[i]);
                 billboardDataExpanded.RemoveAt(i);
                 i--;
@@ -1088,7 +1073,7 @@ Debug.Log(bb.spriteTransform);
 
         for (int i = 0; i < visibleBillboards.Count; i++) {
             if (visibleBillboards[i].segmentIndex < curSegmentIndex) {
-                Destroy(visibleBillboards[i].spriteTransform.gameObject);
+                Destroy(visibleBillboards[i]);
                 visibleBillboards.RemoveAt(i);
                 i--;
             }

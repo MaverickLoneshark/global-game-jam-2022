@@ -5,10 +5,6 @@ using UnityEngine;
 [System.Serializable]
 public class BillboardSprite
 {
-    public Sprite spriteType;
-    [HideInInspector]
-    public Transform spriteTransform;
-    [HideInInspector]
-    public SpriteRenderer spriteRend;
+    public GameObject billboardPrefab;
     public int segmentIndex, offsetX, howManyRows = 1, howManyCols = 1, rowSpacingInSegs = 20, colSpacingInPixels;
 }

@@ -2502,81 +2502,63 @@ MonoBehaviour:
   enemyTurnRotationThreshold: 30
   enemyHardTurnRotationThreshold: 50
   billboardData:
-  - spriteType: {fileID: 21300000, guid: 929b4f8c1de203948add8c7025f68fd8, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
+  - billboardPrefab: {fileID: 2941215520084742869, guid: 92576fa71452a7246853428a98d185c4, type: 3}
     segmentIndex: 1500
     offsetX: -500
     howManyRows: 10
     howManyCols: 1
     rowSpacingInSegs: 50
     colSpacingInPixels: 0
-  - spriteType: {fileID: 21300000, guid: 0a4793df10d9d304d8b67f946768e44e, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
+  - billboardPrefab: {fileID: 9037331172000030243, guid: 31884469cb07e86498d090d2e9ba5133, type: 3}
     segmentIndex: 1500
     offsetX: 500
     howManyRows: 10
     howManyCols: 1
     rowSpacingInSegs: 50
     colSpacingInPixels: 0
-  - spriteType: {fileID: 21300000, guid: 929b4f8c1de203948add8c7025f68fd8, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
+  - billboardPrefab: {fileID: 2941215520084742869, guid: 92576fa71452a7246853428a98d185c4, type: 3}
     segmentIndex: 4000
     offsetX: -500
     howManyRows: 1
     howManyCols: 1
     rowSpacingInSegs: 50
     colSpacingInPixels: 0
-  - spriteType: {fileID: 21300000, guid: 0a4793df10d9d304d8b67f946768e44e, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
+  - billboardPrefab: {fileID: 9037331172000030243, guid: 31884469cb07e86498d090d2e9ba5133, type: 3}
     segmentIndex: 4000
     offsetX: 500
     howManyRows: 10
     howManyCols: 1
     rowSpacingInSegs: 50
     colSpacingInPixels: 0
-  - spriteType: {fileID: 21300000, guid: 75119214aaaf24f4e948b40689bdc686, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
+  - billboardPrefab: {fileID: 1897872052846616367, guid: b3aafb45f22b048418671e3fcfd0ab14, type: 3}
     segmentIndex: 450
     offsetX: -450
     howManyRows: 70
     howManyCols: 10
     rowSpacingInSegs: 10
     colSpacingInPixels: 70
-  - spriteType: {fileID: 21300000, guid: 75119214aaaf24f4e948b40689bdc686, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
+  - billboardPrefab: {fileID: 1897872052846616367, guid: b3aafb45f22b048418671e3fcfd0ab14, type: 3}
     segmentIndex: 450
     offsetX: 450
     howManyRows: 70
     howManyCols: 10
     rowSpacingInSegs: 10
     colSpacingInPixels: 70
-  - spriteType: {fileID: 21300000, guid: ff31ee1832a282043a14fc812d725b9a, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
+  - billboardPrefab: {fileID: 5083161492908324920, guid: 874e6dc2f05e08d4cb9ae6cb5afb4127, type: 3}
     segmentIndex: 2500
     offsetX: 0
     howManyRows: 50
     howManyCols: 1
     rowSpacingInSegs: 10
     colSpacingInPixels: 0
-  - spriteType: {fileID: 21300000, guid: 3d28111475968b847925752f362520eb, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
+  - billboardPrefab: {fileID: 7950662308775476905, guid: 49b338b7eac895449a9e8be9b40b293e, type: 3}
     segmentIndex: 1200
     offsetX: -450
     howManyRows: 10
     howManyCols: 1
     rowSpacingInSegs: 40
     colSpacingInPixels: 0
-  - spriteType: {fileID: 21300000, guid: ff31ee1832a282043a14fc812d725b9a, type: 3}
-    spriteTransform: {fileID: 0}
-    spriteRend: {fileID: 0}
+  - billboardPrefab: {fileID: 5083161492908324920, guid: 874e6dc2f05e08d4cb9ae6cb5afb4127, type: 3}
     segmentIndex: 5500
     offsetX: 0
     howManyRows: 50
@@ -3708,6 +3690,36 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1562800179
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1562800180}
+  m_Layer: 0
+  m_Name: Billboards
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1562800180
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562800179}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 10
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1599980010
 PrefabInstance:
   m_ObjectHideFlags: 0
