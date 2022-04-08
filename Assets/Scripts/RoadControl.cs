@@ -100,6 +100,9 @@ public class RoadControl : MonoBehaviour
 
     // ENEMIES
     [SerializeField]
+    private GameObject nPCarPrefab;
+
+    [SerializeField]
     private GameObject bombPrefab;
 
     [SerializeField]
@@ -107,8 +110,8 @@ public class RoadControl : MonoBehaviour
     [SerializeField]
     private float droidHeight, delayBeforeDropping, bombDropSpeed, bombSizeCorrectionFactor;
 
-    public List<BombDroid> droids;
-    private List<BombDroid> visibleDroids = new List<BombDroid>();
+    public List<BombDroid> bombDroids;
+    private List<Droid> visibleDroids = new List<Droid>();
     private List<Bomb> activeBombPool = new List<Bomb>();
 
     public List<CarModel> trafficCars;
@@ -712,13 +715,11 @@ Debug.Log(roadSegments.Count);
                     }
 
                     if (visibleDroids.Count > 0) {
-                        GameObject bombObject;
-
-                        foreach (BombDroid bd in visibleDroids) {
-                            if (bd.segmentIndex == i) {
+                        foreach (Droid droid in visibleDroids) {
+                            if (droid.segmentIndex == i) {
                                 float roadWidthOffset;
 
-                                if (bd.offsetX < 0) {
+                                if (droid.offsetX < 0) {
                                     roadWidthOffset = screenHalfWidth * -1;
                                 }
                                 else {
@@ -727,24 +728,23 @@ Debug.Log(roadSegments.Count);
 
                                 float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
 
-                                bd.droid.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
-                                bd.droid.position = new Vector3(x + (bd.offsetX) * nearEdgeWidthScale,
-                                    nearEdgeHeight + (droidHeight + bd.droidSprite.sprite.rect.height) * nearEdgeWidthScale * 0.5f, -1f);
-                                bd.droidSprite.enabled = true;
+                                droid.transform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                                droid.transform.position = new Vector3(x + (droid.offsetX) * nearEdgeWidthScale,
+                                    nearEdgeHeight + (droidHeight + droid.droidSprite.sprite.rect.height) * nearEdgeWidthScale * 0.5f, -1f);
+                                droid.droidSprite.enabled = true;
                             }
 
                             //if ((Time.time - bd.dropDelayRefTime > delayBeforeDropping) && bd.droidSprite.sprite == droidHolding) {
-                            if ((bd.segmentIndex < curSegmentIndex + 200) && bd.droidSprite.sprite == droidHolding) {
+                            if ((droid.segmentIndex < curSegmentIndex + 200) && droid.droidSprite.sprite == droidHolding) {
 //TODO: make prefab for bomb + image objects
-                                bd.droidSprite.sprite = droidEmptyHanded;
-                                bombObject = GameObject.Instantiate(bombPrefab);
-                                Bomb bmb = bombObject.GetComponent<Bomb>();
+                                droid.droidSprite.sprite = droidEmptyHanded;
+                                Bomb bmb = GameObject.Instantiate(bombPrefab).GetComponent<Bomb>();
 
                                 bmb.InitializeBlip(warningRoadLinesParent, warningRoadBombBlipSprite,
                                     warningRoadLines[0].rectTransform.anchoredPosition);
                                 bmb.InitializeBlipProjection(warningRoadBombBlipSprite,
                                     warningRoadLines[0].rectTransform.anchoredPosition + Vector2.up * bombBlipProjectionRoadOffsetY);
-                                bmb.InitializeBomb(bd.segmentIndex, bd.offsetX, bombCamo);
+                                bmb.InitializeBomb(droid.segmentIndex, droid.offsetX, bombCamo);
 
                                 activeBombPool.Add(bmb);
                             }
@@ -1081,18 +1081,20 @@ Debug.Log(bb.transform);
     }
 
     private void LoadOpeningEnemies() {
-        foreach (BombDroid bd in droids) {
-            if (bd.segmentIndex <= curSegmentIndex + numSegsToDraw) {
-                GameObject obj = new GameObject("Bomb Droid Renderer");
-                obj.AddComponent<SpriteRenderer>();
-                bd.droid = obj.transform;
-                bd.droidSprite = obj.GetComponent<SpriteRenderer>();
-                bd.droidSprite.enabled = false;
-                bd.droidSprite.sprite = droidHolding;
+        Droid droid;
 
+        for (int i = 0; i < bombDroids.Count; i++) {
+            if (bombDroids[i].segmentIndex <= curSegmentIndex + numSegsToDraw) {
+                droid = GameObject.Instantiate(bombDroids[i].droid).GetComponent<Droid>();
+                droid.segmentIndex = bombDroids[i].segmentIndex;
+                droid.offsetX = bombDroids[i].offsetX;
+                droid.dropDelayRefTime = Time.time;
 
-                visibleDroids.Add(bd);
-Debug.Log(bd.droid);
+                visibleDroids.Add(droid);
+                bombDroids.RemoveAt(i);
+                i--;
+Debug.Log(droid, droid);
+Debug.Break();
             }
         }
 
@@ -1110,10 +1112,10 @@ Debug.Log(bd.droid);
             }
 
             if (enemyModels.Count > 0) {
+                NPCar car;
+
                 for (int i = 0; i < numEnemyModels; i++) {
-                    GameObject obj = new GameObject("Enemy");
-                    obj.AddComponent<SpriteRenderer>();
-                    NPCar car = obj.AddComponent<NPCar>();
+                    car = GameObject.Instantiate(nPCarPrefab).GetComponent<NPCar>();
                     
                     car.InitializeCar(enemyModels[Random.Range(0, enemyModels.Count)],
                                         Random.Range(0, roadSegments.Count),
@@ -1133,11 +1135,11 @@ Debug.Log(bd.droid);
 Debug.Log("# innocent cars: " + innocentModels.Count);
 
             if (innocentModels.Count > 0) {
+                NPCar car;
+
                 for (int i = 0; i < numInnocentModels; i++) {
-                    GameObject obj = new GameObject("NPC");
-                    obj.AddComponent<SpriteRenderer>();
-                    NPCar car = obj.AddComponent<NPCar>();
-                    
+                    car = GameObject.Instantiate(nPCarPrefab).GetComponent<NPCar>();
+
                     car.InitializeCar(innocentModels[Random.Range(0, innocentModels.Count)],
                                         Random.Range(0, roadSegments.Count),
                                         roadSegmentLength,
@@ -1156,25 +1158,24 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
     }
 
     private void UpdateEnemies() {
-        for (int i = 0; i < droids.Count; i++) {
-            if (droids[i].segmentIndex == curSegmentIndex + numSegsToDraw) {
-                GameObject obj = new GameObject("Droid Renderer");
-                obj.AddComponent<SpriteRenderer>();
-                droids[i].droid = obj.transform;
-                droids[i].droidSprite = obj.GetComponent<SpriteRenderer>();
-                droids[i].droidSprite.enabled = false;
-                droids[i].droidSprite.sprite = droidHolding;
+        Droid droid;
 
-                droids[i].dropDelayRefTime = Time.time;
-                visibleDroids.Add(droids[i]);
-                droids.RemoveAt(i);
+        for (int i = 0; i < bombDroids.Count; i++) {
+            if (bombDroids[i].segmentIndex <= curSegmentIndex + numSegsToDraw) {
+                droid = GameObject.Instantiate(bombDroids[i].droid).GetComponent<Droid>();
+                droid.segmentIndex = bombDroids[i].segmentIndex;
+                droid.offsetX = bombDroids[i].offsetX;
+                droid.dropDelayRefTime = Time.time;
+
+                visibleDroids.Add(droid);
+                bombDroids.RemoveAt(i);
                 i--;
             }
         }
 
         for (int i = 0; i < visibleDroids.Count; i++) {
             if (visibleDroids[i].segmentIndex < curSegmentIndex) {
-                Destroy(visibleDroids[i].droidSprite.gameObject);
+                Destroy(visibleDroids[i]);
                 visibleDroids.RemoveAt(i);
                 i--;
             }

@@ -2460,6 +2460,7 @@ MonoBehaviour:
   maxArmor: 100
   roadGrip: 100
   elasticity: 0
+  nPCarPrefab: {fileID: 2957873077328433056, guid: 87ed94a34461b714aad011d626907eeb, type: 3}
   bombPrefab: {fileID: 7786502757124791849, guid: 19e626034d2f3e54db5c0478fb46e41f, type: 3}
   bombVisible: {fileID: 21300000, guid: dd9506d0d088ec044af21401d1243233, type: 3}
   bombCamo: {fileID: 21300000, guid: 0eca701177cd1344e8d0a1042429462c, type: 3}
@@ -2469,22 +2470,19 @@ MonoBehaviour:
   delayBeforeDropping: 1.25
   bombDropSpeed: 10
   bombSizeCorrectionFactor: 1.5
-  droids:
-  - segmentIndex: 1000
+  bombDroids:
+  - droid: {fileID: 4338042597202079013, guid: e0d652911532be945aca4b4ad4363625, type: 3}
+    segmentIndex: 1000
     offsetX: 20
-    dropDelayRefTime: 0
-    droid: {fileID: 0}
-    droidSprite: {fileID: 0}
-  - segmentIndex: 2000
+  - droid: {fileID: 4338042597202079013, guid: e0d652911532be945aca4b4ad4363625, type: 3}
+    segmentIndex: 2000
     offsetX: -40
-    dropDelayRefTime: 0
-    droid: {fileID: 0}
-    droidSprite: {fileID: 0}
-  - segmentIndex: 2800
+  - droid: {fileID: 4338042597202079013, guid: e0d652911532be945aca4b4ad4363625, type: 3}
+    segmentIndex: 2800
     offsetX: 50
-    dropDelayRefTime: 0
-    droid: {fileID: 0}
-    droidSprite: {fileID: 0}
+  - droid: {fileID: 4338042597202079013, guid: e0d652911532be945aca4b4ad4363625, type: 3}
+    segmentIndex: 4000
+    offsetX: 50
   trafficCars:
   - {fileID: 11400000, guid: 25cdf2c7706a8484e80bd574a7ab4035, type: 2}
   - {fileID: 11400000, guid: 2040541cbe5d369469b6a1dc1dce78f8, type: 2}
