@@ -4,10 +4,12 @@ using UnityEngine;
 
 [System.Serializable]
 public class Billboard : MonoBehaviour {
+	[SerializeField]
+	private SpriteRenderer spriteRend;
+
 	public int segmentIndex;
 	public int offsetX;
 
-	private SpriteRenderer spriteRend;
 	public Sprite sprite {
 		get {
 			return spriteRend.sprite;
@@ -20,7 +22,10 @@ public class Billboard : MonoBehaviour {
 
 	private void Awake() {
 		transform.parent = GameObject.Find("Billboards").transform;
-		spriteRend = GetComponent<SpriteRenderer>();
+
+		if (!spriteRend) {
+			spriteRend = GetComponent<SpriteRenderer>();
+		}
 
 		if (!spriteRend) {
 			spriteRend = gameObject.AddComponent<SpriteRenderer>();

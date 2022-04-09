@@ -58,8 +58,9 @@ public class RoadControl : MonoBehaviour
     private float bgdOffset;
     public List<Sprite> roadStripSprites;
 
-    private List<Transform> roadScreenLines = new List<Transform>();
-    private List<SpriteRenderer> roadScreenSprites = new List<SpriteRenderer>();
+    [SerializeField]
+    private GameObject roadStripPrefab;
+    private List<RoadStrip> roadStrips = new List<RoadStrip>();
 
     // Camera is at depth = 0; road is at height = 0
     [SerializeField]
@@ -136,6 +137,9 @@ public class RoadControl : MonoBehaviour
     private float billboardSizeCorrectionFactor, spriteBgdZ;
 
     // SPECIAL EFFECTS
+    [SerializeField]
+    private GameObject sparkPrefab;
+
     [SerializeField]
     public List<Sprite> smokeFrontFrames, smokeLeftFrames, smokeRightFrames,
                         sparkFrontFrames, sparkBackFrames, 
@@ -547,30 +551,29 @@ public class RoadControl : MonoBehaviour
     }
 
     private void InitializeRoadStrips() {
-
-        roadScreenLines.Clear();
-        roadScreenLines.Add(refRoadStrip);
-        roadScreenSprites.Clear();
-        roadScreenSprites.Add(refRoadStrip.GetComponent<SpriteRenderer>());
+        roadStrips.Clear();
+        RoadStrip roadStrip = GameObject.Instantiate(roadStripPrefab).GetComponent<RoadStrip>();
+        roadStrip.transform.SetParent(refRoadStrip.parent);
+        roadStrip.transform.position = refRoadStrip.position;
+        roadStrips.Add(roadStrip);
 
         for (int i = 1; i < numScreenLines; i++) {
-            GameObject newStrip = new GameObject("Road Strip");
+            RoadStrip newStrip = GameObject.Instantiate(roadStripPrefab).GetComponent<RoadStrip>();
+            newStrip.transform.SetParent(refRoadStrip.parent);
             newStrip.transform.position = refRoadStrip.transform.position + new Vector3(0, screenLineHeight * i, 0);
-            newStrip.AddComponent<SpriteRenderer>();
-            roadScreenLines.Add(newStrip.transform);
-            roadScreenSprites.Add(newStrip.GetComponent<SpriteRenderer>());
+            roadStrips.Add(newStrip);
         }
         
         curRoadStripSpriteIndex = 0;
         curRoadStripSprite = roadStripSprites[curRoadStripSpriteIndex];
 
         while (straightSegCounter < numStraightSegs) {
-
             if (rumbleStripCounter > numSegsPerRumble) {
                 curRoadStripSpriteIndex = (curRoadStripSpriteIndex + 1) % roadStripSprites.Count;
                 curRoadStripSprite = roadStripSprites[curRoadStripSpriteIndex];
                 rumbleStripCounter = 1;
             }
+
             RoadSegment newSeg = new RoadSegment();
             //newSeg.EdgeNearZ = camCurZ + roadStartZ + roadSegmentLength * i;
             //newSeg.EdgeFarZ = camCurZ + roadStartZ + roadSegmentLength * (i + 1);
@@ -653,20 +656,20 @@ Debug.Log(roadSegments.Count);
                                 (j - nearEdgeHeight) * ((farEdgeWidthScale - nearEdgeWidthScale) / (farEdgeHeight - nearEdgeHeight));
 
                             if (j >= 0) {
-                                roadScreenSprites[j].sprite = roadSegments[i].SpriteVariation;
-                                roadScreenLines[j].position =
-                                    new Vector3(x + dxFraction, roadScreenLines[j].position.y, roadScreenLines[j].position.z);
-                                roadScreenLines[j].localScale = new Vector3(nearEdgeWidthScale + scaleIncreaseFromNearEdge, 1.0f, 1.0f);
+                                roadStrips[j].spriteRenderer.sprite = roadSegments[i].SpriteVariation;
+                                roadStrips[j].transform.position =
+                                    new Vector3(x + dxFraction, roadStrips[j].transform.position.y, roadStrips[j].transform.position.z);
+                                roadStrips[j].transform.localScale = new Vector3(nearEdgeWidthScale + scaleIncreaseFromNearEdge, 1.0f, 1.0f);
 //Debug.Log(roadScreenLines[j].localScale.x);
                             }
                         }
 //Debug.Log("thick seg, screen line #" + nearEdgeHeight);
                     }
                     else {
-                        roadScreenSprites[farEdgeHeight].sprite = roadSegments[i].SpriteVariation;
-                        roadScreenLines[farEdgeHeight].position =
-                            new Vector3(x + dx, roadScreenLines[farEdgeHeight].position.y, roadScreenLines[farEdgeHeight].position.z);
-                        roadScreenLines[farEdgeHeight].localScale = new Vector3(farEdgeWidthScale, 1.0f, 1.0f);
+                        roadStrips[farEdgeHeight].spriteRenderer.sprite = roadSegments[i].SpriteVariation;
+                        roadStrips[farEdgeHeight].transform.position =
+                            new Vector3(x + dx, roadStrips[farEdgeHeight].transform.position.y, roadStrips[farEdgeHeight].transform.position.z);
+                        roadStrips[farEdgeHeight].transform.localScale = new Vector3(farEdgeWidthScale, 1.0f, 1.0f);
 //Debug.Log("single seg, screen line #" + nearEdgeHeight);
                     }
                 }
@@ -897,11 +900,7 @@ Debug.Log(roadSegments.Count);
                                                 UpdateArmorValue(damageIncurredByCrashing);
                                             }
 
-                                            Spark newSpark = new Spark();
-                                            GameObject obj = new GameObject("Spark Renderer");
-                                            newSpark.sparkInstance = obj.transform;
-                                            newSpark.sparkSprite = obj.AddComponent<SpriteRenderer>();
-                                            newSpark.curSparkFrameIndex = 0;
+                                            Spark newSpark = GameObject.Instantiate(sparkPrefab).GetComponent<Spark>();
 
                                             if (i >= curSegmentIndex) {
                                                 if (car.transform.position.x >= playerCar.position.x) {
@@ -911,16 +910,16 @@ Debug.Log(roadSegments.Count);
                                                     if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
                                                             Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
                                                         newSpark.SparkSide = Spark.SparkDirection.Right;
-                                                        newSpark.sparkInstance.position =
+                                                        newSpark.transform.position =
                                                             playerCar.position + (Vector3.right * playerSparkRightOffset);
-                                                        newSpark.sparkInstance.SetParent(playerCar);
+                                                        newSpark.transform.SetParent(playerCar);
                                                         newSpark.sparkSprite.sprite = curSparkRightFrames[newSpark.curSparkFrameIndex];
                                                     }
                                                     else {
                                                         newSpark.SparkSide = Spark.SparkDirection.Front;
-                                                        newSpark.sparkInstance.position =
+                                                        newSpark.transform.position =
                                                             playerCar.position + (Vector3.up * playerSparkFrontOffset);
-                                                        newSpark.sparkInstance.SetParent(playerCar);
+                                                        newSpark.transform.SetParent(playerCar);
                                                         newSpark.sparkSprite.sprite = curSparkFrontFrames[newSpark.curSparkFrameIndex];
                                                     }
                                                 }
@@ -931,16 +930,16 @@ Debug.Log(roadSegments.Count);
                                                     if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
                                                             Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
                                                         newSpark.SparkSide = Spark.SparkDirection.Left;
-                                                        newSpark.sparkInstance.position =
+                                                        newSpark.transform.position =
                                                             playerCar.position + (Vector3.right * playerSparkLeftOffset);
-                                                        newSpark.sparkInstance.SetParent(playerCar);
+                                                        newSpark.transform.SetParent(playerCar);
                                                         newSpark.sparkSprite.sprite = curSparkLeftFrames[newSpark.curSparkFrameIndex];
                                                     }
                                                     else {
                                                         newSpark.SparkSide = Spark.SparkDirection.Front;
-                                                        newSpark.sparkInstance.position =
+                                                        newSpark.transform.position =
                                                             playerCar.position + Vector3.up * playerSparkFrontOffset;
-                                                        newSpark.sparkInstance.SetParent(playerCar);
+                                                        newSpark.transform.SetParent(playerCar);
                                                         newSpark.sparkSprite.sprite = curSparkFrontFrames[newSpark.curSparkFrameIndex];
                                                     }
                                                 }
@@ -953,16 +952,16 @@ Debug.Log(roadSegments.Count);
                                                     if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
                                                             Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
                                                         newSpark.SparkSide = Spark.SparkDirection.Right;
-                                                        newSpark.sparkInstance.position =
+                                                        newSpark.transform.position =
                                                             playerCar.position + (Vector3.right * playerSparkRightOffset);
-                                                        newSpark.sparkInstance.SetParent(playerCar);
+                                                        newSpark.transform.SetParent(playerCar);
                                                         newSpark.sparkSprite.sprite = curSparkRightFrames[newSpark.curSparkFrameIndex];
                                                     }
                                                     else {
                                                         newSpark.SparkSide = Spark.SparkDirection.Back;
-                                                        newSpark.sparkInstance.position =
+                                                        newSpark.transform.position =
                                                             playerCar.position + (Vector3.up * playerSparkBackOffset);
-                                                        newSpark.sparkInstance.SetParent(playerCar);
+                                                        newSpark.transform.SetParent(playerCar);
                                                         newSpark.sparkSprite.sprite = curSparkBackFrames[newSpark.curSparkFrameIndex];
                                                     }
                                                 }
@@ -973,16 +972,16 @@ Debug.Log(roadSegments.Count);
                                                     if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
                                                             Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
                                                         newSpark.SparkSide = Spark.SparkDirection.Left;
-                                                        newSpark.sparkInstance.position =
+                                                        newSpark.transform.position =
                                                             playerCar.position + (Vector3.right * playerSparkLeftOffset);
-                                                        newSpark.sparkInstance.SetParent(playerCar);
+                                                        newSpark.transform.SetParent(playerCar);
                                                         newSpark.sparkSprite.sprite = curSparkLeftFrames[newSpark.curSparkFrameIndex];
                                                     }
                                                     else {
                                                         newSpark.SparkSide = Spark.SparkDirection.Back;
-                                                        newSpark.sparkInstance.position =
+                                                        newSpark.transform.position =
                                                             playerCar.position + (Vector3.up * playerSparkBackOffset);
-                                                        newSpark.sparkInstance.SetParent(playerCar);
+                                                        newSpark.transform.SetParent(playerCar);
                                                         newSpark.sparkSprite.sprite = curSparkBackFrames[newSpark.curSparkFrameIndex];
                                                     }
                                                 }
@@ -1025,8 +1024,8 @@ Debug.Log(roadSegments.Count);
             }
         }
 
-        for (int i = highestScreenLineDrawn + 1; i < roadScreenLines.Count - 1; i++) {
-            roadScreenLines[i].localScale = Vector3.up + Vector3.forward;
+        for (int i = highestScreenLineDrawn + 1; i < roadStrips.Count - 1; i++) {
+            roadStrips[i].transform.localScale = Vector3.up + Vector3.forward;
         }
 
         for (int i = curWarningRoadLineIndex; i < warningRoadLines.Count; i++) {
@@ -1333,7 +1332,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             playerSparks[i].sparkSprite.sprite = curSparkFrontFrames[playerSparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(playerSparks[i].sparkInstance.gameObject);
+                            Destroy(playerSparks[i]);
                             playerSparks.RemoveAt(i);
                             i--;
                         }
@@ -1345,7 +1344,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             playerSparks[i].sparkSprite.sprite = curSparkBackFrames[playerSparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(playerSparks[i].sparkInstance.gameObject);
+                            Destroy(playerSparks[i]);
                             playerSparks.RemoveAt(i);
                             i--;
                         }
@@ -1357,7 +1356,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             playerSparks[i].sparkSprite.sprite = curSparkLeftFrames[playerSparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(playerSparks[i].sparkInstance.gameObject);
+                            Destroy(playerSparks[i]);
                             playerSparks.RemoveAt(i);
                             i--;
                         }
@@ -1369,7 +1368,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             playerSparks[i].sparkSprite.sprite = curSparkRightFrames[playerSparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(playerSparks[i].sparkInstance.gameObject);
+                            Destroy(playerSparks[i]);
                             playerSparks.RemoveAt(i);
                             i--;
                         }
@@ -1390,7 +1389,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             sparks[i].sparkSprite.sprite = curSparkFrontFrames[sparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(sparks[i].sparkInstance.gameObject);
+                            Destroy(sparks[i]);
                             sparks.RemoveAt(i);
                             i--;
                         }
@@ -1402,7 +1401,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             sparks[i].sparkSprite.sprite = curSparkBackFrames[sparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(sparks[i].sparkInstance.gameObject);
+                            Destroy(sparks[i]);
                             sparks.RemoveAt(i);
                             i--;
                         }
@@ -1414,7 +1413,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             sparks[i].sparkSprite.sprite = curSparkLeftFrames[sparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(sparks[i].sparkInstance.gameObject);
+                            Destroy(sparks[i]);
                             sparks.RemoveAt(i);
                             i--;
                         }
@@ -1426,7 +1425,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             sparks[i].sparkSprite.sprite = curSparkRightFrames[sparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(sparks[i].sparkInstance.gameObject);
+                            Destroy(sparks[i]);
                             sparks.RemoveAt(i);
                             i--;
                         }

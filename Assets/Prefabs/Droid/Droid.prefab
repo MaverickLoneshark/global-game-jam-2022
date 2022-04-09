@@ -44,10 +44,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e221717965124d94191a5daf105d9c80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  droidSprite: {fileID: 7081608834164301734}
   segmentIndex: 0
   offsetX: 0
   dropDelayRefTime: 0
-  droidSprite: {fileID: 0}
 --- !u!212 &7081608834164301734
 SpriteRenderer:
   m_ObjectHideFlags: 0

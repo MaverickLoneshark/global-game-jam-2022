@@ -9,7 +9,9 @@ public class Droid : MonoBehaviour {
 	public float offsetX, dropDelayRefTime;
 
 	private void Awake() {
-		droidSprite = GetComponent<SpriteRenderer>();
+		if (!droidSprite) {
+			droidSprite = GetComponent<SpriteRenderer>();
+		}
 	}
 
 	private void Start() {

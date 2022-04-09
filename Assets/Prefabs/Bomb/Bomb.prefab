@@ -200,7 +200,7 @@ MonoBehaviour:
   blipProjectionObject: {fileID: 3049595642125505402}
   blip: {fileID: 0}
   blipProjection: {fileID: 0}
-  bombSprite: {fileID: 0}
+  bombSprite: {fileID: 6566859517727856452}
   segmentIndex: 0
   offsetX: 0
   explosionHeightOffset: 0

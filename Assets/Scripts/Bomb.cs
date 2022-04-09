@@ -20,7 +20,9 @@ public class Bomb : MonoBehaviour {
 	public float explosionRefTime, blipProjectionFlashRefTime;
 
 	private void Awake() {
-		bombSprite = GetComponent<SpriteRenderer>();
+		if (!bombSprite) {
+			bombSprite = GetComponent<SpriteRenderer>();
+		}
 
 		if (!blipObject) {
 			blipObject = new GameObject("BombBlip");

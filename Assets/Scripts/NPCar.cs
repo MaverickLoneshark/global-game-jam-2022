@@ -6,6 +6,9 @@ using UnityEngine.UI;
 [System.Serializable]
 public class NPCar : MonoBehaviour
 {
+    [SerializeField]
+    private SpriteRenderer carSprite;
+
     private CarModel model;
     private bool isVisible;
 
@@ -13,7 +16,6 @@ public class NPCar : MonoBehaviour
     private float curSpeedZ, curSpeedX, curPosX, prevPosX, curPosZ, lengthPerSeg;
     private Transform trafficCar;
     private RawImage blip;
-    private SpriteRenderer carSprite;
     //public Sprite curStraightOverhead, curSlightLeft, curLeft, curHardLeft, curSlightRight, curRight, curHardRight, curUphill, curDownhill;
     //public List<Sprite> curSpinFrames, curCrashFrames, curExplodeFrames;
     private int curExplodeFramesFirstIndex, curExplodeFramesLastIndex;   // These are to keep track of the bounds of the current selected crashout frames
@@ -54,7 +56,9 @@ public class NPCar : MonoBehaviour
     private float playerPosX, playerPosZ, playerSpeedZ;
 
     void Awake() {
-        
+        if (!carSprite) {
+            carSprite = GetComponent<SpriteRenderer>();
+        }
     }
 
     void Update() {
