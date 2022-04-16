@@ -101,20 +101,21 @@ public class RoadControl : MonoBehaviour
 
     // ENEMIES
     [SerializeField]
-    private GameObject nPCarPrefab;
-
-    [SerializeField]
-    private GameObject bombPrefab;
-
-    [SerializeField]
     private Sprite bombVisible, bombCamo, droidHolding, droidEmptyHanded;
     [SerializeField]
     private float droidHeight, delayBeforeDropping, bombDropSpeed, bombSizeCorrectionFactor;
 
+    [SerializeField]
+    private ObjectPool droidPool;
+    [SerializeField]
+    private ObjectPool bombPool;
+
     public List<BombDroid> bombDroids;
     private List<Droid> visibleDroids = new List<Droid>();
-    private List<Bomb> activeBombPool = new List<Bomb>();
+    private List<Bomb> activeBombs = new List<Bomb>();
 
+    [SerializeField]
+    private ObjectPool nPCarPool;
     public List<CarModel> trafficCars;
     private List<CarModel> enemyModels = new List<CarModel>();
     private List<CarModel> innocentModels = new List<CarModel>();
@@ -130,6 +131,8 @@ public class RoadControl : MonoBehaviour
     // BILLBOARDS and OTHER SPRITES
     public List<BillboardSprite> billboardData;
 
+    [SerializeField]
+    private ObjectPool billboardPool;
     private List<Billboard> billboardDataExpanded = new List<Billboard>();
     private List<Billboard> visibleBillboards = new List<Billboard>();
 
@@ -138,7 +141,7 @@ public class RoadControl : MonoBehaviour
 
     // SPECIAL EFFECTS
     [SerializeField]
-    private GameObject sparkPrefab;
+    private ObjectPool sparkPool;
 
     [SerializeField]
     public List<Sprite> smokeFrontFrames, smokeLeftFrames, smokeRightFrames,
@@ -259,7 +262,9 @@ public class RoadControl : MonoBehaviour
             if (bb.howManyRows > 1 || bb.howManyCols > 1) {
                 for (int i = 0; i < bb.howManyRows; i++) {
                     for (int j = 0; j < bb.howManyCols; j++) {
-                        bbTemp = GameObject.Instantiate(bb.billboardPrefab).GetComponent<Billboard>();
+                        bbTemp = billboardPool.Instate().GetComponent<Billboard>();
+                        bbTemp.sprite = bb.billboardPrefab.GetComponent<SpriteRenderer>().sprite;
+
                         bbTemp.segmentIndex = bb.segmentIndex + (i * bb.rowSpacingInSegs);
 
                         if (bb.offsetX >= 0) {
@@ -274,7 +279,9 @@ public class RoadControl : MonoBehaviour
                 }
             }
             else {
-                billboardDataExpanded.Add(GameObject.Instantiate(bb.billboardPrefab).GetComponent<Billboard>());
+                bbTemp = billboardPool.Instate().GetComponent<Billboard>();
+                bbTemp.sprite = bb.billboardPrefab.GetComponent<SpriteRenderer>().sprite;
+                billboardDataExpanded.Add(bbTemp);
             }
         }
 
@@ -585,13 +592,11 @@ public class RoadControl : MonoBehaviour
             newSeg.SpriteVariation = curRoadStripSprite;
             roadSegments.Add(newSeg);
 
-            if (roadCurves.Count > 0) {
-                foreach(RoadCurve crv in roadCurves) {
-                    if (crv.segmentInsertIndex == straightSegCounter) {
-                        AddRoadCurve(crv);
+            foreach(RoadCurve crv in roadCurves) {
+                if (crv.segmentInsertIndex == straightSegCounter) {
+                    AddRoadCurve(crv);
 
 //Debug.Log("hi, " + straightSegCounter);
-                    }
                 }
             }
             
@@ -686,151 +691,309 @@ Debug.Log(roadSegments.Count);
                 }
 
                 if (segNumDrawn < segIndexSkipSegThreshold) {
-                    if (visibleBillboards.Count > 0) {
-                        foreach (Billboard bb in visibleBillboards) {
-                            if (bb.segmentIndex == i) {
-                                float roadWidthOffset;
+                    Bomb bmb;
+
+                    foreach (Billboard bb in visibleBillboards) {
+                        if (bb.segmentIndex == i) {
+                            float roadWidthOffset;
                                 
-                                if (bb.offsetX < 0) {
-                                    roadWidthOffset = screenHalfWidth * -1;
-                                }
-                                else {
-                                    roadWidthOffset = screenHalfWidth;
-                                }
-
-                                float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
-
-                                float spriteZ;
-                                float spriteElevation = nearEdgeHeight + bb.sprite.rect.height * nearEdgeWidthScale * 0.5f;
-
-                                if (nearEdgeHeight < absHighestScreenLineDrawn && roadSegIndexOfHighestScreenLine < i) {
-                                    spriteZ = spriteBgdZ;
-                                }
-                                else {
-                                    spriteZ = -1f;
-                                }
-
-                                bb.transform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
-                                bb.transform.position = new Vector3(x + (bb.offsetX) * nearEdgeWidthScale, spriteElevation, spriteZ);
-                                bb.EnableSprite();
+                            if (bb.offsetX < 0) {
+                                roadWidthOffset = screenHalfWidth * -1;
                             }
+                            else {
+                                roadWidthOffset = screenHalfWidth;
+                            }
+
+                            float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
+
+                            float spriteZ;
+                            float spriteElevation = nearEdgeHeight + bb.sprite.rect.height * nearEdgeWidthScale * 0.5f;
+
+                            if (nearEdgeHeight < absHighestScreenLineDrawn && roadSegIndexOfHighestScreenLine < i) {
+                                spriteZ = spriteBgdZ;
+                            }
+                            else {
+                                spriteZ = -1f;
+                            }
+
+                            bb.transform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                            bb.transform.position = new Vector3(x + (bb.offsetX) * nearEdgeWidthScale, spriteElevation, spriteZ);
+                            bb.EnableSprite();
                         }
                     }
 
-                    if (visibleDroids.Count > 0) {
-                        foreach (Droid droid in visibleDroids) {
-                            if (droid.segmentIndex == i) {
-                                float roadWidthOffset;
+                    foreach (Droid droid in visibleDroids) {
+                        if (droid.segmentIndex == i) {
+                            float roadWidthOffset;
 
-                                if (droid.offsetX < 0) {
-                                    roadWidthOffset = screenHalfWidth * -1;
-                                }
-                                else {
-                                    roadWidthOffset = screenHalfWidth;
-                                }
-
-                                float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
-
-                                droid.transform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
-                                droid.transform.position = new Vector3(x + (droid.offsetX) * nearEdgeWidthScale,
-                                    nearEdgeHeight + (droidHeight + droid.droidSprite.sprite.rect.height) * nearEdgeWidthScale * 0.5f, -1f);
-                                droid.droidSprite.enabled = true;
+                            if (droid.offsetX < 0) {
+                                roadWidthOffset = screenHalfWidth * -1;
+                            }
+                            else {
+                                roadWidthOffset = screenHalfWidth;
                             }
 
-                            //if ((Time.time - bd.dropDelayRefTime > delayBeforeDropping) && bd.droidSprite.sprite == droidHolding) {
-                            if ((droid.segmentIndex < curSegmentIndex + 200) && droid.droidSprite.sprite == droidHolding) {
-//TODO: make prefab for bomb + image objects
-                                droid.droidSprite.sprite = droidEmptyHanded;
-                                Bomb bmb = GameObject.Instantiate(bombPrefab).GetComponent<Bomb>();
+                            float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
 
-                                bmb.InitializeBlip(warningRoadLinesParent, warningRoadBombBlipSprite,
-                                    warningRoadLines[0].rectTransform.anchoredPosition);
-                                bmb.InitializeBlipProjection(warningRoadBombBlipSprite,
-                                    warningRoadLines[0].rectTransform.anchoredPosition + Vector2.up * bombBlipProjectionRoadOffsetY);
-                                bmb.InitializeBomb(droid.segmentIndex, droid.offsetX, bombCamo);
+                            droid.transform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                            droid.transform.position = new Vector3(x + (droid.offsetX) * nearEdgeWidthScale,
+                                nearEdgeHeight + (droidHeight + droid.droidSprite.sprite.rect.height) * nearEdgeWidthScale * 0.5f, -1f);
+                            droid.droidSprite.enabled = true;
+                        }
 
-                                activeBombPool.Add(bmb);
-                            }
+                        //if ((Time.time - bd.dropDelayRefTime > delayBeforeDropping) && bd.droidSprite.sprite == droidHolding) {
+                        if ((droid.segmentIndex < curSegmentIndex + 200) && droid.droidSprite.sprite == droidHolding) {
+                            droid.droidSprite.sprite = droidEmptyHanded;
+                            bmb = bombPool.Instate().GetComponent<Bomb>();
+
+                            bmb.InitializeBlip(warningRoadLinesParent, warningRoadBombBlipSprite,
+                                warningRoadLines[0].rectTransform.anchoredPosition);
+                            bmb.InitializeBlipProjection(warningRoadBombBlipSprite,
+                                warningRoadLines[0].rectTransform.anchoredPosition + Vector2.up * bombBlipProjectionRoadOffsetY);
+                            bmb.InitializeBomb(droid.segmentIndex, droid.offsetX, bombCamo);
+
+                            activeBombs.Add(bmb);
                         }
                     }
 
-                    if (activeBombPool.Count > 0) {
-                        foreach (Bomb bmb in activeBombPool) {
-                            if (bmb.isExploding) {
-                                bmb.segmentIndex = curSegmentIndex + 5;
+                    for(int j = 0; j < activeBombs.Count; j++) {
+                        bmb = activeBombs[j];
 
-                                if (Time.time - bmb.explosionRefTime > bombExplosionFrameTime) {
-                                    if (bmb.explosionFrameIndex < curExplosionFrames.Count - 1) {
-                                        bmb.explosionFrameIndex++;
-                                        bmb.bombSprite.sprite = curExplosionFrames[bmb.explosionFrameIndex];
-                                        bmb.explosionRefTime = Time.time;
+                        if (bmb.isExploding) {
+                            bmb.segmentIndex = curSegmentIndex + 5;
+
+                            if (Time.time - bmb.explosionRefTime > bombExplosionFrameTime) {
+                                if (bmb.explosionFrameIndex < curExplosionFrames.Count - 1) {
+                                    bmb.explosionFrameIndex++;
+                                    bmb.bombSprite.sprite = curExplosionFrames[bmb.explosionFrameIndex];
+                                    bmb.explosionRefTime = Time.time;
+                                }
+                                else {
+                                    bmb.Detonate();
+                                    activeBombs.RemoveAt(j);
+                                    j--;
+                                }
+                            }
+                        }
+                        else if (bmb.segmentIndex == i) {
+                            float roadWidthOffset;
+
+                            if (bmb.offsetX < 0) {
+                                roadWidthOffset = screenHalfWidth * -1;
+                            }
+                            else {
+                                roadWidthOffset = screenHalfWidth;
+                            }
+
+                            float sizeCorrection = nearEdgeWidthScale * bombSizeCorrectionFactor; //* billboardSizeCorrectionFactor;
+
+                            bmb.transform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
+                            bmb.transform.position = new Vector3(x + (bmb.offsetX) * nearEdgeWidthScale,
+                                nearEdgeHeight + (bmb.bombSprite.sprite.rect.height + bmb.explosionHeightOffset) * nearEdgeWidthScale * 0.5f,
+                                -1.5f);
+
+                            if (bmb.isExploding) {     // This will prevent the sprite from re-enabling after the explosion ends
+                                bmb.bombSprite.enabled = true;
+                            }
+
+                            bmb.blip.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
+                            int height = Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion);
+
+                            if (height < warningRoadLines.Count && height > 0) {
+                                float blipY = warningRoadLines[height].rectTransform.anchoredPosition.y;
+
+                                bmb.blip.rectTransform.anchoredPosition =
+                                    new Vector2(warningRoadLinesInitialX + (bmb.offsetX * nearEdgeWidthScale + x) * roadLineToWarningRoadLineConversion,
+                                    blipY);
+                            }
+
+                            bmb.blipProjection.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
+                            bmb.blipProjection.rectTransform.anchoredPosition = warningRoadLines[0].rectTransform.anchoredPosition +
+                                new Vector2(bmb.offsetX * roadLineToWarningRoadLineConversion, bombBlipProjectionRoadOffsetY);
+
+                            if (Time.time - bmb.blipProjectionFlashRefTime > bombBlipProjectionFlashTime) {
+                                bmb.blipProjection.enabled = !bmb.blipProjection.enabled;
+                                bmb.blipProjectionFlashRefTime = Time.time;
+                            }
+
+                            if (!isInvulnerable && canDrive) {
+                                if (i == curSegmentIndex + 5 && Mathf.Abs(bmb.transform.position.x - playerCar.position.x) < 30) {
+                                    if (bmb.transform.position.x >= playerCar.position.x) {
+                                        collisionSpeedEffect =
+                                            new Vector3(maxBombIntensity / (Mathf.Max(playerCar.position.x - bmb.transform.position.x, -1)),
+                                            -curPlayerSpeed * 0.5f);
+                                        playerIsRollingLeft = true;
                                     }
                                     else {
-                                        bmb.isExploding = false;
-                                        bmb.bombSprite.enabled = false;
+                                        collisionSpeedEffect = new Vector3(maxBombIntensity / (Mathf.Min(playerCar.position.x - bmb.transform.position.x, 1)),
+                                            -curPlayerSpeed * 0.5f);
+                                        playerIsRollingRight = true;
                                     }
+
+                                    canDrive = false;
+                                    isCrashing = true;
+                                    isInvulnerable = true;
+                                    bmb.isExploding = true;
+                                    crashRefTime = Time.time;
+                                    playerCarAnimationRefTime = Time.time;
+                                    playerCarAnimationFrameTimeAdjusted = playerCarAnimationFrameTime;
+                                    playerCarAnimationIndex = 0;
+
+                                    GameMode = GameState.Crashing;
                                 }
                             }
+                        }
+                    }
 
-                            if (bmb.segmentIndex == i) {
-                                float roadWidthOffset;
+                    foreach (NPCar car in carsOnRoad) {
+                        if (car.GetCurSeg() == i) {
+                            car.SetVisibility(true, sensorOverlayIsActive);
+                            car.UseRedVariants(sensorOverlayIsActive);
 
-                                if (bmb.offsetX < 0) {
-                                    roadWidthOffset = screenHalfWidth * -1;
-                                }
-                                else {
-                                    roadWidthOffset = screenHalfWidth;
-                                }
+                            if (car.GetCurSeg() > curSegmentIndex) {
+                                float rotationFactor = roadSegments[car.GetCurSeg()].Curve * 50f + 
+                                    (playerCar.position.x - car.transform.position.x) / (Mathf.Abs(car.GetCurSeg() - curPlayerPosZ) + 10f);
+                            }
 
-                                float sizeCorrection = nearEdgeWidthScale * bombSizeCorrectionFactor; //* billboardSizeCorrectionFactor;
+                            if (car.transform.GetComponent<SpriteRenderer>().sprite != null) {
+                                float depthZ;
+                                //if (sensorOverlayIsActive && !car.model.isSensorDetectable) { depthZ = sensorUndetectableDepthZ; }
+                                //else                                                        { depthZ = sensorDetectableDepthZ; }
 
-                                bmb.transform.localScale = new Vector3(sizeCorrection, sizeCorrection, 1);
-                                bmb.transform.position = new Vector3(x + (bmb.offsetX) * nearEdgeWidthScale,
-                                    nearEdgeHeight + (bmb.bombSprite.sprite.rect.height + bmb.explosionHeightOffset) * nearEdgeWidthScale * 0.5f,
-                                    -1.5f);
+                                car.SetViewAngle(roadSegments[car.GetCurSeg()].Curve * 50f, 0, curPlayerPosZ);
 
-                                if (bmb.isExploding) {     // This will prevent the sprite from re-enabling after the explosion ends
-                                    bmb.bombSprite.enabled = true;
-                                }
+                                depthZ = sensorDetectableDepthZ;
 
-                                bmb.blip.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
-                                int height = Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion);
+                                car.transform.localScale = new Vector3(nearEdgeWidthScale * 2, nearEdgeWidthScale * 2, 1);
+                                car.transform.position = new Vector3(x + (car.GetCurPosX()) * nearEdgeWidthScale,
+                                    nearEdgeHeight + car.transform.GetComponent<SpriteRenderer>().sprite.rect.height * nearEdgeWidthScale * 0.5f,
+                                    depthZ);
+                            }
 
-                                if (height < warningRoadLines.Count && height > 0) {
-                                    float blipY = warningRoadLines[height].rectTransform.anchoredPosition.y;
+                            car.GetBlip().rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
+                            int height = Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion);
 
-                                    bmb.blip.rectTransform.anchoredPosition =
-                                        new Vector2(warningRoadLinesInitialX + (bmb.offsetX * nearEdgeWidthScale + x) * roadLineToWarningRoadLineConversion,
-                                        blipY);
-                                }
+                            if (height < warningRoadLines.Count && height >= 0) {
+                                float blipY = warningRoadLines[height].rectTransform.anchoredPosition.y;
 
-                                bmb.blipProjection.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
-                                bmb.blipProjection.rectTransform.anchoredPosition = warningRoadLines[0].rectTransform.anchoredPosition +
-                                    new Vector2(bmb.offsetX * roadLineToWarningRoadLineConversion, bombBlipProjectionRoadOffsetY);
+                                car.GetBlip().rectTransform.anchoredPosition = 
+                                    new Vector2(warningRoadLinesInitialX + (car.GetCurPosX() * nearEdgeWidthScale + x) * roadLineToWarningRoadLineConversion,
+                                    blipY);
+                            }
 
-                                if (Time.time - bmb.blipProjectionFlashRefTime > bombBlipProjectionFlashTime) {
-                                    bmb.blipProjection.enabled = !bmb.blipProjection.enabled;
-                                    bmb.blipProjectionFlashRefTime = Time.time;
-                                }
+                            // Check for collision with player car
+                            if (!isInvulnerable && canDrive) {
+                                float halfCarLength = car.GetLength() * 0.5f;
 
-                                if (!isInvulnerable && canDrive) {
-                                    if (i == curSegmentIndex + 5 && Mathf.Abs(bmb.transform.position.x - playerCar.position.x) < 30) {
-                                        if (bmb.transform.position.x >= playerCar.position.x) {
-                                            collisionSpeedEffect =
-                                                new Vector3(maxBombIntensity / (Mathf.Max(playerCar.position.x - bmb.transform.position.x, -1)),
-                                                -curPlayerSpeed * 0.5f);
-                                            playerIsRollingLeft = true;
+                                if (i < (curSegmentIndex + halfCarLength) && i > (curSegmentIndex - halfCarLength)) {
+                                    if (Mathf.Abs(car.transform.position.x - playerCar.position.x) < car.GetWidth()) {
+                                        Vector2 impactMomentum = 
+                                            car.InitiateCrash(mass, roadGrip,
+                                                new Vector2(curPlayerTurning, curPlayerSpeed / roadSegmentLength),
+                                                new Vector2(playerCar.position.x, curSegmentIndex));
+                                        impactMomentum = new Vector2(impactMomentum.x, impactMomentum.y * roadSegmentLength);
+                                        bool triggerSpinout = impactMomentum.magnitude > impactThresholdForSpinout;
+
+                                        if (triggerSpinout) {
+                                            UpdateArmorValue(damageIncurredBySpinoutCrash);
                                         }
                                         else {
-                                            collisionSpeedEffect = new Vector3(maxBombIntensity / (Mathf.Min(playerCar.position.x - bmb.transform.position.x, 1)),
-                                                -curPlayerSpeed * 0.5f);
-                                            playerIsRollingRight = true;
+                                            UpdateArmorValue(damageIncurredByCrashing);
                                         }
+
+                                        Spark newSpark = sparkPool.Instate().GetComponent<Spark>();
+
+                                        if (i >= curSegmentIndex) {
+                                            if (car.transform.position.x >= playerCar.position.x) {
+                                                playerIsSpinningOutLeft = triggerSpinout;
+                                                playerIsCrashingLeft = !triggerSpinout;
+
+                                                if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
+                                                        Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
+                                                    newSpark.SparkSide = Spark.SparkDirection.Right;
+                                                    newSpark.transform.position =
+                                                        playerCar.position + (Vector3.right * playerSparkRightOffset);
+                                                    newSpark.transform.SetParent(playerCar);
+                                                    newSpark.sparkSprite.sprite = curSparkRightFrames[newSpark.curSparkFrameIndex];
+                                                }
+                                                else {
+                                                    newSpark.SparkSide = Spark.SparkDirection.Front;
+                                                    newSpark.transform.position =
+                                                        playerCar.position + (Vector3.up * playerSparkFrontOffset);
+                                                    newSpark.transform.SetParent(playerCar);
+                                                    newSpark.sparkSprite.sprite = curSparkFrontFrames[newSpark.curSparkFrameIndex];
+                                                }
+                                            }
+                                            else {
+                                                playerIsSpinningOutRight = triggerSpinout;
+                                                playerIsCrashingRight = !triggerSpinout;
+
+                                                if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
+                                                        Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
+                                                    newSpark.SparkSide = Spark.SparkDirection.Left;
+                                                    newSpark.transform.position =
+                                                        playerCar.position + (Vector3.right * playerSparkLeftOffset);
+                                                    newSpark.transform.SetParent(playerCar);
+                                                    newSpark.sparkSprite.sprite = curSparkLeftFrames[newSpark.curSparkFrameIndex];
+                                                }
+                                                else {
+                                                    newSpark.SparkSide = Spark.SparkDirection.Front;
+                                                    newSpark.transform.position =
+                                                        playerCar.position + Vector3.up * playerSparkFrontOffset;
+                                                    newSpark.transform.SetParent(playerCar);
+                                                    newSpark.sparkSprite.sprite = curSparkFrontFrames[newSpark.curSparkFrameIndex];
+                                                }
+                                            }
+                                        }
+                                        else {
+                                            if (car.transform.position.x >= playerCar.position.x) {
+                                                playerIsSpinningOutRight = triggerSpinout;
+                                                playerIsCrashingRight = !triggerSpinout;
+
+                                                if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
+                                                        Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
+                                                    newSpark.SparkSide = Spark.SparkDirection.Right;
+                                                    newSpark.transform.position =
+                                                        playerCar.position + (Vector3.right * playerSparkRightOffset);
+                                                    newSpark.transform.SetParent(playerCar);
+                                                    newSpark.sparkSprite.sprite = curSparkRightFrames[newSpark.curSparkFrameIndex];
+                                                }
+                                                else {
+                                                    newSpark.SparkSide = Spark.SparkDirection.Back;
+                                                    newSpark.transform.position =
+                                                        playerCar.position + (Vector3.up * playerSparkBackOffset);
+                                                    newSpark.transform.SetParent(playerCar);
+                                                    newSpark.sparkSprite.sprite = curSparkBackFrames[newSpark.curSparkFrameIndex];
+                                                }
+                                            }
+                                            else {
+                                                if (triggerSpinout) { playerIsSpinningOutLeft = true; }
+                                                else { playerIsCrashingLeft = true; }
+
+                                                if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
+                                                        Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
+                                                    newSpark.SparkSide = Spark.SparkDirection.Left;
+                                                    newSpark.transform.position =
+                                                        playerCar.position + (Vector3.right * playerSparkLeftOffset);
+                                                    newSpark.transform.SetParent(playerCar);
+                                                    newSpark.sparkSprite.sprite = curSparkLeftFrames[newSpark.curSparkFrameIndex];
+                                                }
+                                                else {
+                                                    newSpark.SparkSide = Spark.SparkDirection.Back;
+                                                    newSpark.transform.position =
+                                                        playerCar.position + (Vector3.up * playerSparkBackOffset);
+                                                    newSpark.transform.SetParent(playerCar);
+                                                    newSpark.sparkSprite.sprite = curSparkBackFrames[newSpark.curSparkFrameIndex];
+                                                }
+                                            }
+                                        }
+
+                                        playerSparks.Add(newSpark);
+                                        newSpark.sparkFrameRefTime = Time.time;
 
                                         canDrive = false;
                                         isCrashing = true;
                                         isInvulnerable = true;
-                                        bmb.isExploding = true;
                                         crashRefTime = Time.time;
                                         playerCarAnimationRefTime = Time.time;
                                         playerCarAnimationFrameTimeAdjusted = playerCarAnimationFrameTime;
@@ -841,178 +1004,15 @@ Debug.Log(roadSegments.Count);
                                 }
                             }
                         }
-                    }
+                        else if (car.GetCurSeg() < curSegmentIndex || car.GetCurSeg() > curSegmentIndex + numSegsToDraw) {
+                            if (car.transform != null) {
+                                //Destroy(car.trafficCar.gameObject);
+                                //Destroy(car.blip);
 
-                    if (carsOnRoad.Count > 0) {
-                        foreach (NPCar car in carsOnRoad) {
-                            if (car.GetCurSeg() == i) {
-                                car.SetVisibility(true, sensorOverlayIsActive);
-                                car.UseRedVariants(sensorOverlayIsActive);
+                                //car.trafficCar = null;
+                                //car.carSprite = null;
 
-                                if (car.GetCurSeg() > curSegmentIndex) {
-                                    float rotationFactor = roadSegments[car.GetCurSeg()].Curve * 50f + 
-                                        (playerCar.position.x - car.transform.position.x) / (Mathf.Abs(car.GetCurSeg() - curPlayerPosZ) + 10f);
-                                }
-
-                                if (car.transform.GetComponent<SpriteRenderer>().sprite != null) {
-                                    float depthZ;
-                                    //if (sensorOverlayIsActive && !car.model.isSensorDetectable) { depthZ = sensorUndetectableDepthZ; }
-                                    //else                                                        { depthZ = sensorDetectableDepthZ; }
-
-                                    car.SetViewAngle(roadSegments[car.GetCurSeg()].Curve * 50f, 0, curPlayerPosZ);
-
-                                    depthZ = sensorDetectableDepthZ;
-
-                                    car.transform.localScale = new Vector3(nearEdgeWidthScale * 2, nearEdgeWidthScale * 2, 1);
-                                    car.transform.position = new Vector3(x + (car.GetCurPosX()) * nearEdgeWidthScale,
-                                        nearEdgeHeight + car.transform.GetComponent<SpriteRenderer>().sprite.rect.height * nearEdgeWidthScale * 0.5f,
-                                        depthZ);
-                                }
-
-                                car.GetBlip().rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
-                                int height = Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion);
-
-                                if (height < warningRoadLines.Count && height >= 0) {
-                                    float blipY = warningRoadLines[height].rectTransform.anchoredPosition.y;
-
-                                    car.GetBlip().rectTransform.anchoredPosition = 
-                                        new Vector2(warningRoadLinesInitialX + (car.GetCurPosX() * nearEdgeWidthScale + x) * roadLineToWarningRoadLineConversion,
-                                        blipY);
-                                }
-
-                                // Check for collision with player car
-                                if (!isInvulnerable && canDrive) {
-                                    float halfCarLength = car.GetLength() * 0.5f;
-
-                                    if (i < (curSegmentIndex + halfCarLength) && i > (curSegmentIndex - halfCarLength)) {
-                                        if (Mathf.Abs(car.transform.position.x - playerCar.position.x) < car.GetWidth()) {
-                                            Vector2 impactMomentum = 
-                                                car.InitiateCrash(mass, roadGrip,
-                                                    new Vector2(curPlayerTurning, curPlayerSpeed / roadSegmentLength),
-                                                    new Vector2(playerCar.position.x, curSegmentIndex));
-                                            impactMomentum = new Vector2(impactMomentum.x, impactMomentum.y * roadSegmentLength);
-                                            bool triggerSpinout = impactMomentum.magnitude > impactThresholdForSpinout;
-
-                                            if (triggerSpinout) {
-                                                UpdateArmorValue(damageIncurredBySpinoutCrash);
-                                            }
-                                            else {
-                                                UpdateArmorValue(damageIncurredByCrashing);
-                                            }
-
-                                            Spark newSpark = GameObject.Instantiate(sparkPrefab).GetComponent<Spark>();
-
-                                            if (i >= curSegmentIndex) {
-                                                if (car.transform.position.x >= playerCar.position.x) {
-                                                    playerIsSpinningOutLeft = triggerSpinout;
-                                                    playerIsCrashingLeft = !triggerSpinout;
-
-                                                    if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
-                                                            Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
-                                                        newSpark.SparkSide = Spark.SparkDirection.Right;
-                                                        newSpark.transform.position =
-                                                            playerCar.position + (Vector3.right * playerSparkRightOffset);
-                                                        newSpark.transform.SetParent(playerCar);
-                                                        newSpark.sparkSprite.sprite = curSparkRightFrames[newSpark.curSparkFrameIndex];
-                                                    }
-                                                    else {
-                                                        newSpark.SparkSide = Spark.SparkDirection.Front;
-                                                        newSpark.transform.position =
-                                                            playerCar.position + (Vector3.up * playerSparkFrontOffset);
-                                                        newSpark.transform.SetParent(playerCar);
-                                                        newSpark.sparkSprite.sprite = curSparkFrontFrames[newSpark.curSparkFrameIndex];
-                                                    }
-                                                }
-                                                else {
-                                                    playerIsSpinningOutRight = triggerSpinout;
-                                                    playerIsCrashingRight = !triggerSpinout;
-
-                                                    if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
-                                                            Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
-                                                        newSpark.SparkSide = Spark.SparkDirection.Left;
-                                                        newSpark.transform.position =
-                                                            playerCar.position + (Vector3.right * playerSparkLeftOffset);
-                                                        newSpark.transform.SetParent(playerCar);
-                                                        newSpark.sparkSprite.sprite = curSparkLeftFrames[newSpark.curSparkFrameIndex];
-                                                    }
-                                                    else {
-                                                        newSpark.SparkSide = Spark.SparkDirection.Front;
-                                                        newSpark.transform.position =
-                                                            playerCar.position + Vector3.up * playerSparkFrontOffset;
-                                                        newSpark.transform.SetParent(playerCar);
-                                                        newSpark.sparkSprite.sprite = curSparkFrontFrames[newSpark.curSparkFrameIndex];
-                                                    }
-                                                }
-                                            }
-                                            else {
-                                                if (car.transform.position.x >= playerCar.position.x) {
-                                                    playerIsSpinningOutRight = triggerSpinout;
-                                                    playerIsCrashingRight = !triggerSpinout;
-
-                                                    if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
-                                                            Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
-                                                        newSpark.SparkSide = Spark.SparkDirection.Right;
-                                                        newSpark.transform.position =
-                                                            playerCar.position + (Vector3.right * playerSparkRightOffset);
-                                                        newSpark.transform.SetParent(playerCar);
-                                                        newSpark.sparkSprite.sprite = curSparkRightFrames[newSpark.curSparkFrameIndex];
-                                                    }
-                                                    else {
-                                                        newSpark.SparkSide = Spark.SparkDirection.Back;
-                                                        newSpark.transform.position =
-                                                            playerCar.position + (Vector3.up * playerSparkBackOffset);
-                                                        newSpark.transform.SetParent(playerCar);
-                                                        newSpark.sparkSprite.sprite = curSparkBackFrames[newSpark.curSparkFrameIndex];
-                                                    }
-                                                }
-                                                else {
-                                                    if (triggerSpinout) { playerIsSpinningOutLeft = true; }
-                                                    else { playerIsCrashingLeft = true; }
-
-                                                    if (Mathf.Abs(car.GetCurPosX() - playerCar.position.x) >
-                                                            Mathf.Abs(car.GetCurSeg() - curSegmentIndex) * roadSegmentLength) {
-                                                        newSpark.SparkSide = Spark.SparkDirection.Left;
-                                                        newSpark.transform.position =
-                                                            playerCar.position + (Vector3.right * playerSparkLeftOffset);
-                                                        newSpark.transform.SetParent(playerCar);
-                                                        newSpark.sparkSprite.sprite = curSparkLeftFrames[newSpark.curSparkFrameIndex];
-                                                    }
-                                                    else {
-                                                        newSpark.SparkSide = Spark.SparkDirection.Back;
-                                                        newSpark.transform.position =
-                                                            playerCar.position + (Vector3.up * playerSparkBackOffset);
-                                                        newSpark.transform.SetParent(playerCar);
-                                                        newSpark.sparkSprite.sprite = curSparkBackFrames[newSpark.curSparkFrameIndex];
-                                                    }
-                                                }
-                                            }
-
-                                            playerSparks.Add(newSpark);
-                                            newSpark.sparkFrameRefTime = Time.time;
-
-                                            canDrive = false;
-                                            isCrashing = true;
-                                            isInvulnerable = true;
-                                            crashRefTime = Time.time;
-                                            playerCarAnimationRefTime = Time.time;
-                                            playerCarAnimationFrameTimeAdjusted = playerCarAnimationFrameTime;
-                                            playerCarAnimationIndex = 0;
-
-                                            GameMode = GameState.Crashing;
-                                        }
-                                    }
-                                }
-                            }
-                            else if (car.GetCurSeg() < curSegmentIndex || car.GetCurSeg() > curSegmentIndex + numSegsToDraw) {
-                                if (car.transform != null) {
-                                    //Destroy(car.trafficCar.gameObject);
-                                    //Destroy(car.blip);
-
-                                    //car.trafficCar = null;
-                                    //car.carSprite = null;
-
-                                    car.SetVisibility(false);
-                                }
+                                car.SetVisibility(false);
                             }
                         }
                     }
@@ -1024,7 +1024,7 @@ Debug.Log(roadSegments.Count);
             }
         }
 
-        for (int i = highestScreenLineDrawn + 1; i < roadStrips.Count - 1; i++) {
+        for (int i = highestScreenLineDrawn + 1; i < roadStrips.Count; i++) {
             roadStrips[i].transform.localScale = Vector3.up + Vector3.forward;
         }
 
@@ -1072,7 +1072,7 @@ Debug.Log(bb.transform);
 
         for (int i = 0; i < visibleBillboards.Count; i++) {
             if (visibleBillboards[i].segmentIndex < curSegmentIndex) {
-                Destroy(visibleBillboards[i]);
+                visibleBillboards[i].gameObject.SetActive(false);
                 visibleBillboards.RemoveAt(i);
                 i--;
             }
@@ -1084,7 +1084,7 @@ Debug.Log(bb.transform);
 
         for (int i = 0; i < bombDroids.Count; i++) {
             if (bombDroids[i].segmentIndex <= curSegmentIndex + numSegsToDraw) {
-                droid = GameObject.Instantiate(bombDroids[i].droid).GetComponent<Droid>();
+                droid = droidPool.Instate().GetComponent<Droid>();
                 droid.segmentIndex = bombDroids[i].segmentIndex;
                 droid.offsetX = bombDroids[i].offsetX;
                 droid.dropDelayRefTime = Time.time;
@@ -1098,6 +1098,8 @@ Debug.Break();
         }
 
         if (trafficCars.Count > 0) {
+            NPCar car;
+
             enemyModels.Clear();
             innocentModels.Clear();
 
@@ -1110,48 +1112,40 @@ Debug.Break();
                 }
             }
 
-            if (enemyModels.Count > 0) {
-                NPCar car;
+            for (int i = 0; i < numEnemyModels; i++) {
+                car = nPCarPool.Instate().GetComponent<NPCar>();
 
-                for (int i = 0; i < numEnemyModels; i++) {
-                    car = GameObject.Instantiate(nPCarPrefab).GetComponent<NPCar>();
-                    
-                    car.InitializeCar(enemyModels[Random.Range(0, enemyModels.Count)],
-                                        Random.Range(0, roadSegments.Count),
-                                        roadSegmentLength,
-                                        laneWidth,
-                                        warningRoadCarBlipSprite,
-                                        warningRoadLines[0].rectTransform.anchoredPosition,
-                                        warningRoadLinesParent);
-                    car.SetVisibility(false);
-                    car.UseRedVariants(sensorOverlayIsActive);
+                car.InitializeCar(enemyModels[Random.Range(0, enemyModels.Count)],
+                                    Random.Range(0, roadSegments.Count),
+                                    roadSegmentLength,
+                                    laneWidth,
+                                    warningRoadCarBlipSprite,
+                                    warningRoadLines[0].rectTransform.anchoredPosition,
+                                    warningRoadLinesParent);
+                car.SetVisibility(false);
+                car.UseRedVariants(sensorOverlayIsActive);
 
-                    carsOnRoad.Add(car);
-                    //SetOtherCarSprites(car);
-                }
+                carsOnRoad.Add(car);
+                //SetOtherCarSprites(car);
             }
 
 Debug.Log("# innocent cars: " + innocentModels.Count);
 
-            if (innocentModels.Count > 0) {
-                NPCar car;
+            for (int i = 0; i < numInnocentModels; i++) {
+                car = nPCarPool.Instate().GetComponent<NPCar>();
 
-                for (int i = 0; i < numInnocentModels; i++) {
-                    car = GameObject.Instantiate(nPCarPrefab).GetComponent<NPCar>();
+                car.InitializeCar(innocentModels[Random.Range(0, innocentModels.Count)],
+                                    Random.Range(0, roadSegments.Count),
+                                    roadSegmentLength,
+                                    laneWidth,
+                                    warningRoadCarBlipSprite,
+                                    warningRoadLines[0].rectTransform.anchoredPosition,
+                                    warningRoadLinesParent);
+                car.SetVisibility(false);
+                car.UseRedVariants(sensorOverlayIsActive);
 
-                    car.InitializeCar(innocentModels[Random.Range(0, innocentModels.Count)],
-                                        Random.Range(0, roadSegments.Count),
-                                        roadSegmentLength,
-                                        laneWidth,
-                                        warningRoadCarBlipSprite,
-                                        warningRoadLines[0].rectTransform.anchoredPosition,
-                                        warningRoadLinesParent);
-                    car.SetVisibility(false);
-                    car.UseRedVariants(sensorOverlayIsActive);
-
-                    carsOnRoad.Add(car);
+                carsOnRoad.Add(car);
 //Debug.Log(car.curSegIndex + ", " + car.curPosZ + ", " + car.curForwardSpeed + ", " + car);
-                }
             }
         }
     }
@@ -1161,7 +1155,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
 
         for (int i = 0; i < bombDroids.Count; i++) {
             if (bombDroids[i].segmentIndex <= curSegmentIndex + numSegsToDraw) {
-                droid = GameObject.Instantiate(bombDroids[i].droid).GetComponent<Droid>();
+                droid = droidPool.Instate().GetComponent<Droid>();
                 droid.segmentIndex = bombDroids[i].segmentIndex;
                 droid.offsetX = bombDroids[i].offsetX;
                 droid.dropDelayRefTime = Time.time;
@@ -1174,19 +1168,17 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
 
         for (int i = 0; i < visibleDroids.Count; i++) {
             if (visibleDroids[i].segmentIndex < curSegmentIndex) {
-                Destroy(visibleDroids[i]);
+                visibleDroids[i].gameObject.SetActive(false);
                 visibleDroids.RemoveAt(i);
                 i--;
             }
         }
 
-        if (activeBombPool.Count > 0) {
-            for (int i = 0; i < activeBombPool.Count; i++) {
-                if (activeBombPool[i].segmentIndex < curSegmentIndex) {
-                    Destroy(activeBombPool[i]);
-                    activeBombPool.RemoveAt(i);
-                    i--;
-                }
+        for (int i = 0; i < activeBombs.Count; i++) {
+            if (activeBombs[i].segmentIndex < curSegmentIndex) {
+                activeBombs[i].Deactivate();
+                activeBombs.RemoveAt(i);
+                i--;
             }
         }
 
@@ -1332,7 +1324,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             playerSparks[i].sparkSprite.sprite = curSparkFrontFrames[playerSparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(playerSparks[i]);
+                            playerSparks[i].gameObject.SetActive(false);
                             playerSparks.RemoveAt(i);
                             i--;
                         }
@@ -1344,7 +1336,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             playerSparks[i].sparkSprite.sprite = curSparkBackFrames[playerSparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(playerSparks[i]);
+                            playerSparks[i].gameObject.SetActive(false);
                             playerSparks.RemoveAt(i);
                             i--;
                         }
@@ -1356,7 +1348,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             playerSparks[i].sparkSprite.sprite = curSparkLeftFrames[playerSparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(playerSparks[i]);
+                            playerSparks[i].gameObject.SetActive(false);
                             playerSparks.RemoveAt(i);
                             i--;
                         }
@@ -1368,7 +1360,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             playerSparks[i].sparkSprite.sprite = curSparkRightFrames[playerSparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(playerSparks[i]);
+                            playerSparks[i].gameObject.SetActive(false);
                             playerSparks.RemoveAt(i);
                             i--;
                         }
@@ -1389,7 +1381,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             sparks[i].sparkSprite.sprite = curSparkFrontFrames[sparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(sparks[i]);
+                            sparks[i].gameObject.SetActive(false);
                             sparks.RemoveAt(i);
                             i--;
                         }
@@ -1401,7 +1393,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             sparks[i].sparkSprite.sprite = curSparkBackFrames[sparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(sparks[i]);
+                            sparks[i].gameObject.SetActive(false);
                             sparks.RemoveAt(i);
                             i--;
                         }
@@ -1413,7 +1405,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             sparks[i].sparkSprite.sprite = curSparkLeftFrames[sparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(sparks[i]);
+                            sparks[i].gameObject.SetActive(false);
                             sparks.RemoveAt(i);
                             i--;
                         }
@@ -1425,7 +1417,7 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                             sparks[i].sparkSprite.sprite = curSparkRightFrames[sparks[i].curSparkFrameIndex];
                         }
                         else {
-                            Destroy(sparks[i]);
+                            sparks[i].gameObject.SetActive(false);
                             sparks.RemoveAt(i);
                             i--;
                         }
@@ -1527,10 +1519,8 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                     curSensorOverlayFrameIndex = 0;
                     sensorScanline.enabled = true;
 
-                    if (warningRoadLines.Count > 0) {
-                        foreach (RawImage img in warningRoadLines) {
-                            img.enabled = true;
-                        }
+                    foreach (RawImage img in warningRoadLines) {
+                        img.enabled = true;
                     }
                 }
             }
@@ -1562,10 +1552,8 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                     sensorOverlayIsActive = false;
                     sensorOverlay.enabled = false;
 
-                    if (warningRoadLines.Count > 0) {
-                        foreach (RawImage img in warningRoadLines) {
-                            img.enabled = false;
-                        }
+                    foreach (RawImage img in warningRoadLines) {
+                        img.enabled = false;
                     }
                 }
             }
@@ -1763,16 +1751,14 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
         if (inputMapper[(int)InputMapper.CONTROLS.special]) {
             if (!sensorOverlayWasJustActivated && (((curSensorPower / sensorMaxPower) * 100.0f) >= sensorLowPowerPercentageOfMax)) {
                 sensorOverlayWasJustActivated = true;
-
                 SetPlayerCarSprites();
-                if (carsOnRoad.Count > 0) {
-                    foreach (NPCar car in carsOnRoad) {
-                        //if (car.isVisible) {
-                        //    //SetOtherCarSprites(car);
-                        //    car.UseRedVariants(true);
-                        //}
-                        car.UseRedVariants(false);
-                    }
+
+                foreach (NPCar car in carsOnRoad) {
+                    //if (car.isVisible) {
+                    //    //SetOtherCarSprites(car);
+                    //    car.UseRedVariants(true);
+                    //}
+                    car.UseRedVariants(false);
                 }
 
                 SetEffectSprites();
@@ -1795,16 +1781,14 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
 
             if (curSensorPower <= 0) {
                 sensorOverlayWasJustActivated = false;
-
                 SetPlayerCarSprites();
-                if (carsOnRoad.Count > 0) {
-                    foreach (NPCar car in carsOnRoad) {
-                        //if (car.isVisible) {
-                        //    //SetOtherCarSprites(car);
-                        //    car.UseRedVariants(false);
-                        //}
-                        car.UseRedVariants(false);
-                    }
+
+                foreach (NPCar car in carsOnRoad) {
+                    //if (car.isVisible) {
+                    //    //SetOtherCarSprites(car);
+                    //    car.UseRedVariants(false);
+                    //}
+                    car.UseRedVariants(false);
                 }
 
                 SetEffectSprites();
@@ -1818,11 +1802,9 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
                 centerConsoleCover.enabled = true;
             }
 
-            if (activeBombPool.Count > 0) {
-                foreach (Bomb bmb in activeBombPool) {
-                    if (!bmb.isExploding) {
-                        bmb.bombSprite.sprite = bombVisible;
-                    }
+            foreach (Bomb bmb in activeBombs) {
+                if (!bmb.isExploding) {
+                    bmb.bombSprite.sprite = bombVisible;
                 }
             }
         }
@@ -1853,11 +1835,9 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
 
             if (sensorOverlayIsUnloading) { UpdateSensorModeVisuals(); }
 
-            if (activeBombPool.Count > 0) {
-                foreach (Bomb bmb in activeBombPool) {
-                    if (!bmb.isExploding) {
-                        bmb.bombSprite.sprite = bombCamo;
-                    }
+            foreach (Bomb bmb in activeBombs) {
+                if (!bmb.isExploding) {
+                    bmb.bombSprite.sprite = bombCamo;
                 }
             }
         }
@@ -2027,13 +2007,10 @@ Debug.Log("# innocent cars: " + innocentModels.Count);
             //    foreach (RawImage img in warningRoadBlips) { img.enabled = false; }
             //}
 
-            if (warningRoadLines.Count > 0) {
-                foreach (RawImage img in warningRoadLines) { img.enabled = false; }
-            }
 
-            if (sensorBars.Count > 0) {
-                foreach (RawImage img in sensorBars) { img.enabled = false; }
-            }
+            foreach (RawImage img in warningRoadLines) { img.enabled = false; }
+
+            foreach (RawImage img in sensorBars) { img.enabled = false; }
 
             progressCar.enabled = false;
             progressTrack.enabled = false;

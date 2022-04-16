@@ -44,6 +44,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e221717965124d94191a5daf105d9c80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  holdingSprite: {fileID: 21300000, guid: 0e42fb088d161484a828234c0551c001, type: 3}
   droidSprite: {fileID: 7081608834164301734}
   segmentIndex: 0
   offsetX: 0

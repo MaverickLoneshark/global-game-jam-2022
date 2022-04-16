@@ -14,7 +14,6 @@ public class NPCar : MonoBehaviour
 
     private int curSegIndex;
     private float curSpeedZ, curSpeedX, curPosX, prevPosX, curPosZ, lengthPerSeg;
-    private Transform trafficCar;
     private RawImage blip;
     //public Sprite curStraightOverhead, curSlightLeft, curLeft, curHardLeft, curSlightRight, curRight, curHardRight, curUphill, curDownhill;
     //public List<Sprite> curSpinFrames, curCrashFrames, curExplodeFrames;
@@ -171,7 +170,6 @@ Debug.Log("Switch back to: " + BehaviorMode);
 
     public void InitializeCar(CarModel carMod, int startSeg, float lenPerSeg, float widthOfLane, Texture blipSprite, Vector2 blipPos, Transform blipParent) {
         model = carMod;
-        trafficCar = this.transform;
         carSprite = this.transform.GetComponent<SpriteRenderer>();
 
         SetLanePositions(-widthOfLane, 0, widthOfLane);

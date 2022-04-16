@@ -47,4 +47,8 @@ public class Billboard : MonoBehaviour {
 	public void DisableSprite() {
 		spriteRend.enabled = false;
 	}
+
+	private void OnEnable() {
+		Start();
+	}
 }

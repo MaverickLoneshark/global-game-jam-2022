@@ -41,6 +41,8 @@ public class Bomb : MonoBehaviour {
 	}
 
 	private void Start() {
+		blipObject.SetActive(true);
+		blipProjectionObject.SetActive(true);
 		blipProjectionFlashRefTime = Time.time;
 		isExploding = false;
 		explosionFrameIndex = 0;
@@ -70,5 +72,20 @@ public class Bomb : MonoBehaviour {
 		segmentIndex = segment_index;
 		offsetX = offset_x;
 		bombSprite.sprite = sprite;
+	}
+
+	public void Detonate() {
+		isExploding = false;
+		Deactivate();
+	}
+
+	public void Deactivate() {
+		blipObject.SetActive(false);
+		blipProjectionObject.SetActive(false);
+		gameObject.SetActive(false);
+	}
+
+	private void OnEnable() {
+		Start();
 	}
 }

@@ -26,4 +26,8 @@ public class Spark : MonoBehaviour {
 	private void OnDestroy() {
 		Destroy(gameObject);
 	}
+
+	private void OnEnable() {
+		Start();
+	}
 }
