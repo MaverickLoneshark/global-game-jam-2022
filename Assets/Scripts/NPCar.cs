@@ -133,11 +133,11 @@ public class NPCar : MonoBehaviour
                         else {
                             curSpeedX = 0;
                             curSpeedZ = collisionEndVelocityZ;
-Debug.Log("velocity exiting crash = " + collisionEndVelocityZ);
+//Debug.Log("velocity exiting crash = " + collisionEndVelocityZ);
                             curFrameIndex = 0;
                             laneChangeRefTime = Time.time;
                             BehaviorMode = prevBehaveState;
-Debug.Log("Switch back to: " + BehaviorMode);
+//Debug.Log("Switch back to: " + BehaviorMode);
                         }
                     }
                 }
@@ -260,7 +260,7 @@ Debug.Log("Switch back to: " + BehaviorMode);
             curArmor -= model.crashDamage;
         }
 
-Debug.Log("CRAAAASH!  Other car's momentum = " + otherCarMomentum + ", current armor rating = " + curArmor);
+//Debug.Log("CRAAAASH!  Other car's momentum = " + otherCarMomentum + ", current armor rating = " + curArmor);
 
         // Final velocities determined using Conservation of Momentum and the relationship of initial and final velocities in a perfectly elastic collision:
         // m1v1i + m2v2i = m1v1f + m2v2f

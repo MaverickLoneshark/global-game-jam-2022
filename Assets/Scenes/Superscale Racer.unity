@@ -2322,6 +2322,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8f7c13da74d5cc8468d26568751c4671, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  totalSegments: 0
   mainCam: {fileID: 8622382669019151207}
   playerCar: {fileID: 1729664000}
   playerCarEffect: {fileID: 542129408}
@@ -2443,7 +2444,6 @@ MonoBehaviour:
   - {fileID: 21300000, guid: 82c051df1f047ab42ad2f35896d2dfd0, type: 3}
   roadStripPrefab: {fileID: 1310441423508304190, guid: 2e95317012c4427438ee63b4edf4274b, type: 3}
   camHeight: 120
-  roadLength: 20000
   roadWidth: 2000
   laneWidth: 200
   screenHalfWidth: 160
@@ -2785,7 +2785,7 @@ MonoBehaviour:
   ricochetDecayFactor: 0.3
   ricochetEndThreshold: 0.01
   speedometerRotationFactor: -0.08
-  messageDelay: 0.25
+  messageDelay: 0.75
   armorMaxValue: 100
   armorBarWidth: 80
   damageIncurredByCrashing: 5
@@ -4217,7 +4217,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_Sprite: {fileID: 21300000, guid: f542d71d1a768fb4ea9a54d884ac27a0, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
