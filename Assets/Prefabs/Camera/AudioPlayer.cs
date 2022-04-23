@@ -109,10 +109,15 @@ public class AudioPlayer : MonoBehaviour {
 		}
 	}
 	
-	public void PlayCarSound(SFX sound) {
+	public void PlayCarSound(SFX sound, float pitch = 1.0f, float time_start = 0, float time_end = 1.0f, float volume = 1.0f) {
 		if (!audioSources[1].isPlaying || (audioSources[1].clip != sfx[(int)sound])) {
 			audioSources[1].clip = sfx[(int)sound];
-			audioSources[1].Play();
+			audioSources[1].pitch = pitch;
+			audioSources[1].volume = volume;
+
+			audioSources[1].time = time_start * audioSources[1].clip.length;
+			audioSources[1].PlayScheduled(AudioSettings.dspTime);
+			audioSources[1].SetScheduledEndTime(AudioSettings.dspTime + ((time_end - time_start) * audioSources[1].clip.length));
 		}
 	}
 }
