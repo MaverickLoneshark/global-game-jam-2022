@@ -12,7 +12,9 @@ public class NPCar : MonoBehaviour
     private CarModel model;
     private bool isVisible;
 
+    [SerializeField]
     private int curSegIndex;
+    [SerializeField]
     private float curSpeedZ, curSpeedX, curPosX, prevPosX, curPosZ, lengthPerSeg;
     private RawImage blip;
     //public Sprite curStraightOverhead, curSlightLeft, curLeft, curHardLeft, curSlightRight, curRight, curHardRight, curUphill, curDownhill;
@@ -53,6 +55,7 @@ public class NPCar : MonoBehaviour
     private float curFlickerIntervalTime, curFlickerWaitTime, flickerRefTime, flickerWaitRefTime;
 
     private float playerPosX, playerPosZ, playerSpeedZ;
+    private float trackLength;
 
     void Awake() {
         if (!carSprite) {
@@ -168,9 +171,10 @@ public class NPCar : MonoBehaviour
         }
     }
 
-    public void InitializeCar(CarModel carMod, int startSeg, float lenPerSeg, float widthOfLane, Texture blipSprite, Vector2 blipPos, Transform blipParent) {
+    public void InitializeCar(CarModel carMod, float track_length, int startSeg, float lenPerSeg, float widthOfLane, Texture blipSprite, Vector2 blipPos, Transform blipParent) {
         model = carMod;
         carSprite = this.transform.GetComponent<SpriteRenderer>();
+        trackLength = track_length;
 
         SetLanePositions(-widthOfLane, 0, widthOfLane);
         curLaneNum = Random.Range(0, lanePositions.Length);
@@ -243,6 +247,7 @@ public class NPCar : MonoBehaviour
 
     //This calculates the 
     public Vector2 InitiateCrash(float otherMass, float otherRoadGrip, Vector2 otherVelocity, Vector2 impactPoint) {
+        AudioPlayer.audioPlayer.PlaySound(AudioPlayer.SFX.crash);
         //float impactMomentumX = sourceImpactMomentum.x;
         //float impactMomentumZ = sourceImpactMomentum.y;
         //curCrashVelocity = new Vector2(impactMomentumX / model.mass, impactMomentumZ / model.mass);
@@ -516,5 +521,11 @@ public class NPCar : MonoBehaviour
         playerPosX = posX;
         playerPosZ = posZ;
         playerSpeedZ = speedZ;
+    }
+
+    public void LapTrack() {
+        if (curPosZ > trackLength) {
+            curPosZ -= trackLength;
+        }
     }
 }
