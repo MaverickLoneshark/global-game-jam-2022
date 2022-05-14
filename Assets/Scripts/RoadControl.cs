@@ -66,7 +66,11 @@ public class RoadControl : MonoBehaviour
 
     // Camera is at depth = 0; road is at height = 0
     [SerializeField]
-    private float camHeight, roadWidth, laneWidth, screenHalfWidth, roadSegmentLength, roadStartZ, FOV;    // roadwidth is actually half the width
+    private Vector2 designScreenSize = new Vector2(320, 200);
+    private float screenHalfWidth;
+
+    [SerializeField]
+    private float camHeight, roadWidth, laneWidth, roadSegmentLength, roadStartZ, FOV;    // roadwidth is actually half the width
     [SerializeField]
     private int numStraightSegs, numSegsToDraw, numOfSegsToSkipPerPass;   // Skipping segments past a certain distance for improved performance
     private int straightSegCounter;         // This is essentially an index for determining where to add the RoadCurves
@@ -194,7 +198,7 @@ public class RoadControl : MonoBehaviour
                         progressTrack, progressCar, 
                         armor, armorFrame, armorBarCutter;
     [SerializeField]
-    private SpriteRenderer sensorOverlay, sensorScanline;
+    private RawImage sensorOverlay, sensorScanline;
 
     [SerializeField]
     private Text messageText;
@@ -225,7 +229,6 @@ public class RoadControl : MonoBehaviour
     private int curSensorOverlayFrameIndex;
     [SerializeField]
     private float sensorScanLineLowestHeight, sensorScanLineDisplacement;
-    private float sensorScanLineInitialHeight;
     private bool sensorOverlayWasJustActivated, sensorOverlayIsActive, sensorOverlayIsLoading, sensorOverlayIsTotallyLoaded, sensorOverlayIsUnloading;
     [SerializeField]
     private float sensorDetectableDepthZ, sensorUndetectableDepthZ;     // Depth (z) values for cars and billboards that are detectable and not
@@ -258,6 +261,7 @@ public class RoadControl : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        screenHalfWidth = designScreenSize.x * 0.5f;
         inputMapper = InputMapper.inputMapper;
         audioPlayer = AudioPlayer.audioPlayer;
         playerCarSprite = playerCar.GetComponent<SpriteRenderer>();
@@ -310,7 +314,8 @@ public class RoadControl : MonoBehaviour
         sensorOverlayIsLoading = false;
         sensorOverlayIsTotallyLoaded = false;
         sensorOverlayIsUnloading = false;
-        sensorScanLineInitialHeight = sensorScanline.transform.position.y;
+        sensorScanLineLowestHeight = -(Screen.height >> 1);
+
         SetPlayerCarSprites();
         SetEffectSprites();
 
@@ -631,6 +636,7 @@ public class RoadControl : MonoBehaviour
 
     private void UpdateRoad() {
 //Debug.Log(curSegmentIndex);
+        Vector2 screenSize = new Vector2(Screen.width, Screen.height);
         int highestScreenLineDrawn = -1;    // First screen line is roadScreenLines[0], so let's use -1 as a reference
 
         float x = 0;
@@ -677,13 +683,11 @@ public class RoadControl : MonoBehaviour
 
         Bomb bmb;
 
-        for (int i = 0, segNumDrawn; i < bufferFilled; i++) {
-            segNumDrawn = i;
-
-            nearEdgeHeight = (int)(halfScreenLines - Mathf.Floor(distCamToScreen * (camHeight - segmentBuffer[i].y) / (segmentBuffer[i].edgeNearZ - curPlayerPosZ)));
-            farEdgeHeight = (int)(halfScreenLines - Mathf.Floor(distCamToScreen * (camHeight - segmentBuffer[i].y) / (segmentBuffer[i].edgeFarZ - curPlayerPosZ)));
-            nearEdgeWidthScale = (distCamToScreen / (segmentBuffer[i].edgeNearZ - curPlayerPosZ + (camHeight + segmentBuffer[i].y) / Mathf.Tan(FOVInRads)));
-            farEdgeWidthScale = (distCamToScreen / (segmentBuffer[i].edgeFarZ - curPlayerPosZ + (camHeight + segmentBuffer[i].y) / Mathf.Tan(FOVInRads)));
+        for (int stripNumDrawn = 0; stripNumDrawn < bufferFilled; stripNumDrawn++) {
+            nearEdgeHeight = (int)(halfScreenLines - Mathf.Floor(distCamToScreen * (camHeight - segmentBuffer[stripNumDrawn].y) / (segmentBuffer[stripNumDrawn].edgeNearZ - curPlayerPosZ)));
+            farEdgeHeight = (int)(halfScreenLines - Mathf.Floor(distCamToScreen * (camHeight - segmentBuffer[stripNumDrawn].y) / (segmentBuffer[stripNumDrawn].edgeFarZ - curPlayerPosZ)));
+            nearEdgeWidthScale = (distCamToScreen / (segmentBuffer[stripNumDrawn].edgeNearZ - curPlayerPosZ + (camHeight + segmentBuffer[stripNumDrawn].y) / Mathf.Tan(FOVInRads)));
+            farEdgeWidthScale = (distCamToScreen / (segmentBuffer[stripNumDrawn].edgeFarZ - curPlayerPosZ + (camHeight + segmentBuffer[stripNumDrawn].y) / Mathf.Tan(FOVInRads)));
 
 //if (segNumDrawn % numOfSegsToSkipPerPass == 0){
 //    Debug.Log(curSegmentIndex + ", " + i);
@@ -694,17 +698,20 @@ public class RoadControl : MonoBehaviour
             //nearEdgeHeight -= 100;
             //farEdgeHeight -= 100;
 
-            dx = segmentBuffer[i].curve;
+            dx = segmentBuffer[stripNumDrawn].curve;
 
             if (farEdgeHeight > highestScreenLineDrawn && farEdgeHeight < numScreenLines) {
                 if (farEdgeHeight > nearEdgeHeight) {
+                    float dxFraction;
+                    float scaleIncreaseFromNearEdge;
+
                     for (int j = nearEdgeHeight; j <= farEdgeHeight; j++) {
-                        float dxFraction = (j - nearEdgeHeight) * (dx / (farEdgeHeight - nearEdgeHeight));
-                        float scaleIncreaseFromNearEdge =
+                        dxFraction = (j - nearEdgeHeight) * (dx / (farEdgeHeight - nearEdgeHeight));
+                        scaleIncreaseFromNearEdge =
                             (j - nearEdgeHeight) * ((farEdgeWidthScale - nearEdgeWidthScale) / (farEdgeHeight - nearEdgeHeight));
 
                         if (j >= 0) {
-                            roadStrips[j].spriteRenderer.sprite = segmentBuffer[i].spriteVariation;
+                            roadStrips[j].spriteRenderer.sprite = segmentBuffer[stripNumDrawn].spriteVariation;
                             roadStrips[j].transform.position =
                                 new Vector3(x + dxFraction, roadStrips[j].transform.position.y, roadStrips[j].transform.position.z);
                             roadStrips[j].transform.localScale = new Vector3(nearEdgeWidthScale + scaleIncreaseFromNearEdge, 1.0f, 1.0f);
@@ -714,7 +721,7 @@ public class RoadControl : MonoBehaviour
 //Debug.Log("thick seg, screen line #" + nearEdgeHeight);
                 }
                 else {
-                    roadStrips[farEdgeHeight].spriteRenderer.sprite = segmentBuffer[i].spriteVariation;
+                    roadStrips[farEdgeHeight].spriteRenderer.sprite = segmentBuffer[stripNumDrawn].spriteVariation;
                     roadStrips[farEdgeHeight].transform.position =
                         new Vector3(x + dx, roadStrips[farEdgeHeight].transform.position.y, roadStrips[farEdgeHeight].transform.position.z);
                     roadStrips[farEdgeHeight].transform.localScale = new Vector3(farEdgeWidthScale, 1.0f, 1.0f);
@@ -722,22 +729,21 @@ public class RoadControl : MonoBehaviour
                 }
             }
 
-            if ((Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion) == curWarningRoadLineIndex) &&
-                    (curWarningRoadLineIndex < warningRoadLines.Count - 1)) {
-
-                Vector2 lineBasePos = warningRoadLines[curWarningRoadLineIndex].rectTransform.anchoredPosition;
-                warningRoadLines[curWarningRoadLineIndex].rectTransform.anchoredPosition =
-                    new Vector2(warningRoadLinesInitialX + x * roadLineToWarningRoadLineConversion, lineBasePos.y);
-                warningRoadLines[curWarningRoadLineIndex].rectTransform.sizeDelta =
-                    new Vector2(warningRoadLineBaseWidth * nearEdgeWidthScale, 1.0f);
-                curWarningRoadLineIndex++;
-            }
+            //if ((Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion) == curWarningRoadLineIndex) &&
+            //        (curWarningRoadLineIndex < warningRoadLines.Count)) {
+            //    Vector2 lineBasePos = warningRoadLines[curWarningRoadLineIndex].rectTransform.anchoredPosition;
+            //    warningRoadLines[curWarningRoadLineIndex].rectTransform.anchoredPosition =
+            //        new Vector2(warningRoadLinesInitialX + x * roadLineToWarningRoadLineConversion, lineBasePos.y);
+            //    warningRoadLines[curWarningRoadLineIndex].rectTransform.sizeDelta = new Vector2(warningRoadLineBaseWidth * nearEdgeWidthScale, 1.0f);
+            //    warningRoadLines[curWarningRoadLineIndex].rectTransform.localScale = new Vector2(1.5f * nearEdgeWidthScale, 1.0f);
+            //    curWarningRoadLineIndex++;
+            //}
 
             float sizeCorrection = nearEdgeWidthScale * billboardSizeCorrectionFactor;
             float roadWidthOffset;
 
             foreach (Billboard bb in visibleBillboards) {
-                if (bb.segmentIndex == indexBuffer[i]) {
+                if (bb.segmentIndex == indexBuffer[stripNumDrawn]) {
                     roadWidthOffset = screenHalfWidth;
 
                     if (bb.offsetX < 0) {
@@ -747,7 +753,7 @@ public class RoadControl : MonoBehaviour
                     float spriteZ = -1f;
                     float spriteElevation = nearEdgeHeight + bb.sprite.rect.height * nearEdgeWidthScale * 0.5f;
 
-                    if (nearEdgeHeight < absHighestScreenLineDrawn && roadSegIndexOfHighestScreenLine < i) {
+                    if (nearEdgeHeight < absHighestScreenLineDrawn && roadSegIndexOfHighestScreenLine < stripNumDrawn) {
                         spriteZ = spriteBgdZ;
                     }
 
@@ -757,7 +763,7 @@ public class RoadControl : MonoBehaviour
             }
 
             foreach (Droid droid in visibleDroids) {
-                if (droid.segmentIndex == indexBuffer[i]) {
+                if (droid.segmentIndex == indexBuffer[stripNumDrawn]) {
                     roadWidthOffset = screenHalfWidth;
 
                     if (droid.offsetX < 0) {
@@ -808,7 +814,7 @@ public class RoadControl : MonoBehaviour
                         }
                     }
                 }
-                else if (bmb.segmentIndex == indexBuffer[i]) {
+                else if (bmb.segmentIndex == indexBuffer[stripNumDrawn]) {
                     roadWidthOffset = screenHalfWidth;
 
                     if (bmb.offsetX < 0) {
@@ -829,28 +835,48 @@ public class RoadControl : MonoBehaviour
                         bmb.bombSprite.enabled = true;
                     }
 
-                    bmb.blip.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
-                    int height = Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion);
+                    if (sensorOverlayIsActive) {
+                        //bmb.blip.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
+                        //bmb.blip.rectTransform.localScale = Vector2.one * blipSizeIncreaseFactor;
+                        //int height = Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion);
 
-                    if (height < warningRoadLines.Count && height > 0) {
-                        float blipY = warningRoadLines[height].rectTransform.anchoredPosition.y;
+                        //if (height < warningRoadLines.Count && height >= 0) {
+                        //    float blipY = warningRoadLines[height].rectTransform.anchoredPosition.y;
 
-                        bmb.blip.rectTransform.anchoredPosition =
-                            new Vector2(warningRoadLinesInitialX + (bmb.offsetX * nearEdgeWidthScale + x) * roadLineToWarningRoadLineConversion,
-                            blipY);
+                        //    bmb.blip.rectTransform.anchoredPosition =
+                        //        new Vector2(warningRoadLinesInitialX + (bmb.offsetX * nearEdgeWidthScale + x) * roadLineToWarningRoadLineConversion,
+                        //        blipY);
+                        //}
+
+                        Vector2 bmbScreenPosition = Camera.main.WorldToScreenPoint(bmb.transform.position) / screenSize;
+                        Vector2 bmbHalf = bmb.bombSprite.sprite.rect.size * bmb.transform.localScale * 2f / designScreenSize;
+
+                        bmb.blip.rectTransform.anchorMin = bmbScreenPosition - bmbHalf;
+                        bmb.blip.rectTransform.anchorMax = bmbScreenPosition + bmbHalf;
+                        bmb.blip.enabled = true;
+
+                        //bmb.blipProjection.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
+                        //bmb.blipProjection.rectTransform.localScale = Vector2.one * blipSizeIncreaseFactor;
+                        //bmb.blipProjection.rectTransform.anchoredPosition = warningRoadLines[0].rectTransform.anchoredPosition +
+                        //    new Vector2(bmb.offsetX * roadLineToWarningRoadLineConversion, bombBlipProjectionRoadOffsetY);
+
+                        Vector2 bpConsolePosition = Camera.main.WorldToScreenPoint(new Vector3(bmb.offsetX, bombBlipBaseHeight, 0)) / screenSize;
+                        Vector2 bombBlipHalf = bmb.bombSprite.sprite.rect.size * 2f / designScreenSize;
+                        bmb.blipProjection.rectTransform.anchorMin = bpConsolePosition - bombBlipHalf;
+                        bmb.blipProjection.rectTransform.anchorMax = bpConsolePosition + bombBlipHalf;
+
+                        if (Time.time - bmb.blipProjectionFlashRefTime > bombBlipProjectionFlashTime) {
+                            bmb.blipProjection.enabled = !bmb.blipProjection.enabled;
+                            bmb.blipProjectionFlashRefTime = Time.time;
+                        }
                     }
-
-                    bmb.blipProjection.rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
-                    bmb.blipProjection.rectTransform.anchoredPosition = warningRoadLines[0].rectTransform.anchoredPosition +
-                        new Vector2(bmb.offsetX * roadLineToWarningRoadLineConversion, bombBlipProjectionRoadOffsetY);
-
-                    if (Time.time - bmb.blipProjectionFlashRefTime > bombBlipProjectionFlashTime) {
-                        bmb.blipProjection.enabled = !bmb.blipProjection.enabled;
-                        bmb.blipProjectionFlashRefTime = Time.time;
+                    else {
+                        bmb.blipProjection.enabled = false;
+                        bmb.blip.enabled = false;
                     }
 
                     if (!isInvulnerable && canDrive) {
-                        if (indexBuffer[i] == curSegmentIndex + 5 && Mathf.Abs(bmb.transform.position.x - playerCar.position.x) < 30) {
+                        if (indexBuffer[stripNumDrawn] == curSegmentIndex + 5 && Mathf.Abs(bmb.transform.position.x - playerCar.position.x) < 30) {
                             if (bmb.transform.position.x >= playerCar.position.x) {
                                 collisionSpeedEffect =
                                     new Vector3(maxBombIntensity / (Mathf.Max(playerCar.position.x - bmb.transform.position.x, -1)),
@@ -882,7 +908,7 @@ public class RoadControl : MonoBehaviour
             foreach (NPCar car in carsOnRoad) {
                 carSegment = car.GetCurSeg();
 
-                if (carSegment == indexBuffer[i]) {
+                if (carSegment == indexBuffer[stripNumDrawn]) {
                     car.SetVisibility(true, sensorOverlayIsActive);
                     car.UseRedVariants(sensorOverlayIsActive);
 
@@ -906,22 +932,28 @@ public class RoadControl : MonoBehaviour
                             depthZ);
                     }
 
-                    car.GetBlip().rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
-                    int height = Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion);
+                    //car.GetBlip().rectTransform.sizeDelta = new Vector2(bombBlipBaseWidth, bombBlipBaseHeight);
+                    //int height = Mathf.FloorToInt(nearEdgeHeight * roadLineToWarningRoadLineConversion);
 
-                    if (height < warningRoadLines.Count && height >= 0) {
-                        float blipY = warningRoadLines[height].rectTransform.anchoredPosition.y;
+                    //if (height < warningRoadLines.Count && height >= 0) {
+                        //float blipY = warningRoadLines[height].rectTransform.anchoredPosition.y;
+                        //car.GetBlip().rectTransform.anchoredPosition = 
+                        //    new Vector2(warningRoadLinesInitialX + (car.GetCurPosX() * nearEdgeWidthScale + x) * roadLineToWarningRoadLineConversion,
+                        //    blipY);
+                    //}
 
-                        car.GetBlip().rectTransform.anchoredPosition = 
-                            new Vector2(warningRoadLinesInitialX + (car.GetCurPosX() * nearEdgeWidthScale + x) * roadLineToWarningRoadLineConversion,
-                            blipY);
-                    }
+                    Vector2 carConsolePos = Camera.main.WorldToScreenPoint(car.transform.position) / screenSize;
+                    RawImage carBlip = car.GetBlip();
+                    Vector2 carHalf = new Vector2(car.GetWidth(), car.GetLength()) * car.transform.localScale * 2f / designScreenSize; //bigger indicator size
+
+                    carBlip.rectTransform.anchorMin = carConsolePos - carHalf;
+                    carBlip.rectTransform.anchorMax = carConsolePos + carHalf;
 
                     // Check for collision with player car
                     if (!isInvulnerable && canDrive) {
                         float halfCarLength = car.GetLength() * 0.5f;
 
-                        if (indexBuffer[i] < (curSegmentIndex + halfCarLength) && indexBuffer[i] > (curSegmentIndex - halfCarLength)) {
+                        if (indexBuffer[stripNumDrawn] < (curSegmentIndex + halfCarLength) && indexBuffer[stripNumDrawn] > (curSegmentIndex - halfCarLength)) {
                             if (Mathf.Abs(car.transform.position.x - playerCar.position.x) < car.GetWidth()) {
                                 Vector2 impactMomentum = 
                                     car.InitiateCrash(mass, roadGrip,
@@ -939,7 +971,7 @@ public class RoadControl : MonoBehaviour
 
                                 Spark newSpark = sparkPool.Instate().GetComponent<Spark>();
 
-                                if (indexBuffer[i] >= curSegmentIndex) {
+                                if (indexBuffer[stripNumDrawn] >= curSegmentIndex) {
                                     if (car.transform.position.x >= playerCar.position.x) {
                                         playerIsSpinningOutLeft = triggerSpinout;
                                         playerIsCrashingLeft = !triggerSpinout;
@@ -1054,11 +1086,27 @@ public class RoadControl : MonoBehaviour
             roadStrips[i].transform.localScale = Vector3.up + Vector3.forward;
         }
 
-        for (int i = curWarningRoadLineIndex; i < warningRoadLines.Count; i++) {
-            warningRoadLines[i].rectTransform.sizeDelta = Vector2.up;
+        Vector2 anchor;
+        float stripConsoleX;
+        float stripHalf;
+        float resize = 0.5f / (roadStrips[0].gameObject.transform.localScale.x * designScreenSize.x);
+
+        for (int warningRoadLineIndex = 0, stripNum = 0, warningRoadLine2RoadStrip = numScreenLines / warningRoadLines.Count;
+            warningRoadLineIndex < warningRoadLines.Count; warningRoadLineIndex++, stripNum += warningRoadLine2RoadStrip) {
+            stripConsoleX = Camera.main.WorldToScreenPoint(roadStrips[stripNum].gameObject.transform.position).x / screenSize.x;
+            stripHalf = roadStrips[stripNum].spriteRenderer.sprite.rect.size.x * roadStrips[stripNum].gameObject.transform.localScale.x * resize;
+
+            anchor = warningRoadLines[warningRoadLineIndex].rectTransform.anchorMin;
+            anchor.x = stripConsoleX - stripHalf;
+
+            warningRoadLines[warningRoadLineIndex].rectTransform.anchorMin = anchor;
+            anchor = warningRoadLines[warningRoadLineIndex].rectTransform.anchorMax;
+            anchor.x = stripConsoleX + stripHalf;
+
+            warningRoadLines[warningRoadLineIndex].rectTransform.anchorMax = anchor;
         }
 
-        curWarningRoadLineIndex = 0;
+        //curWarningRoadLineIndex = 0;
 
         //foreach (BillboardSprite bb in visibleBillboards) {
         //    if (bb.spriteTransform.position.y < highestScreenLineDrawn) {
@@ -1523,7 +1571,7 @@ public class RoadControl : MonoBehaviour
             if (sensorOverlayIsLoading) {
                 if (curSensorOverlayFrameIndex < sensorOverlayLoadFrames.Count - 1) {
                     curSensorOverlayFrameIndex++;
-                    sensorOverlay.sprite = sensorOverlayLoadFrames[curSensorOverlayFrameIndex];
+                    sensorOverlay.texture = sensorOverlayLoadFrames[curSensorOverlayFrameIndex].texture;
                 }
 
                 if (curCenterConsoleFrameIndex < centerConsoleCoverFrames.Count - 1) {
@@ -1537,7 +1585,7 @@ public class RoadControl : MonoBehaviour
                     sensorOverlayIsTotallyLoaded = true;
                     centerConsoleCover.enabled = false;
                     curSensorOverlayFrameIndex = 0;
-                    sensorScanline.enabled = true;
+                    sensorScanline.gameObject.SetActive(true);
 
                     foreach (RawImage img in warningRoadLines) {
                         img.enabled = true;
@@ -1545,21 +1593,18 @@ public class RoadControl : MonoBehaviour
                 }
             }
             else if (sensorOverlayIsTotallyLoaded) {
-                if (sensorScanline.transform.position.y > sensorScanLineLowestHeight) {
-                    //sensorScanline.transform.position = sensorScanline.transform.position +
-                    //    new Vector3(0, sensorScanLineDisplacement * Time.deltaTime, 0);
-                    sensorScanline.transform.position =
-                        sensorScanline.transform.position + (Vector3.up * sensorScanLineDisplacement * Time.deltaTime);
+                if (sensorScanline.rectTransform.position.y > sensorScanLineLowestHeight) {
+                    //TODO: UI updates are slower than standard Updates, so missing UI time should be factored in
+                    sensorScanline.rectTransform.position += (Vector3.up * sensorScanLineDisplacement * Time.deltaTime);
                 }
                 else {
-                    sensorScanline.transform.position =
-                        new Vector3(sensorScanline.transform.position.x, sensorScanLineInitialHeight, sensorScanline.transform.position.z);
+                    sensorScanline.rectTransform.position += Vector3.up * (Screen.height << 1);
                 }
             }
             else if (sensorOverlayIsUnloading) {
                 if (curSensorOverlayFrameIndex < sensorOverlayUnloadFrames.Count - 1) {
                     curSensorOverlayFrameIndex++;
-                    sensorOverlay.sprite = sensorOverlayUnloadFrames[curSensorOverlayFrameIndex];
+                    sensorOverlay.texture = sensorOverlayUnloadFrames[curSensorOverlayFrameIndex].texture;
                 }
 
                 if (curCenterConsoleFrameIndex > 0) {
@@ -1570,7 +1615,7 @@ public class RoadControl : MonoBehaviour
                 if ((curSensorOverlayFrameIndex >= sensorOverlayUnloadFrames.Count - 1) && (curCenterConsoleFrameIndex <= 0)) {
                     sensorOverlayIsUnloading = false;
                     sensorOverlayIsActive = false;
-                    sensorOverlay.enabled = false;
+                    sensorOverlay.gameObject.SetActive(false);
 
                     foreach (RawImage img in warningRoadLines) {
                         img.enabled = false;
@@ -1618,11 +1663,10 @@ public class RoadControl : MonoBehaviour
     private void UpdateArmorValue(float damageDone) {
         damageTaken += damageDone;
         curArmorValue = armorMaxValue - damageTaken;
-        float damageBarWidth = armorBarWidth * (damageTaken / armorMaxValue);
 
-        armorBarCutter.rectTransform.sizeDelta = new Vector2(damageBarWidth, armorBarCutter.rectTransform.rect.height);
-        armorBarCutter.rectTransform.anchoredPosition =
-            new Vector2(armorCutterInitialX + armorBarWidth - (damageBarWidth * 0.5f), armorBarCutter.rectTransform.anchoredPosition.y);
+        Vector2 min = Vector2.right * (curArmorValue / armorMaxValue);
+        min.y = armorBarCutter.rectTransform.anchorMin.y;
+        armorBarCutter.rectTransform.anchorMin = min;
     }
 
     private void ManageControlsAndPlayerPosition() {
@@ -1637,7 +1681,7 @@ public class RoadControl : MonoBehaviour
 
                 if (curPlayerSpeed < topSpeed) {
                     curPlayerSpeed += maxAcceleration * Time.deltaTime;
-                    audioPlayer.PlayCarSound(AudioPlayer.SFX.accelerate, 0.5f + (0.5f * curPlayerSpeed / topSpeed), 0, 1, 0.9f);
+                    audioPlayer.PlayCarSound(AudioPlayer.SFX.accelerate, 0.5f + (0.5f * curPlayerSpeed / topSpeed), 0, 1);
                 }
                 else {
                     curPlayerSpeed = topSpeed;
@@ -1797,9 +1841,9 @@ public class RoadControl : MonoBehaviour
                 sensorOverlayFrameRefTime = Time.time;
                 curSensorOverlayFrameIndex = 0;
                 curCenterConsoleFrameIndex = 0;
-                sensorOverlay.sprite = sensorOverlayLoadFrames[curSensorOverlayFrameIndex];
+                sensorOverlay.texture = sensorOverlayLoadFrames[curSensorOverlayFrameIndex].texture;
                 centerConsoleCover.texture = centerConsoleCoverFrames[curCenterConsoleFrameIndex];
-                sensorOverlay.enabled = true;
+                sensorOverlay.gameObject.SetActive(true);
 
                 foreach (RawImage img in sensorBars) {
                     img.enabled = false;
@@ -1822,7 +1866,7 @@ public class RoadControl : MonoBehaviour
 
                 SetEffectSprites();
 
-                sensorScanline.enabled = false;
+                sensorScanline.gameObject.SetActive(false);
                 sensorOverlayIsTotallyLoaded = false;
                 sensorOverlayIsUnloading = true;
                 sensorOverlayFrameRefTime = Time.time;
@@ -1853,7 +1897,7 @@ public class RoadControl : MonoBehaviour
 
                 SetEffectSprites();
 
-                sensorScanline.enabled = false;
+                sensorScanline.gameObject.SetActive(false);
                 sensorOverlayIsTotallyLoaded = false;
                 sensorOverlayIsUnloading = true;
                 sensorOverlayFrameRefTime = Time.time;
@@ -2046,8 +2090,8 @@ public class RoadControl : MonoBehaviour
 
             messageText.enabled = false;
 
-            sensorOverlay.enabled = false;
-            sensorScanline.enabled = false;
+            sensorOverlay.gameObject.SetActive(false);
+            sensorScanline.gameObject.SetActive(false);
         }
     }
 

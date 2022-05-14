@@ -109,7 +109,7 @@ public class AudioPlayer : MonoBehaviour {
 		}
 	}
 	
-	public void PlayCarSound(SFX sound, float pitch = 1.0f, float time_start = 0, float time_end = 1.0f, float volume = 1.0f) {
+	public void PlayCarSound(SFX sound, float pitch = 1.0f, float time_start = 0, float time_end = 1.0f, float volume = 0.5f) {
 		if (!audioSources[1].isPlaying || (audioSources[1].clip != sfx[(int)sound])) {
 			audioSources[1].clip = sfx[(int)sound];
 			audioSources[1].pitch = pitch;
